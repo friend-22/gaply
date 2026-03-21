@@ -1,0 +1,12 @@
+# .pubignore
+.metadata
+build/
+.dart_tool/
+.packages
+pubspec.lock
+example/build/
+*.dill
+*.cache
+example/windows/flutter/generated_plugin_registrant.cc
+example/windows/flutter/generated_plugin_registrant.h
+example/windows/flutter/generated_plugins.cmake
