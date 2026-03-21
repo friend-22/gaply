@@ -109,10 +109,13 @@ extension ShimmerExtension on Widget {
 
 class GaplyShimmerPreset with GaplyPreset<ShimmerParams> {
   static final GaplyShimmerPreset instance = GaplyShimmerPreset._internal();
+  GaplyShimmerPreset._internal();
 
-  GaplyShimmerPreset._internal() {
-    register('none', const ShimmerParams());
-    register(
+  void _ensureInitialized() {
+    if (hasPreset) return;
+
+    add('none', const ShimmerParams());
+    add(
       'light',
       const ShimmerParams(
         period: Duration(milliseconds: 1500),
@@ -120,7 +123,7 @@ class GaplyShimmerPreset with GaplyPreset<ShimmerParams> {
         highlightColor: ColorParams(role: ColorRole.surfaceVariant, shade: ColorShade.s50),
       ),
     );
-    register(
+    add(
       'dark',
       const ShimmerParams(
         period: Duration(milliseconds: 1500),
@@ -128,7 +131,7 @@ class GaplyShimmerPreset with GaplyPreset<ShimmerParams> {
         highlightColor: ColorParams(role: ColorRole.surfaceVariant, shade: ColorShade.s700),
       ),
     );
-    register(
+    add(
       'primary',
       const ShimmerParams(
         period: Duration(milliseconds: 1500),
@@ -136,7 +139,7 @@ class GaplyShimmerPreset with GaplyPreset<ShimmerParams> {
         highlightColor: ColorParams(role: ColorRole.primary, opacity: ColorOpacity.o40),
       ),
     );
-    register(
+    add(
       'secondary',
       const ShimmerParams(
         period: Duration(milliseconds: 1500),
@@ -144,7 +147,7 @@ class GaplyShimmerPreset with GaplyPreset<ShimmerParams> {
         highlightColor: ColorParams(role: ColorRole.secondary, opacity: ColorOpacity.o40),
       ),
     );
-    register(
+    add(
       'error',
       const ShimmerParams(
         period: Duration(milliseconds: 1500),
@@ -152,7 +155,7 @@ class GaplyShimmerPreset with GaplyPreset<ShimmerParams> {
         highlightColor: ColorParams(role: ColorRole.error, opacity: ColorOpacity.o20),
       ),
     );
-    register(
+    add(
       'skeleton',
       const ShimmerParams(
         period: Duration(milliseconds: 2000),
@@ -160,7 +163,7 @@ class GaplyShimmerPreset with GaplyPreset<ShimmerParams> {
         highlightColor: ColorParams(role: ColorRole.surfaceVariant, shade: ColorShade.s100),
       ),
     );
-    register(
+    add(
       'fast',
       const ShimmerParams(
         period: Duration(milliseconds: 800),
@@ -168,7 +171,7 @@ class GaplyShimmerPreset with GaplyPreset<ShimmerParams> {
         highlightColor: ColorParams(role: ColorRole.surfaceVariant, shade: ColorShade.s50),
       ),
     );
-    register(
+    add(
       'slow',
       const ShimmerParams(
         period: Duration(milliseconds: 2500),
@@ -176,7 +179,7 @@ class GaplyShimmerPreset with GaplyPreset<ShimmerParams> {
         highlightColor: ColorParams(role: ColorRole.surfaceVariant, shade: ColorShade.s50),
       ),
     );
-    register(
+    add(
       'image',
       const ShimmerParams(
         period: Duration(milliseconds: 1200),
@@ -184,7 +187,7 @@ class GaplyShimmerPreset with GaplyPreset<ShimmerParams> {
         highlightColor: ColorParams(role: ColorRole.surfaceVariant, shade: ColorShade.s100),
       ),
     );
-    register(
+    add(
       'text',
       const ShimmerParams(
         period: Duration(milliseconds: 1500),
@@ -192,7 +195,7 @@ class GaplyShimmerPreset with GaplyPreset<ShimmerParams> {
         highlightColor: ColorParams(role: ColorRole.surfaceVariant, shade: ColorShade.s100),
       ),
     );
-    register(
+    add(
       'card',
       const ShimmerParams(
         period: Duration(milliseconds: 1800),
@@ -202,7 +205,13 @@ class GaplyShimmerPreset with GaplyPreset<ShimmerParams> {
     );
   }
 
-  static void register(String name, ShimmerParams params) => instance.add(name, params);
+  static void register(String name, ShimmerParams params) {
+    instance._ensureInitialized();
+    instance.add(name, params);
+  }
 
-  static ShimmerParams? of(String name) => instance.get(name);
+  static ShimmerParams? of(String name) {
+    instance._ensureInitialized();
+    return instance.get(name);
+  }
 }

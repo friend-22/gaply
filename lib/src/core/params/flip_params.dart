@@ -100,14 +100,23 @@ extension FlipParamsExtension on Widget {
 
 class GaplyFlipPreset with GaplyPreset<FlipParams> {
   static final GaplyFlipPreset instance = GaplyFlipPreset._internal();
+  GaplyFlipPreset._internal();
 
-  GaplyFlipPreset._internal() {
-    register('none', const FlipParams(duration: Duration.zero));
-    register('vertical', const FlipParams(axis: Axis.vertical));
-    register('horizontal', const FlipParams(axis: Axis.horizontal));
+  void _ensureInitialized() {
+    if (hasPreset) return;
+
+    add('none', const FlipParams(duration: Duration.zero));
+    add('vertical', const FlipParams(axis: Axis.vertical));
+    add('horizontal', const FlipParams(axis: Axis.horizontal));
   }
 
-  static void register(String name, FlipParams params) => instance.add(name, params);
+  static void register(String name, FlipParams params) {
+    instance._ensureInitialized();
+    instance.add(name, params);
+  }
 
-  static FlipParams? of(String name) => instance.get(name);
+  static FlipParams? of(String name) {
+    instance._ensureInitialized();
+    return instance.get(name);
+  }
 }

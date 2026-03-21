@@ -1,6 +1,5 @@
 import 'dart:ui';
 
-import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:gaply/src/core/base/gaply_base.dart';
 import 'package:gaply/src/core/base/params_base.dart';
@@ -101,31 +100,39 @@ mixin _ShadowParamsMixin {
 
 class GaplyShadowPreset with GaplyPreset<ShadowParams> {
   static final GaplyShadowPreset instance = GaplyShadowPreset._internal();
+  GaplyShadowPreset._internal();
 
-  GaplyShadowPreset._internal() {
-    register('none', const ShadowParams());
+  void _ensureInitialized() {
+    if (hasPreset) return;
+    add('none', const ShadowParams());
 
     const blurColor = ColorParams.shadow();
 
-    register(
+    add(
       'small',
       const ShadowParams(spreadRadius: 0.0, blurRadius: 4.0, offset: Offset(0, 2), color: blurColor),
     );
-    register(
+    add(
       'medium',
       const ShadowParams(spreadRadius: -1.0, blurRadius: 10.0, offset: Offset(0, 4), color: blurColor),
     );
-    register(
+    add(
       'large',
       const ShadowParams(spreadRadius: -2.0, blurRadius: 24.0, offset: Offset(0, 10), color: blurColor),
     );
-    register(
+    add(
       'base',
       const ShadowParams(spreadRadius: 0.0, blurRadius: 5.0, offset: Offset(3, 3), color: blurColor),
     );
   }
 
-  static void register(String name, ShadowParams params) => instance.add(name, params);
+  static void register(String name, ShadowParams params) {
+    instance._ensureInitialized();
+    instance.add(name, params);
+  }
 
-  static ShadowParams? of(String name) => instance.get(name);
+  static ShadowParams? of(String name) {
+    instance._ensureInitialized();
+    return instance.get(name);
+  }
 }

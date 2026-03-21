@@ -130,16 +130,24 @@ extension TrainParamsExtension<T> on T {
 
 class GaplyTrainPreset with GaplyPreset<TrainParams> {
   static final GaplyTrainPreset instance = GaplyTrainPreset._internal();
+  GaplyTrainPreset._internal();
 
-  GaplyTrainPreset._internal() {
-    register('none', const TrainParams(duration: Duration.zero));
-    register('left', const TrainParams(direction: AxisDirection.left));
-    register('right', const TrainParams(direction: AxisDirection.right));
-    register('up', const TrainParams(direction: AxisDirection.up));
-    register('down', const TrainParams(direction: AxisDirection.down));
+  void _ensureInitialized() {
+    if (hasPreset) return;
+    add('none', const TrainParams(duration: Duration.zero));
+    add('left', const TrainParams(direction: AxisDirection.left));
+    add('right', const TrainParams(direction: AxisDirection.right));
+    add('up', const TrainParams(direction: AxisDirection.up));
+    add('down', const TrainParams(direction: AxisDirection.down));
   }
 
-  static void register(String name, TrainParams params) => instance.add(name, params);
+  static void register(String name, TrainParams params) {
+    instance._ensureInitialized();
+    instance.add(name, params);
+  }
 
-  static TrainParams? of(String name) => instance.get(name);
+  static TrainParams? of(String name) {
+    instance._ensureInitialized();
+    return instance.get(name);
+  }
 }

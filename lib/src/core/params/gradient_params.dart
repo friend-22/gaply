@@ -130,10 +130,13 @@ extension GradientParamsExtension on BoxDecoration {
 
 class GaplyGradientPreset with GaplyPreset<GradientParams> {
   static final GaplyGradientPreset instance = GaplyGradientPreset._internal();
+  GaplyGradientPreset._internal();
 
-  GaplyGradientPreset._internal() {
-    register('none', const GradientParams(colors: [], stops: []));
-    register(
+  void _ensureInitialized() {
+    if (hasPreset) return;
+
+    add('none', const GradientParams(colors: [], stops: []));
+    add(
       'sunset',
       const GradientParams(
         type: GradientType.linear,
@@ -146,7 +149,7 @@ class GaplyGradientPreset with GaplyPreset<GradientParams> {
         end: Alignment.bottomRight,
       ),
     );
-    register(
+    add(
       'ocean',
       const GradientParams(
         type: GradientType.linear,
@@ -157,7 +160,7 @@ class GaplyGradientPreset with GaplyPreset<GradientParams> {
         stops: [0.0, 1.0],
       ),
     );
-    register(
+    add(
       'forest',
       const GradientParams(
         type: GradientType.linear,
@@ -168,7 +171,7 @@ class GaplyGradientPreset with GaplyPreset<GradientParams> {
         stops: [0.0, 1.0],
       ),
     );
-    register(
+    add(
       'midnight',
       const GradientParams(
         type: GradientType.linear,
@@ -179,7 +182,7 @@ class GaplyGradientPreset with GaplyPreset<GradientParams> {
         stops: [0.0, 1.0],
       ),
     );
-    register(
+    add(
       'rainbow',
       const GradientParams(
         type: GradientType.linear,
@@ -192,7 +195,7 @@ class GaplyGradientPreset with GaplyPreset<GradientParams> {
         stops: [0.0, 0.33, 0.66, 1.0],
       ),
     );
-    register(
+    add(
       'warm',
       const GradientParams(
         type: GradientType.radial,
@@ -203,7 +206,7 @@ class GaplyGradientPreset with GaplyPreset<GradientParams> {
         stops: [0.0, 1.0],
       ),
     );
-    register(
+    add(
       'cool',
       const GradientParams(
         type: GradientType.linear,
@@ -216,7 +219,13 @@ class GaplyGradientPreset with GaplyPreset<GradientParams> {
     );
   }
 
-  static void register(String name, GradientParams params) => instance.add(name, params);
+  static void register(String name, GradientParams params) {
+    instance._ensureInitialized();
+    instance.add(name, params);
+  }
 
-  static GradientParams? of(String name) => instance.get(name);
+  static GradientParams? of(String name) {
+    instance._ensureInitialized();
+    return instance.get(name);
+  }
 }

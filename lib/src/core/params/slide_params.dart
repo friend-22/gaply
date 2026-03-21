@@ -159,16 +159,24 @@ extension SlideParamsExtension on Widget {
 
 class GaplySlidePreset with GaplyPreset<SlideParams> {
   static final GaplySlidePreset instance = GaplySlidePreset._internal();
+  GaplySlidePreset._internal();
 
-  GaplySlidePreset._internal() {
-    register('none', const SlideParams(duration: Duration.zero));
-    register('left', const SlideParams(direction: AxisDirection.left));
-    register('right', const SlideParams(direction: AxisDirection.right));
-    register('up', const SlideParams(direction: AxisDirection.up));
-    register('down', const SlideParams(direction: AxisDirection.down));
+  void _ensureInitialized() {
+    if (hasPreset) return;
+    add('none', const SlideParams(duration: Duration.zero));
+    add('left', const SlideParams(direction: AxisDirection.left));
+    add('right', const SlideParams(direction: AxisDirection.right));
+    add('up', const SlideParams(direction: AxisDirection.up));
+    add('down', const SlideParams(direction: AxisDirection.down));
   }
 
-  static void register(String name, SlideParams params) => instance.add(name, params);
+  static void register(String name, SlideParams params) {
+    instance._ensureInitialized();
+    instance.add(name, params);
+  }
 
-  static SlideParams? of(String name) => instance.get(name);
+  static SlideParams? of(String name) {
+    instance._ensureInitialized();
+    return instance.get(name);
+  }
 }

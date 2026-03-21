@@ -110,15 +110,24 @@ extension ScaleParamsExtension on Widget {
 
 class GaplyScalePreset with GaplyPreset<ScaleParams> {
   static final GaplyScalePreset instance = GaplyScalePreset._internal();
+  GaplyScalePreset._internal();
 
-  GaplyScalePreset._internal() {
-    register('none', const ScaleParams(duration: Duration.zero));
-    register('pop', const ScaleParams(curve: Curves.easeInBack));
-    register('shrink', const ScaleParams(curve: Curves.easeIn));
-    register('grow', const ScaleParams(curve: Curves.easeOut));
+  void _ensureInitialized() {
+    if (hasPreset) return;
+
+    add('none', const ScaleParams(duration: Duration.zero));
+    add('pop', const ScaleParams(curve: Curves.easeInBack));
+    add('shrink', const ScaleParams(curve: Curves.easeIn));
+    add('grow', const ScaleParams(curve: Curves.easeOut));
   }
 
-  static void register(String name, ScaleParams params) => instance.add(name, params);
+  static void register(String name, ScaleParams params) {
+    instance._ensureInitialized();
+    instance.add(name, params);
+  }
 
-  static ScaleParams? of(String name) => instance.get(name);
+  static ScaleParams? of(String name) {
+    instance._ensureInitialized();
+    return instance.get(name);
+  }
 }

@@ -61,22 +61,32 @@ extension BlurParamsExtension on Widget {}
 class GaplyBlurPreset with GaplyPreset<BlurParams> {
   static final GaplyBlurPreset instance = GaplyBlurPreset._internal();
 
-  GaplyBlurPreset._internal() {
-    register('none', const BlurParams());
+  GaplyBlurPreset._internal();
+
+  void _ensureInitialized() {
+    if (hasPreset) return;
+
+    add('none', const BlurParams());
 
     const blurColor = ColorParams.shadow();
 
-    register('low', const BlurParams(sigma: 4.0, opacity: 0.05, color: blurColor));
-    register('medium', const BlurParams(sigma: 10.0, opacity: 0.1, color: blurColor));
-    register('high', const BlurParams(sigma: 24.0, opacity: 0.2, color: blurColor));
-    register('extra', const BlurParams(sigma: 48.0, opacity: 0.3, color: blurColor));
+    add('low', const BlurParams(sigma: 4.0, opacity: 0.05, color: blurColor));
+    add('medium', const BlurParams(sigma: 10.0, opacity: 0.1, color: blurColor));
+    add('high', const BlurParams(sigma: 24.0, opacity: 0.2, color: blurColor));
+    add('extra', const BlurParams(sigma: 48.0, opacity: 0.3, color: blurColor));
 
-    register('apple', const BlurParams(sigma: 40.0, opacity: 0.15, color: blurColor));
-    register('windows', const BlurParams(sigma: 25.0, opacity: 0.05, color: blurColor));
-    register('google', const BlurParams(sigma: 8.0, opacity: 0.1, color: blurColor));
+    add('apple', const BlurParams(sigma: 40.0, opacity: 0.15, color: blurColor));
+    add('windows', const BlurParams(sigma: 25.0, opacity: 0.05, color: blurColor));
+    add('google', const BlurParams(sigma: 8.0, opacity: 0.1, color: blurColor));
   }
 
-  static void register(String name, BlurParams params) => instance.add(name, params);
+  static void register(String name, BlurParams params) {
+    instance._ensureInitialized();
+    instance.add(name, params);
+  }
 
-  static BlurParams? of(String name) => instance.get(name);
+  static BlurParams? of(String name) {
+    instance._ensureInitialized();
+    return instance.get(name);
+  }
 }

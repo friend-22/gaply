@@ -1,6 +1,5 @@
 import 'dart:ui';
 
-import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:gaply/src/core/base/gaply_base.dart';
 import 'package:gaply/src/core/base/params_base.dart';
@@ -224,12 +223,21 @@ mixin BoxParamsMixin {
 
 class GaplyBoxPreset with GaplyPreset<BoxParams> {
   static final GaplyBoxPreset instance = GaplyBoxPreset._internal();
+  GaplyBoxPreset._internal();
 
-  GaplyBoxPreset._internal() {
-    register('none', const BoxParams());
+  void _ensureInitialized() {
+    if (hasPreset) return;
+
+    add('none', const BoxParams());
   }
 
-  static void register(String name, BoxParams params) => instance.add(name, params);
+  static void register(String name, BoxParams params) {
+    instance._ensureInitialized();
+    instance.add(name, params);
+  }
 
-  static BoxParams? of(String name) => instance.get(name);
+  static BoxParams? of(String name) {
+    instance._ensureInitialized();
+    return instance.get(name);
+  }
 }

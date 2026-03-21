@@ -91,18 +91,26 @@ extension ShakeParamsExtension on Widget {
 
 class GaplyShakePreset with GaplyPreset<ShakeParams> {
   static final GaplyShakePreset instance = GaplyShakePreset._internal();
+  GaplyShakePreset._internal();
 
-  GaplyShakePreset._internal() {
-    register('none', const ShakeParams(duration: Duration.zero));
-    register('mild', const ShakeParams(distance: 4.0, count: 2.0, isVertical: false));
-    register('normal', const ShakeParams(distance: 8.0, count: 4.0, isVertical: false));
-    register('severe', const ShakeParams(distance: 12.0, count: 7.0, isVertical: false));
-    register('alert', const ShakeParams(distance: 6.0, count: 7.0, isVertical: false));
-    register('nod', const ShakeParams(distance: 6.0, count: 2.0, isVertical: true));
-    register('celebrate', const ShakeParams(distance: 10.0, count: 3.0, isVertical: true));
+  void _ensureInitialized() {
+    if (hasPreset) return;
+    add('none', const ShakeParams(duration: Duration.zero));
+    add('mild', const ShakeParams(distance: 4.0, count: 2.0, isVertical: false));
+    add('normal', const ShakeParams(distance: 8.0, count: 4.0, isVertical: false));
+    add('severe', const ShakeParams(distance: 12.0, count: 7.0, isVertical: false));
+    add('alert', const ShakeParams(distance: 6.0, count: 7.0, isVertical: false));
+    add('nod', const ShakeParams(distance: 6.0, count: 2.0, isVertical: true));
+    add('celebrate', const ShakeParams(distance: 10.0, count: 3.0, isVertical: true));
   }
 
-  static void register(String name, ShakeParams params) => instance.add(name, params);
+  static void register(String name, ShakeParams params) {
+    instance._ensureInitialized();
+    instance.add(name, params);
+  }
 
-  static ShakeParams? of(String name) => instance.get(name);
+  static ShakeParams? of(String name) {
+    instance._ensureInitialized();
+    return instance.get(name);
+  }
 }

@@ -67,14 +67,23 @@ extension FadeParamsExtension on Widget {
 
 class GaplyFadePreset with GaplyPreset<FadeParams> {
   static final GaplyFadePreset instance = GaplyFadePreset._internal();
+  GaplyFadePreset._internal();
 
-  GaplyFadePreset._internal() {
-    register('none', const FadeParams(duration: Duration.zero));
-    register('fadeIn', const FadeParams(curve: Curves.easeInOut));
-    register('fadeOut', const FadeParams(curve: Curves.easeOut));
+  void _ensureInitialized() {
+    if (hasPreset) return;
+
+    add('none', const FadeParams(duration: Duration.zero));
+    add('fadeIn', const FadeParams(curve: Curves.easeInOut));
+    add('fadeOut', const FadeParams(curve: Curves.easeOut));
   }
 
-  static void register(String name, FadeParams params) => instance.add(name, params);
+  static void register(String name, FadeParams params) {
+    instance._ensureInitialized();
+    instance.add(name, params);
+  }
 
-  static FadeParams? of(String name) => instance.get(name);
+  static FadeParams? of(String name) {
+    instance._ensureInitialized();
+    return instance.get(name);
+  }
 }

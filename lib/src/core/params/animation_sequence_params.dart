@@ -72,11 +72,14 @@ mixin AnimationSequenceParamsMixin {
 
 class GaplyAnimationSequencePreset with GaplyPreset<AnimationSequenceParams> {
   static final GaplyAnimationSequencePreset instance = GaplyAnimationSequencePreset._internal();
+  GaplyAnimationSequencePreset._internal();
 
-  GaplyAnimationSequencePreset._internal() {
-    register('none', const AnimationSequenceParams());
+  void _ensureInitialized() {
+    if (hasPreset) return;
 
-    register(
+    add('none', const AnimationSequenceParams());
+
+    add(
       'error',
       AnimationSequenceParams(
         effects: [
@@ -86,17 +89,14 @@ class GaplyAnimationSequencePreset with GaplyPreset<AnimationSequenceParams> {
       ),
     );
 
-    register(
-      'success',
-      AnimationSequenceParams(effects: [ScaleParams.preset('pop'), ShakeParams.preset('nod')]),
-    );
+    add('success', AnimationSequenceParams(effects: [ScaleParams.preset('pop'), ShakeParams.preset('nod')]));
 
-    register(
+    add(
       'attention',
       AnimationSequenceParams(effects: [FadeParams.preset('fadeIn'), ShakeParams.preset('mild')]),
     );
 
-    register(
+    add(
       'critical',
       AnimationSequenceParams(
         effects: [
@@ -106,7 +106,7 @@ class GaplyAnimationSequencePreset with GaplyPreset<AnimationSequenceParams> {
       ),
     );
 
-    register(
+    add(
       'entrance',
       AnimationSequenceParams(
         effects: [
@@ -117,7 +117,13 @@ class GaplyAnimationSequencePreset with GaplyPreset<AnimationSequenceParams> {
     );
   }
 
-  static void register(String name, AnimationSequenceParams params) => instance.add(name, params);
+  static void register(String name, AnimationSequenceParams params) {
+    instance._ensureInitialized();
+    instance.add(name, params);
+  }
 
-  static AnimationSequenceParams? of(String name) => instance.get(name);
+  static AnimationSequenceParams? of(String name) {
+    instance._ensureInitialized();
+    return instance.get(name);
+  }
 }
