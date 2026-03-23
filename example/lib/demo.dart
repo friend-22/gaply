@@ -11,11 +11,57 @@ class GaplyDemoPage extends StatefulWidget {
 class _GaplyDemoPageState extends State<GaplyDemoPage> {
   // 상태 관리를 위한 변수들
   bool _isLoading = false;
-  Color _cardColor = Colors.transparent;
+  bool _isAnimation = false;
+
+  late final AnimationSequenceParams complexAnim1;
+  late final AnimationSequenceParams complexAnim2;
 
   @override
   void initState() {
     super.initState();
+
+    complexAnim1 = AnimationSequenceParams(
+      effects: [ShakeParams.preset('mild', onComplete: () => print('Shake 1완료'))],
+      children: [
+        AnimationSequenceParams(effects: [ShakeParams.preset('nod', onComplete: () => print('Shake 2완료'))]),
+      ],
+      onComplete: () {
+        setState(() {
+          print('Shake 완료');
+          _isAnimation = false;
+        });
+      },
+    );
+
+    complexAnim2 = AnimationSequenceParams(
+      effects: [
+        FadeParams(
+          duration: Duration(milliseconds: 1000),
+          curve: Curves.easeOut,
+          visible: false,
+          onComplete: () => print('Fade 1완료'),
+        ),
+      ],
+      children: [
+        AnimationSequenceParams(
+          effects: [
+            FadeParams(
+              duration: Duration(milliseconds: 1000),
+              curve: Curves.easeOut,
+              visible: true,
+              onComplete: () => print('Fade 2완료'),
+            ),
+          ],
+        ),
+      ],
+      onComplete: () {
+        setState(() {
+          print('Fade 완료');
+          _isAnimation = false;
+        });
+      },
+    );
+
     // Shimmer 효과를 위한 컬러 프리셋 등록 예시 (간단화)
     GaplyShimmerPreset.register(
       'default',
@@ -56,24 +102,23 @@ class _GaplyDemoPageState extends State<GaplyDemoPage> {
           padding: const EdgeInsets.all(32),
           child: Column(
             children: [
-              const GaplyBox(
-                    child: _CardContent(
-                      title: "Glassmorphism Card",
-                      desc: "블러 프리셋('apple')과 미세 테두리 조합으로 만든 고급 유리 효과 카드입니다.",
-                    ),
-                  )
-                  .boxSize(340, 200)
-                  .padding(const EdgeInsets.all(24))
-                  .boxRadius(BorderRadius.circular(20))
-                  .borderWidth(1)
-                  .borderColor(Colors.black)
-                  .colorR(ColorRole.surface, opacity: ColorOpacity.transparent)
-                  .blurPreset('apple')
-                  .elevation(10)
-                  .colorR(ColorRole.surface, opacity: ColorOpacity.transparent),
-
-              const SizedBox(height: 32),
-
+              // const GaplyBox(
+              //       child: _CardContent(
+              //         title: "Glassmorphism Card",
+              //         desc: "블러 프리셋('apple')과 미세 테두리 조합으로 만든 고급 유리 효과 카드입니다.",
+              //       ),
+              //     )
+              //     .boxSize(340, 200)
+              //     .padding(const EdgeInsets.all(24))
+              //     .boxRadius(BorderRadius.circular(20))
+              //     .borderWidth(1)
+              //     .borderColor(Colors.black)
+              //     .colorR(ColorRole.surface, opacity: ColorOpacity.transparent)
+              //     .blurPreset('apple')
+              //     .elevation(10)
+              //     .colorR(ColorRole.surface, opacity: ColorOpacity.transparent),
+              //
+              // const SizedBox(height: 32),
               GaplyBox(
                     child: const _CardContent(
                       title: "Dynamic Feedback Card",
@@ -83,7 +128,7 @@ class _GaplyDemoPageState extends State<GaplyDemoPage> {
                   .boxSize(340, 200)
                   .padding(const EdgeInsets.all(24))
                   .boxRadius(BorderRadius.circular(20))
-                  .color(_cardColor)
+                  .color(Colors.white)
                   .shadows([
                     ShadowParams(
                       blurRadius: 16.0,
@@ -91,11 +136,7 @@ class _GaplyDemoPageState extends State<GaplyDemoPage> {
                       color: const ColorParams(role: ColorRole.shadow, opacity: ColorOpacity.o10),
                     ),
                   ])
-                  .animation(
-                    _cardColor != Colors.transparent
-                        ? AnimationSequenceParams.preset('successConfirm')
-                        : AnimationSequenceParams.preset('none'),
-                  ),
+                  .animation(_isAnimation ? complexAnim1 : const AnimationSequenceParams.none()),
 
               const SizedBox(height: 16),
 
@@ -107,38 +148,38 @@ class _GaplyDemoPageState extends State<GaplyDemoPage> {
                 ],
               ),
 
-              const SizedBox(height: 32),
-
-              // 🎬 3. 스켈레톤 카드 (로딩 중일 때 시머 적용)
-              _isLoading
-                  ? const GaplyBox(
-                          child: _CardContent(title: "Skeleton Card", desc: ''),
-                        ) // 로딩 중: 빈 박스
-                        .boxSize(340, 200)
-                        .padding(const EdgeInsets.all(24))
-                        .boxRadius(BorderRadius.circular(20))
-                        .colorR(ColorRole.primaryContainer)
-                        .shimmer(
-                          const ShimmerParams(
-                            baseColor: ColorParams(role: ColorRole.surfaceVariant, opacity: ColorOpacity.o30),
-                            highlightColor: ColorParams.fromColor(Colors.white, opacity: ColorOpacity.o80),
-                          ),
-                        )
-                  : const GaplyBox(
-                          // 로딩 완료: 콘텐츠
-                          child: _CardContent(
-                            title: "Skeleton Card",
-                            desc: "2초 로딩 후 콘텐츠가 나타납니다. 로딩 중에는 시머 효과가 적용됩니다.",
-                          ),
-                        )
-                        .boxSize(340, 200)
-                        .padding(const EdgeInsets.all(24))
-                        .boxRadius(BorderRadius.circular(20))
-                        .colorR(ColorRole.primaryContainer) // 로딩 완료 시 배경색
-                        .elevation(160),
-
-              const SizedBox(height: 16),
-              ElevatedButton(onPressed: () => _onLoadClicked(), child: const Text("시머 효과 시연 (2초)")),
+              // const SizedBox(height: 32),
+              //
+              // // 🎬 3. 스켈레톤 카드 (로딩 중일 때 시머 적용)
+              // _isLoading
+              //     ? const GaplyBox(
+              //             child: _CardContent(title: "Skeleton Card", desc: ''),
+              //           ) // 로딩 중: 빈 박스
+              //           .boxSize(340, 200)
+              //           .padding(const EdgeInsets.all(24))
+              //           .boxRadius(BorderRadius.circular(20))
+              //           .colorR(ColorRole.primaryContainer)
+              //           .shimmer(
+              //             const ShimmerParams(
+              //               baseColor: ColorParams(role: ColorRole.surfaceVariant, opacity: ColorOpacity.o30),
+              //               highlightColor: ColorParams.fromColor(Colors.white, opacity: ColorOpacity.o80),
+              //             ),
+              //           )
+              //     : const GaplyBox(
+              //             // 로딩 완료: 콘텐츠
+              //             child: _CardContent(
+              //               title: "Skeleton Card",
+              //               desc: "2초 로딩 후 콘텐츠가 나타납니다. 로딩 중에는 시머 효과가 적용됩니다.",
+              //             ),
+              //           )
+              //           .boxSize(340, 200)
+              //           .padding(const EdgeInsets.all(24))
+              //           .boxRadius(BorderRadius.circular(20))
+              //           .colorR(ColorRole.primaryContainer) // 로딩 완료 시 배경색
+              //           .elevation(160),
+              //
+              // const SizedBox(height: 16),
+              // ElevatedButton(onPressed: () => _onLoadClicked(), child: const Text("시머 효과 시연 (2초)")),
             ],
           ),
         ),
@@ -150,19 +191,12 @@ class _GaplyDemoPageState extends State<GaplyDemoPage> {
   void _onConfirmClicked() {
     // 1. 카드 배경색을 성공 색상으로 변경
     setState(() {
-      _cardColor = Colors.green.withValues(alpha: .2); // 초록빛
+      _isAnimation = true; // 초록빛
     });
 
     // 🎬 2. 위젯 리빌드를 통해 'success' 애니메이션 실행
     // GaplyBox(...).animation(...,) 부분이 'success' 프리셋으로 바뀌면서 애니메이션이 실행됩니다.
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("성공 피드백! (팝업 & 끄덕끄덕)")));
-
-    // 3. 연출 후 상태 원복 (0.6초 후)
-    Future.delayed(const Duration(milliseconds: 600), () {
-      setState(() {
-        _cardColor = Colors.transparent;
-      });
-    });
+    //ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("성공 피드백! (팝업 & 끄덕끄덕)")));
   }
 
   // 로딩 시뮬레이션 로직

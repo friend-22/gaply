@@ -1,6 +1,4 @@
-import 'package:flutter/material.dart';
-import 'package:gaply/src/core/params/train_params.dart';
-import 'package:gaply/src/widget/trigger_mixin.dart';
+part of '../core/gaply_animation.dart';
 
 class TrainWidget<T> extends StatefulWidget {
   final T currentItem;
@@ -39,6 +37,7 @@ class _TrainWidgetState<T> extends State<TrainWidget<T>> with SingleTickerProvid
     _controller.addStatusListener((status) {
       if (status == AnimationStatus.completed || status == AnimationStatus.dismissed) {
         widget.params.onComplete?.call();
+        widget.params._internalComplete?.call();
       }
     });
 
@@ -73,10 +72,14 @@ class _TrainWidgetState<T> extends State<TrainWidget<T>> with SingleTickerProvid
   }
 
   void executeParams(TrainParams params) {
-    _controller.duration = params.duration;
-    _curve.curve = params.curve;
+    Future.delayed(params.delay, () {
+      if (!mounted) return;
 
-    _controller.forward(from: 0);
+      _controller.duration = params.duration;
+      _curve.curve = params.curve;
+
+      _controller.forward(from: 0);
+    });
   }
 
   @override
@@ -167,7 +170,7 @@ class TrainTriggerState<T> extends State<TrainTrigger<T>>
   }
 
   @override
-  void execute(TrainParams params) {
+  void _execute(TrainParams params) {
     triggerKey.currentState?.executeParams(params);
   }
 

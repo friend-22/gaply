@@ -7,7 +7,7 @@ import 'package:gaply/src/core/params/shadow_params.dart';
 import 'package:gaply/src/core/params/shimmer_params.dart';
 import 'package:gaply/src/widget/tap_gesture_detector.dart';
 
-import 'animation_sequence_params.dart';
+import '../gaply_animation.dart';
 import 'blur_params.dart';
 import 'color_params.dart';
 import 'gradient_params.dart';

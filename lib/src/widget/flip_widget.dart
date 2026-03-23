@@ -1,8 +1,4 @@
-import 'dart:math' as math;
-
-import 'package:flutter/material.dart';
-import 'package:gaply/src/core/params/flip_params.dart';
-import 'package:gaply/src/widget/trigger_mixin.dart';
+part of '../core/gaply_animation.dart';
 
 class FlipWidget extends StatefulWidget {
   final Widget front;
@@ -32,6 +28,7 @@ class _FlipWidgetState extends State<FlipWidget> with SingleTickerProviderStateM
     _controller.addStatusListener((status) {
       if (status == AnimationStatus.completed || status == AnimationStatus.dismissed) {
         widget.params.onComplete?.call();
+        widget.params._internalComplete?.call();
       }
     });
 
@@ -66,6 +63,8 @@ class _FlipWidgetState extends State<FlipWidget> with SingleTickerProviderStateM
   void reset() => _controller.reset();
 
   void executeParams(FlipParams params) {
+    if (!mounted) return;
+
     _controller.duration = params.duration;
     _curve.curve = params.curve;
 
@@ -133,7 +132,7 @@ class FlipTriggerState extends State<FlipTrigger>
   }
 
   @override
-  void execute(FlipParams params) {
+  void _execute(FlipParams params) {
     triggerKey.currentState?.executeParams(params);
   }
 

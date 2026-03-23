@@ -1,12 +1,7 @@
-import 'dart:ui';
-
-import 'package:flutter/widgets.dart';
-import 'package:gaply/src/core/base/gaply_base.dart';
-import 'package:gaply/src/widget/shake_widget.dart';
-import '../base/animation_params.dart';
+part of '../gaply_animation.dart';
 
 @immutable
-class ShakeParams extends AnimationParams {
+class ShakeParams extends AnimationParams with AnimationParamsWithMixin<ShakeParams> {
   final double distance;
   final double count;
   final bool useHaptic;
@@ -17,30 +12,50 @@ class ShakeParams extends AnimationParams {
     super.duration,
     super.curve,
     super.onComplete,
+    super.delay,
     this.distance = 8.0,
     this.count = 4.0,
     this.useHaptic = true,
     this.useRepaintBoundary = true,
     this.isVertical = false,
+  }) : super(internalComplete: null);
+
+  const ShakeParams._internal({
+    required super.duration,
+    required super.curve,
+    required super.delay,
+    required super.onComplete,
+    required super.internalComplete,
+    required this.distance,
+    required this.count,
+    required this.useHaptic,
+    required this.useRepaintBoundary,
+    required this.isVertical,
   });
 
   const ShakeParams.none() : this(duration: Duration.zero, curve: Curves.linear, distance: 0.0, count: 0.0);
 
-  factory ShakeParams.preset(String name, {double? distance, double? count, bool? isVertical}) {
+  factory ShakeParams.preset(
+    String name, {
+    double? distance,
+    double? count,
+    bool? isVertical,
+    VoidCallback? onComplete,
+  }) {
     final params = GaplyShakePreset.of(name);
     if (params == null) {
       throw ArgumentError('Unknown shake preset: "$name"');
     }
-    return params.copyWith(distance: distance, count: count, isVertical: isVertical);
-  }
-
-  ShakeParams withSpeed(double speed) {
-    final resolveDuration = duration.inMilliseconds * speed;
-    return copyWith(duration: Duration(milliseconds: resolveDuration.toInt()));
+    return params.copyWith(distance: distance, count: count, isVertical: isVertical, onComplete: onComplete);
   }
 
   ShakeParams withIntensity(double intensity) {
     return copyWith(distance: distance * intensity, count: (count * intensity).toDouble());
+  }
+
+  @override
+  Widget buildWidget({required Widget child, Object? trigger}) {
+    return ShakeTrigger(params: this, trigger: trigger ?? DateTime.now(), child: child);
   }
 
   @override
@@ -51,31 +66,51 @@ class ShakeParams extends AnimationParams {
     Duration? duration,
     Curve? curve,
     VoidCallback? onComplete,
+    Duration? delay,
     double? distance,
     double? count,
     bool? useHaptic,
     bool? useRepaintBoundary,
     bool? isVertical,
   }) {
-    return ShakeParams(
+    return ShakeParams._internal(
       distance: distance ?? this.distance,
       count: count ?? this.count,
       duration: duration ?? this.duration,
+      onComplete: onComplete ?? this.onComplete,
+      internalComplete: _internalComplete,
+      delay: delay ?? this.delay,
       curve: curve ?? this.curve,
       useHaptic: useHaptic ?? this.useHaptic,
       useRepaintBoundary: useRepaintBoundary ?? this.useRepaintBoundary,
-      onComplete: onComplete ?? this.onComplete,
       isVertical: isVertical ?? this.isVertical,
+    );
+  }
+
+  ShakeParams copyWithInternal({VoidCallback? internalComplete}) {
+    return ShakeParams._internal(
+      distance: distance,
+      count: count,
+      duration: duration,
+      onComplete: onComplete,
+      internalComplete: internalComplete ?? _internalComplete,
+      delay: delay,
+      curve: curve,
+      useHaptic: useHaptic,
+      useRepaintBoundary: useRepaintBoundary,
+      isVertical: isVertical,
     );
   }
 
   @override
   ShakeParams lerp(AnimationParams? other, double t) {
     if (other is! ShakeParams) return this;
-    return ShakeParams(
+    return ShakeParams._internal(
       duration: t < 0.5 ? duration : other.duration,
       curve: t < 0.5 ? curve : other.curve,
       onComplete: other.onComplete,
+      internalComplete: other._internalComplete,
+      delay: t < 0.5 ? delay : other.delay,
       distance: lerpDouble(distance, other.distance, t) ?? distance,
       count: lerpDouble(count, other.count, t) ?? count,
       useHaptic: t < 0.5 ? useHaptic : other.useHaptic,
@@ -86,14 +121,10 @@ class ShakeParams extends AnimationParams {
 
   @override
   List<Object?> get props => [...super.props, distance, count, useHaptic, useRepaintBoundary, isVertical];
-
-  Widget buildWidget({required Widget child}) {
-    return ShakeTrigger(params: this, trigger: DateTime.now(), child: child);
-  }
 }
 
 extension ShakeParamsExtension on Widget {
-  Widget withShake(ShakeParams params) => ShakeTrigger(params: params, trigger: DateTime.now(), child: this);
+  Widget withShake(ShakeParams params) => params.buildWidget(child: this);
 }
 
 class GaplyShakePreset with GaplyPreset<ShakeParams> {

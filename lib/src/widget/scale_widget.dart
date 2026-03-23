@@ -1,6 +1,4 @@
-import 'package:flutter/material.dart';
-import 'package:gaply/src/core/params/scale_params.dart';
-import 'package:gaply/src/widget/trigger_mixin.dart';
+part of '../core/gaply_animation.dart';
 
 class ScaleWidget extends StatefulWidget {
   final Widget child;
@@ -29,6 +27,7 @@ class _ScaleWidgetState extends State<ScaleWidget> with SingleTickerProviderStat
     _controller.addStatusListener((status) {
       if (status == AnimationStatus.completed || status == AnimationStatus.dismissed) {
         widget.params.onComplete?.call();
+        widget.params._internalComplete?.call();
       }
     });
 
@@ -68,14 +67,18 @@ class _ScaleWidgetState extends State<ScaleWidget> with SingleTickerProviderStat
   }
 
   void executeParams(ScaleParams params) {
-    _controller.duration = params.duration;
-    _curve.curve = params.curve;
+    Future.delayed(params.delay, () {
+      if (!mounted) return;
 
-    if (params.isScaled) {
-      _controller.forward(from: _controller.value == 1.0 ? 0.0 : _controller.value);
-    } else {
-      _controller.reverse(from: _controller.value == 0.0 ? 1.0 : _controller.value);
-    }
+      _controller.duration = params.duration;
+      _curve.curve = params.curve;
+
+      if (params.isScaled) {
+        _controller.forward(from: _controller.value == 1.0 ? 0.0 : _controller.value);
+      } else {
+        _controller.reverse(from: _controller.value == 0.0 ? 1.0 : _controller.value);
+      }
+    });
   }
 
   @override
@@ -111,7 +114,7 @@ class ScaleTriggerState extends State<ScaleTrigger>
   }
 
   @override
-  void execute(ScaleParams params) {
+  void _execute(ScaleParams params) {
     triggerKey.currentState?.executeParams(params);
   }
 

@@ -1,11 +1,8 @@
-import 'package:flutter/widgets.dart';
-import 'package:gaply/src/core/base/gaply_base.dart';
-import 'package:gaply/src/widget/slide_widget.dart';
-
-import '../base/animation_params.dart';
+part of '../gaply_animation.dart';
 
 @immutable
-class SlideParams extends AnimationParams with DirectionAnimationParamsMixin {
+class SlideParams extends AnimationParams
+    with AnimationParamsWithMixin<SlideParams>, DirectionAnimationParamsMixin {
   @override
   final AxisDirection direction;
   final bool visible;
@@ -16,10 +13,23 @@ class SlideParams extends AnimationParams with DirectionAnimationParamsMixin {
     super.duration,
     super.curve,
     super.onComplete,
+    super.delay,
     required this.direction,
     this.visible = true,
     this.fixedSize = false,
     this.useOpacity = true,
+  }) : super(internalComplete: null);
+
+  const SlideParams._internal({
+    required super.duration,
+    required super.curve,
+    required super.delay,
+    required super.onComplete,
+    required super.internalComplete,
+    required this.direction,
+    required this.visible,
+    required this.fixedSize,
+    required this.useOpacity,
   });
 
   const SlideParams.none()
@@ -27,10 +37,11 @@ class SlideParams extends AnimationParams with DirectionAnimationParamsMixin {
 
   factory SlideParams.preset(
     String name, {
-    required AxisDirection direction,
+    AxisDirection? direction,
     bool? visible,
     bool? fixedSize,
     bool? useOpacity,
+    VoidCallback? onComplete,
   }) {
     final params = GaplySlidePreset.of(name);
     if (params == null) {
@@ -41,12 +52,13 @@ class SlideParams extends AnimationParams with DirectionAnimationParamsMixin {
       visible: visible,
       fixedSize: fixedSize,
       useOpacity: useOpacity,
+      onComplete: onComplete,
     );
   }
 
-  SlideParams withSpeed(double speed) {
-    final resolveDuration = duration.inMilliseconds * speed;
-    return copyWith(duration: Duration(milliseconds: resolveDuration.toInt()));
+  @override
+  Widget buildWidget({required Widget child, Object? trigger}) {
+    return SlideTrigger(params: this, trigger: trigger ?? DateTime.now(), child: child);
   }
 
   SlideParams get reversed {
@@ -62,42 +74,58 @@ class SlideParams extends AnimationParams with DirectionAnimationParamsMixin {
     Duration? duration,
     Curve? curve,
     VoidCallback? onComplete,
+    Duration? delay,
     bool? visible,
     bool? fixedSize,
     bool? useOpacity,
   }) {
-    return SlideParams(
+    return SlideParams._internal(
       direction: direction ?? this.direction,
       duration: duration ?? this.duration,
       curve: curve ?? this.curve,
       onComplete: onComplete ?? this.onComplete,
+      internalComplete: _internalComplete,
+      delay: delay ?? this.delay,
       visible: visible ?? this.visible,
       fixedSize: fixedSize ?? this.fixedSize,
       useOpacity: useOpacity ?? this.useOpacity,
     );
   }
 
+  SlideParams copyWithInternal({VoidCallback? internalComplete}) {
+    return SlideParams._internal(
+      direction: direction,
+      duration: duration,
+      curve: curve,
+      delay: delay,
+      onComplete: onComplete,
+      internalComplete: internalComplete ?? _internalComplete,
+      visible: visible,
+      fixedSize: fixedSize,
+      useOpacity: useOpacity,
+    );
+  }
+
   @override
   SlideParams lerp(AnimationParams? other, double t) {
     if (other is! SlideParams) return this;
-    return SlideParams(
+
+    return SlideParams._internal(
       duration: t < 0.5 ? duration : other.duration,
       curve: t < 0.5 ? curve : other.curve,
       onComplete: other.onComplete,
+      internalComplete: other._internalComplete,
+      delay: t < 0.5 ? delay : other.delay,
       direction: t < 0.5 ? direction : other.direction,
       visible: t < 0.5 ? visible : other.visible,
       fixedSize: t < 0.5 ? fixedSize : other.fixedSize,
       useOpacity: t < 0.5 ? useOpacity : other.useOpacity,
     );
   }
-
-  Widget buildWidget({required Widget child}) {
-    return SlideTrigger(params: this, trigger: DateTime.now(), child: child);
-  }
 }
 
 extension SlideParamsExtension on Widget {
-  Widget withSlide(SlideParams params) => SlideTrigger(params: params, trigger: DateTime.now(), child: this);
+  Widget withSlide(SlideParams params) => params.buildWidget(child: this);
 }
 
 class GaplySlidePreset with GaplyPreset<SlideParams> {

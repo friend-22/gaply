@@ -1,38 +1,64 @@
-import 'package:flutter/widgets.dart';
-import 'package:gaply/src/core/base/gaply_base.dart';
-import 'package:gaply/src/widget/fade_widget.dart';
-import '../base/animation_params.dart';
+part of '../gaply_animation.dart';
 
 @immutable
-class FadeParams extends AnimationParams {
+class FadeParams extends AnimationParams with AnimationParamsWithMixin<FadeParams> {
   final bool visible;
 
-  const FadeParams({super.duration, super.curve, super.onComplete, required this.visible});
+  const FadeParams({super.duration, super.curve, super.onComplete, super.delay, required this.visible})
+    : super(internalComplete: null);
 
-  const FadeParams.none() : this(duration: Duration.zero, curve: Curves.linear, visible: false);
+  const FadeParams._internal({
+    required super.duration,
+    required super.curve,
+    required super.delay,
+    required super.onComplete,
+    required super.internalComplete,
+    required this.visible,
+  });
 
-  factory FadeParams.preset(String name, {bool? visible}) {
+  const FadeParams.none() : this(duration: Duration.zero, visible: false);
+
+  factory FadeParams.preset(String name, {VoidCallback? onComplete}) {
     final params = GaplyFadePreset.of(name);
 
     if (params == null) {
       throw ArgumentError('Unknown fade preset: "$name"');
     }
 
-    return visible != null ? params.copyWith(visible: visible) : params;
-  }
-
-  FadeParams withSpeed(double speed) {
-    final resolveDuration = duration.inMilliseconds * speed;
-    return copyWith(duration: Duration(milliseconds: resolveDuration.toInt()));
+    return (onComplete != null) ? params.copyWith(onComplete: onComplete) : params;
   }
 
   @override
-  FadeParams copyWith({Duration? duration, Curve? curve, VoidCallback? onComplete, bool? visible}) {
-    return FadeParams(
+  Widget buildWidget({required Widget child, Object? trigger}) {
+    return FadeTrigger(params: this, trigger: trigger ?? DateTime.now(), child: child);
+  }
+
+  @override
+  FadeParams copyWith({
+    Duration? duration,
+    Curve? curve,
+    VoidCallback? onComplete,
+    Duration? delay,
+    bool? visible,
+  }) {
+    return FadeParams._internal(
       duration: duration ?? this.duration,
       curve: curve ?? this.curve,
       onComplete: onComplete ?? this.onComplete,
+      internalComplete: _internalComplete,
+      delay: delay ?? this.delay,
       visible: visible ?? this.visible,
+    );
+  }
+
+  FadeParams copyWithInternal({VoidCallback? internalComplete}) {
+    return FadeParams._internal(
+      duration: duration,
+      curve: curve,
+      delay: delay,
+      onComplete: onComplete,
+      internalComplete: internalComplete ?? _internalComplete,
+      visible: visible,
     );
   }
 
@@ -40,26 +66,24 @@ class FadeParams extends AnimationParams {
   FadeParams lerp(AnimationParams? other, double t) {
     if (other is! FadeParams) return this;
 
-    return FadeParams(
+    return FadeParams._internal(
       duration: t < 0.5 ? duration : other.duration,
       curve: t < 0.5 ? curve : other.curve,
-      visible: t < 0.5 ? visible : other.visible,
       onComplete: other.onComplete,
+      internalComplete: other._internalComplete,
+      delay: t < 0.5 ? delay : other.delay,
+      visible: t < 0.5 ? visible : other.visible,
     );
   }
 
   @override
   List<Object?> get props => [...super.props, visible];
-
-  Widget buildWidget({required Widget child}) {
-    return FadeTrigger(params: this, trigger: DateTime.now(), child: child);
-  }
 }
 
 extension FadeParamsX on FadeParams {}
 
 extension FadeParamsExtension on Widget {
-  Widget withFade(FadeParams params) => FadeTrigger(params: params, trigger: DateTime.now(), child: this);
+  Widget withFade(FadeParams params) => params.buildWidget(child: this);
 }
 
 class GaplyFadePreset with GaplyPreset<FadeParams> {

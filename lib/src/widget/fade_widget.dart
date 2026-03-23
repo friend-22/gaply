@@ -1,6 +1,4 @@
-import 'package:flutter/material.dart';
-import 'package:gaply/src/core/params/fade_params.dart';
-import 'package:gaply/src/widget/trigger_mixin.dart';
+part of '../core/gaply_animation.dart';
 
 class FadeWidget extends StatefulWidget {
   final Widget child;
@@ -23,16 +21,19 @@ class _FadeWidgetState extends State<FadeWidget> with SingleTickerProviderStateM
     _controller = AnimationController(
       vsync: this,
       duration: widget.params.duration,
-      value: widget.params.visible ? 1.0 : 0.0,
+      value: widget.params.visible ? 0.0 : 1.0,
     );
 
     _controller.addStatusListener((status) {
       if (status == AnimationStatus.completed || status == AnimationStatus.dismissed) {
         widget.params.onComplete?.call();
+        widget.params._internalComplete?.call();
       }
     });
 
     _opacity = CurvedAnimation(parent: _controller, curve: widget.params.curve);
+
+    _execute(widget.params);
   }
 
   @override
@@ -48,19 +49,25 @@ class _FadeWidgetState extends State<FadeWidget> with SingleTickerProviderStateM
     }
 
     if (widget.params.visible != oldWidget.params.visible) {
-      widget.params.visible ? _controller.forward() : _controller.reverse();
+      _execute(widget.params);
+    }
+  }
+
+  void _execute(FadeParams params) {
+    if (params.visible) {
+      _controller.forward();
+    } else {
+      _controller.reverse();
     }
   }
 
   void executeParams(FadeParams params) {
+    if (!mounted) return;
+
     _controller.duration = params.duration;
     _opacity.curve = params.curve;
 
-    if (params.visible) {
-      _controller.forward(from: _controller.value == 1.0 ? 0.0 : _controller.value);
-    } else {
-      _controller.reverse(from: _controller.value == 0.0 ? 1.0 : _controller.value);
-    }
+    _execute(params);
   }
 
   @override
@@ -100,7 +107,7 @@ class FadeTriggerState extends State<FadeTrigger>
   }
 
   @override
-  void execute(FadeParams params) {
+  void _execute(FadeParams params) {
     triggerKey.currentState?.executeParams(params);
   }
 

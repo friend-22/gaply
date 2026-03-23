@@ -1,12 +1,7 @@
-import 'dart:ui' show lerpDouble;
-
-import 'package:flutter/widgets.dart';
-import 'package:gaply/src/core/base/animation_params.dart';
-import 'package:gaply/src/core/base/gaply_base.dart';
-import 'package:gaply/src/widget/scale_widget.dart';
+part of '../gaply_animation.dart';
 
 @immutable
-class ScaleParams extends AnimationParams {
+class ScaleParams extends AnimationParams with AnimationParamsWithMixin<ScaleParams> {
   final double begin;
   final double end;
   final Alignment alignment;
@@ -16,9 +11,22 @@ class ScaleParams extends AnimationParams {
     super.duration,
     super.curve,
     super.onComplete,
+    super.delay,
     required this.begin,
     required this.end,
     this.alignment = Alignment.center,
+    required this.isScaled,
+  }) : super(internalComplete: null);
+
+  const ScaleParams._internal({
+    required super.duration,
+    required super.curve,
+    required super.delay,
+    required super.onComplete,
+    required super.internalComplete,
+    required this.begin,
+    required this.end,
+    required this.alignment,
     required this.isScaled,
   });
 
@@ -32,24 +40,22 @@ class ScaleParams extends AnimationParams {
         isScaled: false,
       );
 
-  factory ScaleParams.preset(String name, {Alignment? alignment, bool? isScaled}) {
+  factory ScaleParams.preset(String name, {Alignment? alignment, bool? isScaled, VoidCallback? onComplete}) {
     final params = GaplyScalePreset.of(name);
 
     if (params == null) {
       throw ArgumentError('Unknown scale preset: "$name"');
     }
 
-    return alignment != null || isScaled != null
-        ? params.copyWith(alignment: alignment, isScaled: isScaled)
-        : params;
+    return params.copyWith(alignment: alignment, isScaled: isScaled, onComplete: onComplete);
   }
 
   @override
   bool get isEnabled => isScaled && duration.inMilliseconds > 0;
 
-  ScaleParams withSpeed(double speed) {
-    final resolveDuration = duration.inMilliseconds * speed;
-    return copyWith(duration: Duration(milliseconds: resolveDuration.toInt()));
+  @override
+  Widget buildWidget({required Widget child, Object? trigger}) {
+    return ScaleTrigger(params: this, trigger: trigger ?? DateTime.now(), child: child);
   }
 
   @override
@@ -57,15 +63,18 @@ class ScaleParams extends AnimationParams {
     Duration? duration,
     Curve? curve,
     VoidCallback? onComplete,
+    Duration? delay,
     double? begin,
     double? end,
     Alignment? alignment,
     bool? isScaled,
   }) {
-    return ScaleParams(
+    return ScaleParams._internal(
       duration: duration ?? this.duration,
       curve: curve ?? this.curve,
       onComplete: onComplete ?? this.onComplete,
+      internalComplete: _internalComplete,
+      delay: delay ?? this.delay,
       begin: begin ?? this.begin,
       end: end ?? this.end,
       alignment: alignment ?? this.alignment,
@@ -73,14 +82,30 @@ class ScaleParams extends AnimationParams {
     );
   }
 
+  ScaleParams copyWithInternal({VoidCallback? internalComplete}) {
+    return ScaleParams._internal(
+      duration: duration,
+      curve: curve,
+      delay: delay,
+      onComplete: onComplete,
+      internalComplete: internalComplete ?? _internalComplete,
+      begin: begin,
+      end: end,
+      alignment: alignment,
+      isScaled: isScaled,
+    );
+  }
+
   @override
   ScaleParams lerp(AnimationParams? other, double t) {
     if (other is! ScaleParams) return this;
 
-    return ScaleParams(
+    return ScaleParams._internal(
       duration: t < 0.5 ? duration : other.duration,
       curve: t < 0.5 ? curve : other.curve,
       onComplete: other.onComplete,
+      internalComplete: other._internalComplete,
+      delay: t < 0.5 ? delay : other.delay,
       begin: lerpDouble(begin, other.begin, t) ?? begin,
       end: lerpDouble(end, other.end, t) ?? end,
       alignment: Alignment.lerp(alignment, other.alignment, t) ?? alignment,
@@ -90,14 +115,10 @@ class ScaleParams extends AnimationParams {
 
   @override
   List<Object?> get props => [...super.props, begin, end, alignment, isScaled];
-
-  Widget buildWidget({required Widget child}) {
-    return ScaleTrigger(params: this, trigger: DateTime.now(), child: child);
-  }
 }
 
 extension ScaleParamsExtension on Widget {
-  Widget withScale(ScaleParams params) => ScaleTrigger(params: params, trigger: DateTime.now(), child: this);
+  Widget withScale(ScaleParams params) => params.buildWidget(child: this);
 }
 
 class GaplyScalePreset with GaplyPreset<ScaleParams> {

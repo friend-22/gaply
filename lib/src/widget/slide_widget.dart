@@ -1,6 +1,4 @@
-import 'package:flutter/material.dart';
-import 'package:gaply/src/core/params/slide_params.dart';
-import 'package:gaply/src/widget/trigger_mixin.dart';
+part of '../core/gaply_animation.dart';
 
 class SlideWidget extends StatefulWidget {
   final Widget child;
@@ -29,6 +27,7 @@ class _SlideWidgetState extends State<SlideWidget> with SingleTickerProviderStat
     _controller.addStatusListener((status) {
       if (status == AnimationStatus.completed || status == AnimationStatus.dismissed) {
         widget.params.onComplete?.call();
+        widget.params._internalComplete?.call();
       }
     });
 
@@ -67,9 +66,9 @@ class _SlideWidgetState extends State<SlideWidget> with SingleTickerProviderStat
     _curve.curve = params.curve;
 
     if (params.visible) {
-      _controller.forward(from: _controller.value == 1.0 ? 0.0 : _controller.value);
+      _controller.forward();
     } else {
-      _controller.reverse(from: _controller.value == 0.0 ? 1.0 : _controller.value);
+      _controller.reverse();
     }
   }
 
@@ -80,11 +79,16 @@ class _SlideWidgetState extends State<SlideWidget> with SingleTickerProviderStat
     return AnimatedBuilder(
       animation: _curve,
       builder: (context, child) {
-        if (_curve.value <= 0.001 && !widget.params.visible) {
+        if (_controller.isDismissed && !widget.params.visible) {
           return const SizedBox.shrink();
         }
 
-        Widget content = widget.params.useOpacity ? FadeTransition(opacity: _curve, child: child!) : child!;
+        Widget content = child!;
+
+        if (widget.params.useOpacity) {
+          content = FadeTransition(opacity: _curve, child: content);
+        }
+
         if (widget.params.fixedSize) return content;
 
         return ClipRect(
@@ -128,7 +132,7 @@ class SlideTriggerState extends State<SlideTrigger>
   }
 
   @override
-  void execute(SlideParams params) {
+  void _execute(SlideParams params) {
     triggerKey.currentState?.executeParams(params);
   }
 

@@ -1,9 +1,4 @@
-import 'dart:math';
-
-import 'package:flutter/material.dart';
-import 'package:gaply/src/core/params/shake_params.dart';
-import 'package:gaply/src/utils/haptic_feedback.dart';
-import 'package:gaply/src/widget/trigger_mixin.dart';
+part of '../core/gaply_animation.dart';
 
 class ShakeWidget extends StatefulWidget {
   final Widget child;
@@ -30,6 +25,7 @@ class _ShakeWidgetState extends State<ShakeWidget> with SingleTickerProviderStat
     _controller.addStatusListener((status) {
       if (status == AnimationStatus.completed || status == AnimationStatus.dismissed) {
         widget.params.onComplete?.call();
+        widget.params._internalComplete?.call();
       }
     });
 
@@ -102,6 +98,8 @@ class _ShakeWidgetState extends State<ShakeWidget> with SingleTickerProviderStat
 
   /// ShakeParams로부터 실행
   void executeParams(ShakeParams params) {
+    if (!mounted) return;
+
     _controller.duration = params.duration;
     _curved.curve = params.curve;
 
@@ -114,8 +112,10 @@ class _ShakeWidgetState extends State<ShakeWidget> with SingleTickerProviderStat
       animation: _controller,
       builder: (context, child) {
         final dampingFactor = 1.0 - _curved.value;
-        final sineValue = sin(_controller.value * pi * 2 * _activeCount);
+        final sineValue = math.sin(_controller.value * math.pi * 2 * _activeCount);
         final offset = sineValue * _activeDistance * dampingFactor;
+
+        print("실제 offset: $offset");
 
         return Transform.translate(offset: _isVertical ? Offset(0, offset) : Offset(offset, 0), child: child);
       },
@@ -153,7 +153,8 @@ class ShakeTriggerState extends State<ShakeTrigger>
   }
 
   @override
-  void execute(ShakeParams params) {
+  void _execute(ShakeParams params) {
+    print("실제 애니메이션 실행 시작: ${params.runtimeType}");
     triggerKey.currentState?.executeParams(params);
   }
 

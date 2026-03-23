@@ -32,26 +32,44 @@ extension TaskHelper on Object {
   }
 
   void onDelay(Duration duration, VoidCallback callback) {
-    Future.delayed(duration, callback);
+    if (duration == Duration.zero) {
+      callback();
+    } else {
+      Future.delayed(duration, callback);
+    }
   }
 
   void onSecDelay(double seconds, VoidCallback callback) {
-    Future.delayed(Duration(milliseconds: (seconds * 1000).toInt()), callback);
+    if (seconds == 0.0) {
+      callback();
+    } else {
+      Future.delayed(Duration(milliseconds: (seconds * 1000).toInt()), callback);
+    }
   }
 
   void onMilliDelay(int milliseconds, VoidCallback callback) {
-    Future.delayed(Duration(milliseconds: milliseconds), callback);
+    if (milliseconds == 0) {
+      callback();
+    } else {
+      Future.delayed(Duration(milliseconds: milliseconds), callback);
+    }
   }
 
   Future<void> delay(Duration duration) async {
+    if (duration == Duration.zero) return;
+
     await Future.delayed(duration);
   }
 
   Future<void> delaySec(double seconds) async {
+    if (seconds == 0.0) return;
+
     await Future.delayed(Duration(milliseconds: (seconds * 1000).toInt()));
   }
 
   Future<void> delayMilli(int milliseconds) async {
+    if (milliseconds == 0) return;
+
     await Future.delayed(Duration(milliseconds: milliseconds));
   }
 }

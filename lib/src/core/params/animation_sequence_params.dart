@@ -1,20 +1,12 @@
-import 'package:flutter/widgets.dart';
-import 'package:gaply/src/core/base/gaply_base.dart';
-import 'package:gaply/src/core/base/params_base.dart';
-import 'package:gaply/src/core/params/scale_params.dart';
-import 'package:gaply/src/core/params/shake_params.dart';
-import 'package:gaply/src/core/params/slide_params.dart';
-import 'package:gaply/src/core/params/flip_params.dart';
-
-import '../base/animation_params.dart';
-import 'fade_params.dart';
+part of '../gaply_animation.dart';
 
 @immutable
-class AnimationSequenceParams extends ParamsBase<AnimationSequenceParams> {
+class AnimationSequenceParams extends ParamsBase<AnimationSequenceParams> with AnimationSequenceParamsMixin {
   final List<AnimationParams> effects;
   final List<AnimationSequenceParams> children;
+  final VoidCallback? onComplete;
 
-  const AnimationSequenceParams({required this.effects, this.children = const []});
+  const AnimationSequenceParams({required this.effects, this.children = const [], this.onComplete});
 
   const AnimationSequenceParams.none() : this(effects: const []);
 
@@ -27,7 +19,7 @@ class AnimationSequenceParams extends ParamsBase<AnimationSequenceParams> {
   }
 
   @override
-  bool get isEnabled => effects.isNotEmpty;
+  bool get isEnabled => effects.isNotEmpty || children.isNotEmpty;
 
   AnimationSequenceParams addEffect(AnimationParams effect) {
     return copyWith(effects: [...effects, effect]);
@@ -43,36 +35,87 @@ class AnimationSequenceParams extends ParamsBase<AnimationSequenceParams> {
     return t < 0.5 ? this : other;
   }
 
-  @override
-  AnimationSequenceParams copyWith({List<AnimationParams>? effects}) {
-    return AnimationSequenceParams(effects: effects ?? this.effects);
+  Widget buildWidget({required Widget child, Object? trigger}) {
+    return applyAnimationSequence(this, child, trigger: trigger);
   }
 
   @override
-  List<Object?> get props => [effects];
+  AnimationSequenceParams copyWith({
+    List<AnimationParams>? effects,
+    List<AnimationSequenceParams>? children,
+    VoidCallback? onComplete,
+  }) {
+    return AnimationSequenceParams(
+      effects: effects ?? this.effects,
+      children: children ?? this.children,
+      onComplete: onComplete ?? this.onComplete,
+    );
+  }
+
+  @override
+  List<Object?> get props => [effects, children, onComplete];
+
+  Duration get effectsDuration {
+    if (effects.isEmpty) return Duration.zero;
+    return effects.fold<Duration>(Duration.zero, (sum, e) => sum + e.duration + e.delay);
+  }
 }
 
 /// AnimationSequenceParams를 Widget에 적용하는 확장 메서드
 mixin AnimationSequenceParamsMixin {
-  Widget applyAnimationSequence(AnimationSequenceParams params, Widget child) {
-    if (params.effects.isEmpty) return child;
+  Widget applyAnimationSequence(AnimationSequenceParams params, Widget child, {Object? trigger}) {
+    if (!params.isEnabled) return child;
 
     Widget result = child;
 
-    for (final effect in params.effects) {
-      result = _wrapWithEffect(result, effect);
+    for (int i = 0; i < params.effects.length; i++) {
+      var effect = params.effects[i];
+
+      if (i == params.effects.length - 1 && params.children.isEmpty) {
+        effect = (effect as AnimationParamsWithMixin)._copyWithInternal(params.onComplete);
+      }
+
+      result = _wrapWithEffect(result, effect, trigger: trigger);
+    }
+
+    if (params.children.isNotEmpty) {
+      final delayAfterEffects = params.effectsDuration;
+
+      List<Widget> sequenceLayers = [result];
+
+      for (int i = 0; i < params.children.length; i++) {
+        var childSeq = params.children[i];
+
+        if (i == params.children.length - 1) {
+          childSeq = childSeq.copyWith(onComplete: params.onComplete);
+        }
+
+        final delayedEffects = childSeq.effects.map((e) {
+          return e.withDelay(delayAfterEffects);
+        }).toList();
+
+        final childLayer = applyAnimationSequence(
+          childSeq.copyWith(effects: delayedEffects),
+          result,
+          trigger: trigger,
+        );
+
+        sequenceLayers.add(childLayer);
+      }
+
+      result = Stack(alignment: Alignment.center, children: sequenceLayers);
     }
 
     return result;
   }
 
-  Widget _wrapWithEffect(Widget child, AnimationParams effect) {
+  Widget _wrapWithEffect(Widget child, AnimationParams effect, {Object? trigger}) {
     return switch (effect) {
-      FadeParams p => p.buildWidget(child: child),
-      ShakeParams p => p.buildWidget(child: child),
-      SlideParams p => p.buildWidget(child: child),
-      ScaleParams p => p.buildWidget(child: child),
-      FlipParams p => p.buildWidget(front: child, back: child), // 추가
+      FadeParams p => p.buildWidget(child: child, trigger: trigger),
+      ShakeParams p => p.buildWidget(child: child, trigger: trigger),
+      SlideParams p => p.buildWidget(child: child, trigger: trigger),
+      ScaleParams p => p.buildWidget(child: child, trigger: trigger),
+      FlipParams p => p.buildWidget(child: child, trigger: trigger),
       _ => child,
     };
   }

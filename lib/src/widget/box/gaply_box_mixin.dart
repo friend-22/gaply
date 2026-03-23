@@ -1,12 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:gaply/src/core/base/animation_params.dart';
-import 'package:gaply/src/core/params/animation_sequence_params.dart';
-import 'package:gaply/src/core/params/blur_params.dart';
-import 'package:gaply/src/core/params/box_params.dart';
-import 'package:gaply/src/core/params/color_params.dart';
+import 'package:gaply/gaply.dart';
 import 'package:gaply/src/core/params/layout_params.dart';
-import 'package:gaply/src/core/params/shadow_params.dart';
-import 'package:gaply/src/core/params/shimmer_params.dart';
+
 
 mixin BoxStyleModifierMixin<T> {
   BoxParams get params;
