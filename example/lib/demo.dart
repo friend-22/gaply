@@ -21,7 +21,7 @@ class _GaplyDemoPageState extends State<GaplyDemoPage> {
       'default',
       const ShimmerParams(
         baseColor: ColorParams(role: ColorRole.surfaceVariant, opacity: ColorOpacity.o10),
-        highlightColor: ColorParams(customColor: Colors.white, opacity: ColorOpacity.o30),
+        highlightColor: ColorParams.fromColor(Colors.white, opacity: ColorOpacity.o30),
       ),
     );
 
@@ -35,6 +35,7 @@ class _GaplyDemoPageState extends State<GaplyDemoPage> {
             end: 1.1,
             duration: Duration(milliseconds: 150),
             curve: Curves.easeOutBack,
+            isScaled: true,
           ),
           const ShakeParams(distance: 6.0, count: 2.0, isVertical: true),
         ],
@@ -49,14 +50,8 @@ class _GaplyDemoPageState extends State<GaplyDemoPage> {
 
     return Scaffold(
       appBar: AppBar(title: const Text("Gaply Modifier 체이닝 데모")),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [Colors.blue.shade100, Colors.purple.shade100, Colors.orange.shade50],
-          ),
-        ),
+      body: GaplyBox(
+        params: BoxParams.preset('rainbow'),
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(32),
           child: Column(
@@ -69,21 +64,14 @@ class _GaplyDemoPageState extends State<GaplyDemoPage> {
                   )
                   .boxSize(340, 200)
                   .padding(const EdgeInsets.all(24))
-                  .borderRadius(BorderRadius.circular(20))
+                  .boxRadius(BorderRadius.circular(20))
                   .borderWidth(1)
-                  .borderColor(Colors.white.withValues(alpha: 0.5))
+                  .borderColor(Colors.black)
+                  .colorR(ColorRole.surface, opacity: ColorOpacity.transparent)
                   .blurPreset('apple')
-                  .colorR(ColorRole.surface)
-                  .colorOpacity(ColorOpacity.o30)
-                  .elevation(20),
+                  .elevation(10)
+                  .colorR(ColorRole.surface, opacity: ColorOpacity.transparent),
 
-              // .shadows([
-              //   ShadowParams(
-              //     blurRadius: 16.0,
-              //     spreadRadius: 2.0,
-              //     color: const ColorParams(role: ColorRole.shadow, opacity: ColorOpacity.o10),
-              //   ),
-              // ]),
               const SizedBox(height: 32),
 
               GaplyBox(
@@ -94,13 +82,19 @@ class _GaplyDemoPageState extends State<GaplyDemoPage> {
                   )
                   .boxSize(340, 200)
                   .padding(const EdgeInsets.all(24))
-                  .borderRadius(BorderRadius.circular(20))
+                  .boxRadius(BorderRadius.circular(20))
                   .color(_cardColor)
-                  .elevation(4)
+                  .shadows([
+                    ShadowParams(
+                      blurRadius: 16.0,
+                      spreadRadius: 2.0,
+                      color: const ColorParams(role: ColorRole.shadow, opacity: ColorOpacity.o10),
+                    ),
+                  ])
                   .animation(
                     _cardColor != Colors.transparent
                         ? AnimationSequenceParams.preset('successConfirm')
-                        : const AnimationSequenceParams(),
+                        : AnimationSequenceParams.preset('none'),
                   ),
 
               const SizedBox(height: 16),
@@ -117,14 +111,17 @@ class _GaplyDemoPageState extends State<GaplyDemoPage> {
 
               // 🎬 3. 스켈레톤 카드 (로딩 중일 때 시머 적용)
               _isLoading
-                  ? const GaplyBox(child: SizedBox.shrink()) // 로딩 중: 빈 박스
+                  ? const GaplyBox(
+                          child: _CardContent(title: "Skeleton Card", desc: ''),
+                        ) // 로딩 중: 빈 박스
                         .boxSize(340, 200)
-                        .borderRadius(BorderRadius.circular(20))
+                        .padding(const EdgeInsets.all(24))
+                        .boxRadius(BorderRadius.circular(20))
+                        .colorR(ColorRole.primaryContainer)
                         .shimmer(
                           const ShimmerParams(
-                            // 직접 시머 적용
-                            baseColor: ColorParams(role: ColorRole.surfaceVariant, opacity: ColorOpacity.o10),
-                            highlightColor: ColorParams(customColor: Colors.white, opacity: ColorOpacity.o30),
+                            baseColor: ColorParams(role: ColorRole.surfaceVariant, opacity: ColorOpacity.o30),
+                            highlightColor: ColorParams.fromColor(Colors.white, opacity: ColorOpacity.o80),
                           ),
                         )
                   : const GaplyBox(
@@ -136,9 +133,9 @@ class _GaplyDemoPageState extends State<GaplyDemoPage> {
                         )
                         .boxSize(340, 200)
                         .padding(const EdgeInsets.all(24))
-                        .borderRadius(BorderRadius.circular(20))
+                        .boxRadius(BorderRadius.circular(20))
                         .colorR(ColorRole.primaryContainer) // 로딩 완료 시 배경색
-                        .elevation(6),
+                        .elevation(160),
 
               const SizedBox(height: 16),
               ElevatedButton(onPressed: () => _onLoadClicked(), child: const Text("시머 효과 시연 (2초)")),

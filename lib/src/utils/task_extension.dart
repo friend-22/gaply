@@ -1,11 +1,8 @@
 import 'dart:async';
-import 'dart:ui';
+
+import 'package:flutter/widgets.dart';
 
 extension TaskHelper on Object {
-  void onMicrotask(VoidCallback callback) => Future.microtask(callback);
-
-  void onNextEvent(VoidCallback callback) => Future(callback);
-
   Future<void> get microtask {
     final completer = Completer<void>();
     Future.microtask(() => completer.complete());
@@ -16,6 +13,22 @@ extension TaskHelper on Object {
     final completer = Completer<void>();
     Future(() => completer.complete());
     return completer.future;
+  }
+
+  Future<void> get nextRender {
+    final completer = Completer<void>();
+    WidgetsBinding.instance.addPostFrameCallback((_) => completer.complete());
+    return completer.future;
+  }
+
+  void onMicrotask(VoidCallback callback) => Future.microtask(callback);
+
+  void onNextEvent(VoidCallback callback) => Future(callback);
+
+  void onNextRender(VoidCallback callback) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      callback();
+    });
   }
 
   void onDelay(Duration duration, VoidCallback callback) {
@@ -34,11 +47,11 @@ extension TaskHelper on Object {
     await Future.delayed(duration);
   }
 
-  Future<void> secDelay(double seconds) async {
+  Future<void> delaySec(double seconds) async {
     await Future.delayed(Duration(milliseconds: (seconds * 1000).toInt()));
   }
 
-  Future<void> milliDelay(int milliseconds) async {
+  Future<void> delayMilli(int milliseconds) async {
     await Future.delayed(Duration(milliseconds: milliseconds));
   }
 }

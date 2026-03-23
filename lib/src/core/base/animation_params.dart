@@ -9,7 +9,7 @@ abstract class AnimationParams extends ParamsBase<AnimationParams> {
 
   const AnimationParams({
     this.duration = const Duration(milliseconds: 500),
-    this.curve = Curves.fastOutSlowIn,
+    this.curve = Curves.easeInOut,
     this.onComplete,
   });
 

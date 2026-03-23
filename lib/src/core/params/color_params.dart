@@ -1,7 +1,7 @@
 import 'dart:ui';
 
-import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
+import 'package:gaply/gaply.dart';
 
 enum ColorRole {
   none,
@@ -70,7 +70,7 @@ enum ColorShade {
 }
 
 @immutable
-class ColorParams extends Equatable with _ColorParamsMixin {
+class ColorParams extends ParamsBase<ColorParams> with _ColorParamsMixin {
   final ColorRole role;
   final ColorOpacity opacity;
   final ColorShade shade;
@@ -78,50 +78,129 @@ class ColorParams extends Equatable with _ColorParamsMixin {
   final bool autoInvert;
 
   const ColorParams({
-    this.role = ColorRole.none,
+    required this.role,
     this.shade = ColorShade.s500,
     this.opacity = ColorOpacity.full,
     this.customColor,
     this.autoInvert = true,
   });
 
-  const ColorParams.transparent() : this(customColor: Colors.transparent);
-  const ColorParams.primary() : this(role: ColorRole.primary, opacity: ColorOpacity.full);
-  const ColorParams.onPrimary() : this(role: ColorRole.onPrimary, opacity: ColorOpacity.full);
-  const ColorParams.primaryContainer() : this(role: ColorRole.primaryContainer, opacity: ColorOpacity.full);
-  const ColorParams.onPrimaryContainer()
-    : this(role: ColorRole.onPrimaryContainer, opacity: ColorOpacity.full);
-  const ColorParams.secondary() : this(role: ColorRole.secondary, opacity: ColorOpacity.full);
-  const ColorParams.onSecondary() : this(role: ColorRole.onSecondary, opacity: ColorOpacity.full);
-  const ColorParams.tertiary() : this(role: ColorRole.tertiary, opacity: ColorOpacity.full);
-  const ColorParams.onTertiary() : this(role: ColorRole.onTertiary, opacity: ColorOpacity.full);
-  const ColorParams.error() : this(role: ColorRole.error, opacity: ColorOpacity.full);
-  const ColorParams.onError() : this(role: ColorRole.onError, opacity: ColorOpacity.full);
-  const ColorParams.success() : this(role: ColorRole.success, opacity: ColorOpacity.full);
-  const ColorParams.warning() : this(role: ColorRole.warning, opacity: ColorOpacity.full);
-  const ColorParams.surface() : this(role: ColorRole.surface, opacity: ColorOpacity.full);
-  const ColorParams.surfaceVariant() : this(role: ColorRole.surfaceVariant, opacity: ColorOpacity.full);
-  const ColorParams.outline() : this(role: ColorRole.outline, opacity: ColorOpacity.full);
-  const ColorParams.outlineVariant() : this(role: ColorRole.outlineVariant, opacity: ColorOpacity.full);
-  const ColorParams.shadow() : this(role: ColorRole.shadow, opacity: ColorOpacity.full);
-  const ColorParams.scrim() : this(role: ColorRole.scrim, opacity: ColorOpacity.full);
-  const ColorParams.inverseSurface() : this(role: ColorRole.inverseSurface, opacity: ColorOpacity.full);
-  const ColorParams.onInverseSurface() : this(role: ColorRole.onInverseSurface, opacity: ColorOpacity.full);
+  const ColorParams.none() : this(role: ColorRole.none);
 
-  const ColorParams.subtle(ColorRole role) : this(role: role, opacity: ColorOpacity.subtle);
-  const ColorParams.half(ColorRole role) : this(role: role, opacity: ColorOpacity.half);
-  const ColorParams.solid(ColorRole role) : this(role: role, opacity: ColorOpacity.solid);
+  const ColorParams.fromRole(
+    ColorRole role, {
+    ColorShade shade = ColorShade.s500,
+    ColorOpacity opacity = ColorOpacity.full,
+    bool autoInvert = true,
+  }) : this(role: role, shade: shade, opacity: opacity, autoInvert: autoInvert);
+
+  const ColorParams.fromColor(
+    Color color, {
+    ColorShade shade = ColorShade.s500,
+    ColorOpacity opacity = ColorOpacity.full,
+    bool autoInvert = true,
+  }) : this(role: ColorRole.none, customColor: color, shade: shade, opacity: opacity, autoInvert: autoInvert);
+
+  const ColorParams.transparent()
+    : this(role: ColorRole.none, customColor: Colors.transparent, opacity: ColorOpacity.transparent);
+
+  const ColorParams.primary({ColorShade shade = ColorShade.s500, ColorOpacity opacity = ColorOpacity.full})
+    : this(role: ColorRole.primary, shade: shade, opacity: opacity);
+
+  const ColorParams.onPrimary({ColorShade shade = ColorShade.s500, ColorOpacity opacity = ColorOpacity.full})
+    : this(role: ColorRole.onPrimary, shade: shade, opacity: opacity);
+
+  const ColorParams.primaryContainer({
+    ColorShade shade = ColorShade.s500,
+    ColorOpacity opacity = ColorOpacity.full,
+  }) : this(role: ColorRole.primaryContainer, shade: shade, opacity: opacity);
+
+  const ColorParams.onPrimaryContainer({
+    ColorShade shade = ColorShade.s500,
+    ColorOpacity opacity = ColorOpacity.full,
+  }) : this(role: ColorRole.onPrimaryContainer, shade: shade, opacity: opacity);
+
+  const ColorParams.secondary({ColorShade shade = ColorShade.s500, ColorOpacity opacity = ColorOpacity.full})
+    : this(role: ColorRole.secondary, shade: shade, opacity: opacity);
+
+  const ColorParams.onSecondary({
+    ColorShade shade = ColorShade.s500,
+    ColorOpacity opacity = ColorOpacity.full,
+  }) : this(role: ColorRole.onSecondary, shade: shade, opacity: opacity);
+
+  const ColorParams.tertiary({ColorShade shade = ColorShade.s500, ColorOpacity opacity = ColorOpacity.full})
+    : this(role: ColorRole.tertiary, shade: shade, opacity: opacity);
+
+  const ColorParams.onTertiary({ColorShade shade = ColorShade.s500, ColorOpacity opacity = ColorOpacity.full})
+    : this(role: ColorRole.onTertiary, shade: shade, opacity: opacity);
+
+  const ColorParams.error({ColorShade shade = ColorShade.s500, ColorOpacity opacity = ColorOpacity.full})
+    : this(role: ColorRole.error, shade: shade, opacity: opacity);
+
+  const ColorParams.onError({ColorShade shade = ColorShade.s500, ColorOpacity opacity = ColorOpacity.full})
+    : this(role: ColorRole.onError, shade: shade, opacity: opacity);
+
+  const ColorParams.success({ColorShade shade = ColorShade.s500, ColorOpacity opacity = ColorOpacity.full})
+    : this(role: ColorRole.success, shade: shade, opacity: opacity);
+
+  const ColorParams.warning({ColorShade shade = ColorShade.s500, ColorOpacity opacity = ColorOpacity.full})
+    : this(role: ColorRole.warning, shade: shade, opacity: opacity);
+
+  const ColorParams.surface({ColorShade shade = ColorShade.s500, ColorOpacity opacity = ColorOpacity.full})
+    : this(role: ColorRole.surface, shade: shade, opacity: opacity);
+
+  const ColorParams.surfaceVariant({
+    ColorShade shade = ColorShade.s500,
+    ColorOpacity opacity = ColorOpacity.full,
+  }) : this(role: ColorRole.surfaceVariant, shade: shade, opacity: opacity);
+
+  const ColorParams.outline({ColorShade shade = ColorShade.s500, ColorOpacity opacity = ColorOpacity.full})
+    : this(role: ColorRole.outline, shade: shade, opacity: opacity);
+
+  const ColorParams.outlineVariant({
+    ColorShade shade = ColorShade.s500,
+    ColorOpacity opacity = ColorOpacity.full,
+  }) : this(role: ColorRole.outlineVariant, shade: shade, opacity: opacity);
+
+  const ColorParams.shadow({ColorShade shade = ColorShade.s500, ColorOpacity opacity = ColorOpacity.full})
+    : this(role: ColorRole.shadow, shade: shade, opacity: opacity);
+
+  const ColorParams.scrim({ColorShade shade = ColorShade.s500, ColorOpacity opacity = ColorOpacity.full})
+    : this(role: ColorRole.scrim, shade: shade, opacity: opacity);
+
+  const ColorParams.inverseSurface({
+    ColorShade shade = ColorShade.s500,
+    ColorOpacity opacity = ColorOpacity.full,
+  }) : this(role: ColorRole.inverseSurface, shade: shade, opacity: opacity);
+
+  const ColorParams.onInverseSurface({
+    ColorShade shade = ColorShade.s500,
+    ColorOpacity opacity = ColorOpacity.full,
+  }) : this(role: ColorRole.onInverseSurface, shade: shade, opacity: opacity);
+
+  const ColorParams.subtle(ColorRole role, {ColorShade shade = ColorShade.s500})
+    : this(role: role, shade: shade, opacity: ColorOpacity.subtle);
+
+  const ColorParams.half(ColorRole role, {ColorShade shade = ColorShade.s500})
+    : this(role: role, shade: shade, opacity: ColorOpacity.half);
+
+  const ColorParams.solid(ColorRole role, {ColorShade shade = ColorShade.s500})
+    : this(role: role, shade: shade, opacity: ColorOpacity.solid);
+
+  @override
+  bool get isEnabled => role != ColorRole.none || customColor != null;
 
   bool get isVisible {
+    if (!isEnabled) return false;
     if (customColor == Colors.transparent) return false;
     if (opacity == ColorOpacity.transparent) return false;
-    if (role == ColorRole.none && customColor == null) return false;
     return true;
   }
 
   @override
   List<Object?> get props => [role, opacity, customColor, shade, autoInvert];
 
+  @override
   ColorParams copyWith({
     ColorRole? role,
     ColorOpacity? opacity,
@@ -138,6 +217,7 @@ class ColorParams extends Equatable with _ColorParamsMixin {
     );
   }
 
+  @override
   ColorParams lerp(ColorParams? other, double t) {
     if (other == null) return this;
 
@@ -159,12 +239,12 @@ class ColorParams extends Equatable with _ColorParamsMixin {
 }
 
 mixin _ColorParamsMixin {
-  ColorParams get _colorParams => this as ColorParams;
+  ColorParams get _params => this as ColorParams;
 
   Color _getMaterialColorShade(MaterialColor materialColor, bool isDark) {
-    var shade = _colorParams.shade;
+    var shade = _params.shade;
 
-    if (_colorParams.autoInvert && isDark) {
+    if (_params.autoInvert && isDark) {
       shade = _invertShade(shade);
     }
 
@@ -188,10 +268,10 @@ mixin _ColorParamsMixin {
   }
 
   Color _applySmartShade(Color color, bool isDark) {
-    final double shadeValue = _colorParams.shade.value;
-    if (shadeValue == 0.5 && !_colorParams.autoInvert) return color;
+    final double shadeValue = _params.shade.value;
+    if (shadeValue == 0.5 && !_params.autoInvert) return color;
 
-    final double effectiveValue = (_colorParams.autoInvert && isDark) ? 1.0 - shadeValue : shadeValue;
+    final double effectiveValue = (_params.autoInvert && isDark) ? 1.0 - shadeValue : shadeValue;
 
     final hsl = HSLColor.fromColor(color);
 
@@ -205,7 +285,7 @@ mixin _ColorParamsMixin {
   }
 
   Color? _resolveByRole(ColorScheme scheme) {
-    return switch (_colorParams.role) {
+    return switch (_params.role) {
       ColorRole.primary => scheme.primary,
       ColorRole.onPrimary => scheme.onPrimary,
       ColorRole.primaryContainer => scheme.primaryContainer,
@@ -239,11 +319,15 @@ mixin _ColorParamsMixin {
     };
   }
 
-  Color resolve(BuildContext context) {
+  Color? resolve(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    Color baseColor = _colorParams.customColor ?? _resolveByRole(theme.colorScheme) ?? Colors.transparent;
+    if (_params.role == ColorRole.none && _params.customColor == null) {
+      return null;
+    }
+
+    Color baseColor = _params.customColor ?? _resolveByRole(theme.colorScheme)!;
 
     if (baseColor is MaterialColor) {
       baseColor = _getMaterialColorShade(baseColor, isDark);
@@ -251,7 +335,7 @@ mixin _ColorParamsMixin {
       baseColor = _applySmartShade(baseColor, isDark);
     }
 
-    final alpha = _colorParams.opacity.value;
+    final alpha = _params.opacity.value;
 
     return baseColor.withValues(alpha: alpha);
   }

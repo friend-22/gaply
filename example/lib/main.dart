@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:gaply/gaply.dart';
 
 import 'demo.dart';
 

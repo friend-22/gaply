@@ -14,42 +14,27 @@ class FlipParams extends AnimationParams {
 
   const FlipParams({
     super.duration,
-    super.curve = Curves.fastOutSlowIn,
+    super.curve,
     super.onComplete,
-    this.axis = Axis.vertical,
+    required this.axis,
     this.angleRange = math.pi,
-    this.isFlipped = false,
-  });
+    required this.isFlipped,
+  }) : assert(angleRange > 0 && angleRange <= 2 * math.pi, 'angleRange은 0~2π 범위여야 합니다');
+
+  const FlipParams.none()
+    : this(duration: Duration.zero, curve: Curves.linear, axis: Axis.horizontal, isFlipped: false);
 
   factory FlipParams.preset(String name, {bool? isFlipped}) {
-    final params = GaplyFlipPreset.of(name) ?? GaplyFlipPreset.of('none')!;
-    return params.copyWith(isFlipped: isFlipped);
+    final params = GaplyFlipPreset.of(name);
+    if (params == null) {
+      throw ArgumentError('Unknown flip preset: "$name"');
+    }
+    return isFlipped != null ? params.copyWith(isFlipped: isFlipped) : params;
   }
 
-  factory FlipParams.fast(String name, {bool? isFlipped}) {
-    final params = GaplyFlipPreset.of(name) ?? GaplyFlipPreset.of('none')!;
-    return params.copyWith(duration: Duration(milliseconds: 300), isFlipped: isFlipped);
-  }
-
-  factory FlipParams.slow(String name, {bool? isFlipped}) {
-    final params = GaplyFlipPreset.of(name) ?? GaplyFlipPreset.of('none')!;
-    return params.copyWith(duration: Duration(milliseconds: 800), isFlipped: isFlipped);
-  }
-
-  factory FlipParams.elastic({
-    Duration duration = const Duration(milliseconds: 400),
-    Axis axis = Axis.horizontal,
-    bool isFlipped = false,
-  }) {
-    return FlipParams(duration: duration, curve: Curves.elasticOut, axis: axis, isFlipped: isFlipped);
-  }
-
-  factory FlipParams.bounce({
-    Duration duration = const Duration(milliseconds: 500),
-    Axis axis = Axis.horizontal,
-    bool isFlipped = false,
-  }) {
-    return FlipParams(duration: duration, curve: Curves.bounceOut, axis: axis, isFlipped: isFlipped);
+  FlipParams withSpeed(double speed) {
+    final resolveDuration = duration.inMilliseconds * speed;
+    return copyWith(duration: Duration(milliseconds: resolveDuration.toInt()));
   }
 
   @override
@@ -74,6 +59,7 @@ class FlipParams extends AnimationParams {
   @override
   FlipParams lerp(AnimationParams? other, double t) {
     if (other is! FlipParams) return this;
+
     return FlipParams(
       duration: t < 0.5 ? duration : other.duration,
       curve: t < 0.5 ? curve : other.curve,
@@ -88,13 +74,20 @@ class FlipParams extends AnimationParams {
   List<Object?> get props => [...super.props, axis, angleRange, isFlipped];
 
   Widget buildWidget({required Widget front, required Widget back}) {
-    return FlipWidget(front: front, back: back, flipParams: this);
+    return FlipTrigger(front: front, back: back, trigger: DateTime.now(), params: this);
+  }
+}
+
+extension FlipParamsX on FlipParams {
+  FlipParams withSpeed(double speed) {
+    final resolveDuration = duration.inMilliseconds * speed;
+    return copyWith(duration: Duration(milliseconds: resolveDuration.toInt()));
   }
 }
 
 extension FlipParamsExtension on Widget {
   Widget withFlip(FlipParams flipParams, {required Widget back}) {
-    return FlipWidget(front: this, back: back, flipParams: flipParams);
+    return FlipTrigger(front: this, back: back, trigger: DateTime.now(), params: flipParams);
   }
 }
 
@@ -105,9 +98,24 @@ class GaplyFlipPreset with GaplyPreset<FlipParams> {
   void _ensureInitialized() {
     if (hasPreset) return;
 
-    add('none', const FlipParams(duration: Duration.zero));
-    add('vertical', const FlipParams(axis: Axis.vertical));
-    add('horizontal', const FlipParams(axis: Axis.horizontal));
+    add(
+      'vertical',
+      const FlipParams(
+        duration: Duration(milliseconds: 500),
+        curve: Curves.fastOutSlowIn,
+        axis: Axis.vertical,
+        isFlipped: true,
+      ),
+    );
+    add(
+      'horizontal',
+      const FlipParams(
+        duration: Duration(milliseconds: 500),
+        curve: Curves.fastOutSlowIn,
+        axis: Axis.horizontal,
+        isFlipped: true,
+      ),
+    );
   }
 
   static void register(String name, FlipParams params) {

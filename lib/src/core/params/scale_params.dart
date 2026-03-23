@@ -14,52 +14,43 @@ class ScaleParams extends AnimationParams {
 
   const ScaleParams({
     super.duration,
-    super.curve = Curves.easeOutBack,
+    super.curve,
     super.onComplete,
-    this.begin = 0.0,
-    this.end = 1.0,
+    required this.begin,
+    required this.end,
     this.alignment = Alignment.center,
-    this.isScaled = false,
+    required this.isScaled,
   });
 
+  const ScaleParams.none()
+    : this(
+        duration: Duration.zero,
+        curve: Curves.linear,
+        begin: 0.0,
+        end: 1.0,
+        alignment: Alignment.center,
+        isScaled: false,
+      );
+
   factory ScaleParams.preset(String name, {Alignment? alignment, bool? isScaled}) {
-    final params = GaplyScalePreset.of(name) ?? GaplyScalePreset.of('none')!;
-    return params.copyWith(alignment: alignment, isScaled: isScaled);
-  }
+    final params = GaplyScalePreset.of(name);
 
-  factory ScaleParams.fast(String name, {Alignment? alignment, bool? isScaled}) {
-    final params = GaplyScalePreset.of(name) ?? GaplyScalePreset.of('none')!;
-    return params.copyWith(duration: Duration(milliseconds: 300), alignment: alignment, isScaled: isScaled);
-  }
+    if (params == null) {
+      throw ArgumentError('Unknown scale preset: "$name"');
+    }
 
-  factory ScaleParams.slow(String name, {Alignment? alignment, bool? isScaled}) {
-    final params = GaplyScalePreset.of(name) ?? GaplyScalePreset.of('none')!;
-    return params.copyWith(duration: Duration(milliseconds: 800), alignment: alignment, isScaled: isScaled);
-  }
-
-  factory ScaleParams.elastic({
-    Duration duration = const Duration(milliseconds: 400),
-    Alignment alignment = Alignment.center,
-    bool isScaled = false,
-  }) {
-    return ScaleParams(
-      duration: duration,
-      curve: Curves.elasticOut,
-      alignment: alignment,
-      isScaled: isScaled,
-    );
-  }
-
-  factory ScaleParams.bounce({
-    Duration duration = const Duration(milliseconds: 500),
-    Alignment alignment = Alignment.center,
-    bool isScaled = false,
-  }) {
-    return ScaleParams(duration: duration, curve: Curves.bounceOut, alignment: alignment, isScaled: isScaled);
+    return alignment != null || isScaled != null
+        ? params.copyWith(alignment: alignment, isScaled: isScaled)
+        : params;
   }
 
   @override
-  bool get isEnabled => duration.inMilliseconds > 0;
+  bool get isEnabled => isScaled && duration.inMilliseconds > 0;
+
+  ScaleParams withSpeed(double speed) {
+    final resolveDuration = duration.inMilliseconds * speed;
+    return copyWith(duration: Duration(milliseconds: resolveDuration.toInt()));
+  }
 
   @override
   ScaleParams copyWith({
@@ -85,6 +76,7 @@ class ScaleParams extends AnimationParams {
   @override
   ScaleParams lerp(AnimationParams? other, double t) {
     if (other is! ScaleParams) return this;
+
     return ScaleParams(
       duration: t < 0.5 ? duration : other.duration,
       curve: t < 0.5 ? curve : other.curve,
@@ -100,12 +92,12 @@ class ScaleParams extends AnimationParams {
   List<Object?> get props => [...super.props, begin, end, alignment, isScaled];
 
   Widget buildWidget({required Widget child}) {
-    return ScaleWidget(params: this, child: child);
+    return ScaleTrigger(params: this, trigger: DateTime.now(), child: child);
   }
 }
 
 extension ScaleParamsExtension on Widget {
-  Widget withScale(ScaleParams params) => ScaleWidget(params: params, child: this);
+  Widget withScale(ScaleParams params) => ScaleTrigger(params: params, trigger: DateTime.now(), child: this);
 }
 
 class GaplyScalePreset with GaplyPreset<ScaleParams> {
@@ -115,10 +107,36 @@ class GaplyScalePreset with GaplyPreset<ScaleParams> {
   void _ensureInitialized() {
     if (hasPreset) return;
 
-    add('none', const ScaleParams(duration: Duration.zero));
-    add('pop', const ScaleParams(curve: Curves.easeInBack));
-    add('shrink', const ScaleParams(curve: Curves.easeIn));
-    add('grow', const ScaleParams(curve: Curves.easeOut));
+    add(
+      'pop',
+      const ScaleParams(
+        duration: Duration(milliseconds: 500),
+        curve: Curves.easeInBack,
+        begin: 0.0,
+        end: 1.1,
+        isScaled: true,
+      ),
+    );
+    add(
+      'shrink',
+      const ScaleParams(
+        duration: Duration(milliseconds: 500),
+        curve: Curves.easeIn,
+        begin: 1.0,
+        end: 0.0,
+        isScaled: true,
+      ),
+    );
+    add(
+      'grow',
+      const ScaleParams(
+        duration: Duration(milliseconds: 500),
+        curve: Curves.easeOut,
+        begin: 0.0,
+        end: 1.0,
+        isScaled: true,
+      ),
+    );
   }
 
   static void register(String name, ScaleParams params) {

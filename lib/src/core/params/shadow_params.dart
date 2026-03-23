@@ -9,9 +9,9 @@ import 'color_params.dart';
 @immutable
 class ShadowParams extends ParamsBase<ShadowParams> with _ShadowParamsMixin {
   static const double _elevationOffsetScale = 1.5;
-  static const double _elevationBlurScale = 2.0;
-  static const double _maxAlpha = 0.20;
-  static const double _minAlpha = 0.05;
+  static const double _elevationBlurScale = 0.5;
+  static const double _maxAlpha = 0.5;
+  static const double _minAlpha = 0.1;
 
   final double spreadRadius;
   final double blurRadius;
@@ -21,32 +21,48 @@ class ShadowParams extends ParamsBase<ShadowParams> with _ShadowParamsMixin {
 
   const ShadowParams({
     this.spreadRadius = 0.0,
-    this.blurRadius = 0.0,
-    this.color = const ColorParams.transparent(),
+    required this.blurRadius,
+    required this.color,
     this.offset = Offset.zero,
     this.blurStyle = BlurStyle.normal,
   });
 
+  const ShadowParams.none()
+    : spreadRadius = 0.0,
+      blurRadius = 0.0,
+      color = const ColorParams.none(),
+      offset = Offset.zero,
+      blurStyle = BlurStyle.normal;
+
   factory ShadowParams.preset(String name, {ColorParams? color}) {
-    final params = GaplyShadowPreset.of(name) ?? GaplyShadowPreset.of('none')!;
-    return params.copyWith(color: color);
+    final params = GaplyShadowPreset.of(name);
+
+    if (params == null) {
+      throw ArgumentError('Unknown shadow preset: "$name"');
+    }
+
+    return color != null ? params.copyWith(color: color) : params;
   }
 
   factory ShadowParams.elevation(double elevation, {ColorParams? color}) {
-    if (elevation <= 0) return const ShadowParams();
+    if (elevation <= 0) return const ShadowParams.none();
 
     final alpha = (_maxAlpha - (elevation / 100)).clamp(_minAlpha, _maxAlpha);
 
     return ShadowParams(
-      offset: Offset(0, elevation / _elevationOffsetScale),
-      blurRadius: elevation * _elevationBlurScale,
+      offset: Offset(elevation, elevation),
+      blurRadius: elevation * 0.5,
       spreadRadius: -elevation / 8,
-      color: color ?? const ColorParams.surfaceVariant().opacityValue(alpha),
+      color: color ?? const ColorParams.shadow().opacityValue(alpha),
     );
   }
 
   @override
-  bool get isEnabled => color.isVisible;
+  bool get isEnabled => color.isEnabled;
+
+  ShadowParams withIntensity(double intensity) {
+    return copyWith(blurRadius: blurRadius * intensity, spreadRadius: spreadRadius * intensity);
+  }
 
   @override
   ShadowParams copyWith({
@@ -86,10 +102,11 @@ mixin _ShadowParamsMixin {
   ShadowParams get _params => this as ShadowParams;
 
   BoxShadow? resolve(BuildContext context) {
-    if (!_params.isEnabled) return null;
+    final resolvedColor = _params.color.resolve(context);
+    if (resolvedColor == null) return null;
 
     return BoxShadow(
-      color: _params.color.resolve(context),
+      color: resolvedColor,
       offset: _params.offset,
       blurRadius: _params.blurRadius,
       spreadRadius: _params.spreadRadius,
@@ -104,7 +121,6 @@ class GaplyShadowPreset with GaplyPreset<ShadowParams> {
 
   void _ensureInitialized() {
     if (hasPreset) return;
-    add('none', const ShadowParams());
 
     const blurColor = ColorParams.shadow();
 

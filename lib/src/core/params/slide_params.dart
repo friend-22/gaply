@@ -16,11 +16,14 @@ class SlideParams extends AnimationParams with DirectionAnimationParamsMixin {
     super.duration,
     super.curve,
     super.onComplete,
-    this.direction = AxisDirection.down,
+    required this.direction,
     this.visible = true,
     this.fixedSize = false,
     this.useOpacity = true,
   });
+
+  const SlideParams.none()
+    : this(duration: Duration.zero, curve: Curves.linear, direction: AxisDirection.down, visible: false);
 
   factory SlideParams.preset(
     String name, {
@@ -29,7 +32,10 @@ class SlideParams extends AnimationParams with DirectionAnimationParamsMixin {
     bool? fixedSize,
     bool? useOpacity,
   }) {
-    final params = GaplySlidePreset.of(name) ?? GaplySlidePreset.of('none')!;
+    final params = GaplySlidePreset.of(name);
+    if (params == null) {
+      throw ArgumentError('Unknown slide preset: "$name"');
+    }
     return params.copyWith(
       direction: direction,
       visible: visible,
@@ -38,72 +44,9 @@ class SlideParams extends AnimationParams with DirectionAnimationParamsMixin {
     );
   }
 
-  factory SlideParams.fast(
-    String name, {
-    required AxisDirection direction,
-    bool? visible,
-    bool? fixedSize,
-    bool? useOpacity,
-  }) {
-    final params = GaplySlidePreset.of(name) ?? GaplySlidePreset.of('none')!;
-    return params.copyWith(
-      duration: Duration(milliseconds: 300),
-      direction: direction,
-      visible: visible,
-      fixedSize: fixedSize,
-      useOpacity: useOpacity,
-    );
-  }
-
-  factory SlideParams.slow(
-    String name, {
-    required AxisDirection direction,
-    bool? visible,
-    bool? fixedSize,
-    bool? useOpacity,
-  }) {
-    final params = GaplySlidePreset.of(name) ?? GaplySlidePreset.of('none')!;
-    return params.copyWith(
-      duration: Duration(milliseconds: 800),
-      direction: direction,
-      visible: visible,
-      fixedSize: fixedSize,
-      useOpacity: useOpacity,
-    );
-  }
-
-  factory SlideParams.elastic(
-    AxisDirection direction, {
-    Duration duration = const Duration(milliseconds: 400),
-    bool visible = true,
-    bool fixedSize = false,
-    bool useOpacity = true,
-  }) {
-    return SlideParams(
-      direction: direction,
-      duration: duration,
-      curve: Curves.elasticOut,
-      visible: visible,
-      fixedSize: fixedSize,
-      useOpacity: useOpacity,
-    );
-  }
-
-  factory SlideParams.bounce(
-    AxisDirection direction, {
-    Duration duration = const Duration(milliseconds: 500),
-    bool visible = true,
-    bool fixedSize = false,
-    bool useOpacity = true,
-  }) {
-    return SlideParams(
-      direction: direction,
-      duration: duration,
-      curve: Curves.bounceOut,
-      visible: visible,
-      fixedSize: fixedSize,
-      useOpacity: useOpacity,
-    );
+  SlideParams withSpeed(double speed) {
+    final resolveDuration = duration.inMilliseconds * speed;
+    return copyWith(duration: Duration(milliseconds: resolveDuration.toInt()));
   }
 
   SlideParams get reversed {
@@ -149,12 +92,12 @@ class SlideParams extends AnimationParams with DirectionAnimationParamsMixin {
   }
 
   Widget buildWidget({required Widget child}) {
-    return SlideWidget(params: this, child: child);
+    return SlideTrigger(params: this, trigger: DateTime.now(), child: child);
   }
 }
 
 extension SlideParamsExtension on Widget {
-  Widget withSlide(SlideParams params) => SlideWidget(params: params, child: this);
+  Widget withSlide(SlideParams params) => SlideTrigger(params: params, trigger: DateTime.now(), child: this);
 }
 
 class GaplySlidePreset with GaplyPreset<SlideParams> {
@@ -163,11 +106,39 @@ class GaplySlidePreset with GaplyPreset<SlideParams> {
 
   void _ensureInitialized() {
     if (hasPreset) return;
-    add('none', const SlideParams(duration: Duration.zero));
-    add('left', const SlideParams(direction: AxisDirection.left));
-    add('right', const SlideParams(direction: AxisDirection.right));
-    add('up', const SlideParams(direction: AxisDirection.up));
-    add('down', const SlideParams(direction: AxisDirection.down));
+
+    add(
+      'left',
+      const SlideParams(
+        duration: Duration(milliseconds: 500),
+        curve: Curves.easeInOut,
+        direction: AxisDirection.left,
+      ),
+    );
+    add(
+      'right',
+      const SlideParams(
+        duration: Duration(milliseconds: 500),
+        curve: Curves.easeInOut,
+        direction: AxisDirection.right,
+      ),
+    );
+    add(
+      'up',
+      const SlideParams(
+        duration: Duration(milliseconds: 500),
+        curve: Curves.easeInOut,
+        direction: AxisDirection.up,
+      ),
+    );
+    add(
+      'down',
+      const SlideParams(
+        duration: Duration(milliseconds: 500),
+        curve: Curves.easeInOut,
+        direction: AxisDirection.down,
+      ),
+    );
   }
 
   static void register(String name, SlideParams params) {

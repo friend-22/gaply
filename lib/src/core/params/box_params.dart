@@ -11,21 +11,12 @@ import 'animation_sequence_params.dart';
 import 'blur_params.dart';
 import 'color_params.dart';
 import 'gradient_params.dart';
-
-enum BoxType { none, box }
+import 'layout_params.dart';
 
 @immutable
 class BoxParams extends ParamsBase<BoxParams> {
-  final BoxType boxType;
-
   // 1. Layout & Shape
-  final double? width;
-  final double? height;
-  final EdgeInsetsGeometry? padding;
-  final EdgeInsetsGeometry? margin;
-
-  final BorderRadiusGeometry? borderRadius;
-  final AlignmentGeometry? alignment;
+  final LayoutParams layout;
 
   // 2. Static Style
   final ColorParams color;
@@ -45,42 +36,37 @@ class BoxParams extends ParamsBase<BoxParams> {
   final Duration duration;
 
   const BoxParams({
-    this.boxType = BoxType.box,
-    this.width,
-    this.height,
-    this.padding,
-    this.margin,
-    this.borderRadius,
-    this.alignment,
-    this.color = const ColorParams.transparent(),
-    this.borderColor = const ColorParams.transparent(),
+    this.layout = const LayoutParams.none(),
+    this.color = const ColorParams.none(),
+    this.borderColor = const ColorParams.none(),
     this.borderWidth = 0.0,
     this.shadows = const [],
-    this.blur = const BlurParams(),
-    this.gradient = const GradientParams(colors: [], stops: []),
-    this.shimmer = const ShimmerParams(),
-    this.animation = const AnimationSequenceParams(),
+    this.blur = const BlurParams.none(),
+    this.gradient = const GradientParams.none(),
+    this.shimmer = const ShimmerParams.none(),
+    this.animation = const AnimationSequenceParams.none(),
     this.onPressed,
     this.curve = Curves.linear,
     this.duration = const Duration(milliseconds: 300),
   });
 
   factory BoxParams.preset(String name) {
-    return GaplyBoxPreset.of(name) ?? const BoxParams();
+    final params = GaplyBoxPreset.of(name);
+    if (params == null) {
+      throw ArgumentError('Unknown box preset: "$name"');
+    }
+    return params;
   }
 
   @override
-  bool get isEnabled => true;
+  bool get isEnabled {
+    return layout.isEnabled;
+  }
 
   @override
   BoxParams copyWith({
-    BoxType? boxType,
-    double? width,
-    double? height,
-    EdgeInsetsGeometry? padding,
-    EdgeInsetsGeometry? margin,
-    BorderRadiusGeometry? borderRadius,
-    AlignmentGeometry? alignment,
+    LayoutParams? layout,
+
     ColorParams? color,
     ColorParams? borderColor,
     double? borderWidth,
@@ -94,13 +80,7 @@ class BoxParams extends ParamsBase<BoxParams> {
     Curve? curve,
   }) {
     return BoxParams(
-      boxType: boxType ?? this.boxType,
-      width: width ?? this.width,
-      height: height ?? this.height,
-      padding: padding ?? this.padding,
-      margin: margin ?? this.margin,
-      borderRadius: borderRadius ?? this.borderRadius,
-      alignment: alignment ?? this.alignment,
+      layout: layout ?? this.layout,
       color: color ?? this.color,
       borderColor: borderColor ?? this.borderColor,
       borderWidth: borderWidth ?? this.borderWidth,
@@ -123,13 +103,7 @@ class BoxParams extends ParamsBase<BoxParams> {
   BoxParams lerp(BoxParams? other, double t) {
     if (other == null) return this;
     return copyWith(
-      boxType: t < 0.5 ? boxType : other.boxType,
-      width: lerpDouble(width, other.width, t),
-      height: lerpDouble(height, other.height, t),
-      padding: EdgeInsetsGeometry.lerp(padding, other.padding, t),
-      margin: EdgeInsetsGeometry.lerp(margin, other.margin, t),
-      borderRadius: BorderRadiusGeometry.lerp(borderRadius, other.borderRadius, t),
-      alignment: AlignmentGeometry.lerp(alignment, other.alignment, t),
+      layout: layout.lerp(other.layout, t),
       color: color.lerp(other.color, t),
       borderColor: borderColor.lerp(other.borderColor, t),
       borderWidth: lerpDouble(borderWidth, other.borderWidth, t),
@@ -150,13 +124,7 @@ class BoxParams extends ParamsBase<BoxParams> {
 
   @override
   List<Object?> get props => [
-    boxType,
-    width,
-    height,
-    padding,
-    margin,
-    borderRadius,
-    alignment,
+    layout,
     color,
     borderColor,
     borderWidth,
@@ -175,49 +143,88 @@ mixin BoxParamsMixin {
   BoxParams get params;
 
   Widget buildBox(BuildContext context, Widget content) {
-    Widget effectiveContent = params.shimmer.isEnabled
-        ? params.shimmer.buildWidget(child: content, context: context)
-        : content;
+    Widget result = content;
 
-    final decoration = BoxDecoration(
-      color: params.color.isVisible ? params.color.resolve(context) : null,
-      borderRadius: params.borderRadius,
-      border: params.borderWidth > 0
-          ? Border.all(color: params.borderColor.resolve(context), width: params.borderWidth)
-          : null,
-      boxShadow: params.shadows.map((s) => s.resolve(context)).whereType<BoxShadow>().toList(),
-      gradient: params.gradient.resolve(context),
-    );
+    // if (params.blur.isEnabled) {
+    //   print('DEBUG: Applying blur');
+    //   //result = ImageFiltered(imageFilter: params.blur.resolve()!, child: result);
+    //   result = Stack(
+    //     children: [
+    //       // 1. 흐려진 배경
+    //       Positioned.fill(
+    //         child: ClipRRect(
+    //           borderRadius: params.borderRadius ?? BorderRadius.zero,
+    //           //child: Container(color: Colors.red),
+    //           child: BackdropFilter(filter: params.blur.resolve()!, child: const SizedBox()),
+    //         ),
+    //       ),
+    //       result,
+    //       // 2. 선명한 콘텐츠
+    //     ],
+    //   );
+    //   print('DEBUG: Blur applied');
+    // }
 
-    Widget box = AnimatedContainer(
+    final decoration = _buildDecoration(context);
+
+    result = AnimatedContainer(
       duration: params.duration,
       curve: params.curve,
-      width: params.width,
-      height: params.height,
-      padding: params.padding,
-      margin: params.margin,
-      alignment: params.alignment,
+      width: params.layout.width,
+      height: params.layout.height,
+      padding: params.layout.padding,
+      margin: params.layout.margin,
+      alignment: params.layout.alignment,
       decoration: decoration,
-      clipBehavior: params.borderRadius != null ? Clip.antiAlias : Clip.none,
-      child: effectiveContent,
+      clipBehavior: params.layout.borderRadius != null ? Clip.antiAlias : Clip.none,
+      child: result,
     );
 
+    if (params.shimmer.isEnabled) {
+      result = params.shimmer.buildWidget(context: context, child: result);
+    }
+
     if (params.blur.isEnabled) {
-      box = ClipRRect(
-        borderRadius: params.borderRadius ?? BorderRadius.zero,
-        child: BackdropFilter(filter: params.blur.resolve(), child: box),
+      result = params.blur.buildWidget(
+        context: context,
+        borderRadius: params.layout.borderRadius,
+        child: result,
       );
     }
 
     if (params.onPressed != null) {
-      box = TapGestureDetector(
+      result = TapGestureDetector(
         onTap: params.onPressed,
         behavior: HitTestBehavior.opaque,
-        child: MouseRegion(cursor: SystemMouseCursors.click, child: box),
+        child: MouseRegion(cursor: SystemMouseCursors.click, child: result),
       );
     }
 
-    return box;
+    return result;
+  }
+
+  BoxDecoration? _buildDecoration(BuildContext context) {
+    final hasDecoration =
+        params.color.isEnabled ||
+        params.borderColor.isEnabled ||
+        params.borderWidth > 0 ||
+        params.shadows.isNotEmpty ||
+        params.gradient.isEnabled;
+
+    if (!hasDecoration) return null;
+
+    return BoxDecoration(
+      color: params.color.isVisible ? params.color.resolve(context) : null,
+      borderRadius: params.layout.borderRadius,
+      border: params.borderWidth > 0
+          ? Border.all(
+              color: params.borderColor.resolve(context) ?? Colors.transparent,
+              width: params.borderWidth,
+            )
+          : null,
+      boxShadow: params.shadows.map((s) => s.resolve(context)).whereType<BoxShadow>().toList(),
+      gradient: params.gradient.resolve(context),
+    );
   }
 }
 
@@ -228,7 +235,33 @@ class GaplyBoxPreset with GaplyPreset<BoxParams> {
   void _ensureInitialized() {
     if (hasPreset) return;
 
-    add('none', const BoxParams());
+    add('rainbow', BoxParams(gradient: GradientParams.preset('rainbow')));
+
+    add(
+      'card',
+      const BoxParams(
+        layout: LayoutParams(
+          padding: EdgeInsets.all(16),
+          borderRadius: BorderRadius.all(Radius.circular(12)),
+        ),
+        color: ColorParams(role: ColorRole.surface),
+        shadows: [
+          // ShadowParams.preset('small')
+        ],
+      ),
+    );
+
+    add(
+      'button',
+      const BoxParams(
+        layout: LayoutParams(
+          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          borderRadius: BorderRadius.all(Radius.circular(8)),
+        ),
+        color: ColorParams(role: ColorRole.primary),
+        duration: Duration(milliseconds: 200),
+      ),
+    );
   }
 
   static void register(String name, BoxParams params) {

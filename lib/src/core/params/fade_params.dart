@@ -7,29 +7,23 @@ import '../base/animation_params.dart';
 class FadeParams extends AnimationParams {
   final bool visible;
 
-  const FadeParams({super.duration, super.curve = Curves.easeInOut, super.onComplete, this.visible = true});
+  const FadeParams({super.duration, super.curve, super.onComplete, required this.visible});
+
+  const FadeParams.none() : this(duration: Duration.zero, curve: Curves.linear, visible: false);
 
   factory FadeParams.preset(String name, {bool? visible}) {
-    final params = GaplyFadePreset.of(name) ?? GaplyFadePreset.of('none')!;
-    return params.copyWith(visible: visible);
+    final params = GaplyFadePreset.of(name);
+
+    if (params == null) {
+      throw ArgumentError('Unknown fade preset: "$name"');
+    }
+
+    return visible != null ? params.copyWith(visible: visible) : params;
   }
 
-  factory FadeParams.fast(String name, {bool? visible}) {
-    final params = GaplyFadePreset.of(name) ?? GaplyFadePreset.of('none')!;
-    return params.copyWith(duration: Duration(milliseconds: 300), visible: visible);
-  }
-
-  factory FadeParams.slow(String name, {bool? visible}) {
-    final params = GaplyFadePreset.of(name) ?? GaplyFadePreset.of('none')!;
-    return params.copyWith(duration: Duration(milliseconds: 800), visible: visible);
-  }
-
-  factory FadeParams.elastic({Duration duration = const Duration(milliseconds: 400), bool visible = true}) {
-    return FadeParams(duration: duration, curve: Curves.elasticOut, visible: visible);
-  }
-
-  factory FadeParams.bounce({Duration duration = const Duration(milliseconds: 500), bool visible = true}) {
-    return FadeParams(duration: duration, curve: Curves.bounceOut, visible: visible);
+  FadeParams withSpeed(double speed) {
+    final resolveDuration = duration.inMilliseconds * speed;
+    return copyWith(duration: Duration(milliseconds: resolveDuration.toInt()));
   }
 
   @override
@@ -45,6 +39,7 @@ class FadeParams extends AnimationParams {
   @override
   FadeParams lerp(AnimationParams? other, double t) {
     if (other is! FadeParams) return this;
+
     return FadeParams(
       duration: t < 0.5 ? duration : other.duration,
       curve: t < 0.5 ? curve : other.curve,
@@ -57,12 +52,14 @@ class FadeParams extends AnimationParams {
   List<Object?> get props => [...super.props, visible];
 
   Widget buildWidget({required Widget child}) {
-    return FadeWidget(params: this, child: child);
+    return FadeTrigger(params: this, trigger: DateTime.now(), child: child);
   }
 }
 
+extension FadeParamsX on FadeParams {}
+
 extension FadeParamsExtension on Widget {
-  Widget withFade(FadeParams params) => FadeWidget(params: params, child: this);
+  Widget withFade(FadeParams params) => FadeTrigger(params: params, trigger: DateTime.now(), child: this);
 }
 
 class GaplyFadePreset with GaplyPreset<FadeParams> {
@@ -72,9 +69,14 @@ class GaplyFadePreset with GaplyPreset<FadeParams> {
   void _ensureInitialized() {
     if (hasPreset) return;
 
-    add('none', const FadeParams(duration: Duration.zero));
-    add('fadeIn', const FadeParams(curve: Curves.easeInOut));
-    add('fadeOut', const FadeParams(curve: Curves.easeOut));
+    add(
+      'fadeIn',
+      const FadeParams(duration: Duration(milliseconds: 500), curve: Curves.easeInOut, visible: true),
+    );
+    add(
+      'fadeOut',
+      const FadeParams(duration: Duration(milliseconds: 500), curve: Curves.easeOut, visible: false),
+    );
   }
 
   static void register(String name, FadeParams params) {

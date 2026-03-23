@@ -14,53 +14,24 @@ class TrainParams extends AnimationParams with DirectionAnimationParamsMixin {
     super.duration,
     super.curve,
     super.onComplete,
-    this.direction = AxisDirection.down,
+    required this.direction,
     this.useOpacity = true,
   });
 
+  const TrainParams.none()
+    : this(duration: Duration.zero, curve: Curves.linear, direction: AxisDirection.down, useOpacity: false);
+
   factory TrainParams.preset(String name, {bool? useOpacity}) {
-    final params = GaplyTrainPreset.of(name) ?? GaplyTrainPreset.of('none')!;
-    return params.copyWith(useOpacity: useOpacity);
+    final params = GaplyTrainPreset.of(name);
+    if (params == null) {
+      throw ArgumentError('Unknown train preset: "$name"');
+    }
+    return useOpacity != null ? params.copyWith(useOpacity: useOpacity) : params;
   }
 
-  factory TrainParams.fast(String name, {bool? useOpacity}) {
-    final params = GaplyTrainPreset.of(name) ?? GaplyTrainPreset.of('none')!;
-    return params.copyWith(duration: Duration(milliseconds: 300), useOpacity: useOpacity);
-  }
-
-  factory TrainParams.slow(String name, {bool? useOpacity}) {
-    final params = GaplyTrainPreset.of(name) ?? GaplyTrainPreset.of('none')!;
-    return params.copyWith(duration: Duration(milliseconds: 800), useOpacity: useOpacity);
-  }
-
-  factory TrainParams.elastic(
-    AxisDirection direction, {
-    Duration duration = const Duration(milliseconds: 400),
-    bool useOpacity = true,
-    VoidCallback? onComplete,
-  }) {
-    return TrainParams(
-      direction: direction,
-      duration: duration,
-      curve: Curves.elasticOut,
-      useOpacity: useOpacity,
-      onComplete: onComplete,
-    );
-  }
-
-  factory TrainParams.bounce(
-    AxisDirection direction, {
-    Duration duration = const Duration(milliseconds: 500),
-    bool useOpacity = true,
-    VoidCallback? onComplete,
-  }) {
-    return TrainParams(
-      direction: direction,
-      duration: duration,
-      curve: Curves.bounceOut,
-      useOpacity: useOpacity,
-      onComplete: onComplete,
-    );
+  TrainParams withSpeed(double speed) {
+    final resolveDuration = duration.inMilliseconds * speed;
+    return copyWith(duration: Duration(milliseconds: resolveDuration.toInt()));
   }
 
   TrainParams get reversed {
@@ -104,10 +75,11 @@ class TrainParams extends AnimationParams with DirectionAnimationParamsMixin {
     required T? previousItem,
     required Widget Function(T) itemBuilder,
   }) {
-    return TrainWidget<T>(
+    return TrainTrigger<T>(
       currentItem: currentItem,
       previousItem: previousItem,
       itemBuilder: itemBuilder,
+      trigger: DateTime.now(),
       params: this,
     );
   }
@@ -117,12 +89,13 @@ extension TrainParamsExtension<T> on T {
   Widget withTrain({
     required T? previousItem,
     required Widget Function(T) itemBuilder,
-    TrainParams params = const TrainParams(),
+    required TrainParams params,
   }) {
-    return TrainWidget<T>(
+    return TrainTrigger<T>(
       currentItem: this,
       previousItem: previousItem,
       itemBuilder: itemBuilder,
+      trigger: DateTime.now(),
       params: params,
     );
   }
@@ -134,11 +107,39 @@ class GaplyTrainPreset with GaplyPreset<TrainParams> {
 
   void _ensureInitialized() {
     if (hasPreset) return;
-    add('none', const TrainParams(duration: Duration.zero));
-    add('left', const TrainParams(direction: AxisDirection.left));
-    add('right', const TrainParams(direction: AxisDirection.right));
-    add('up', const TrainParams(direction: AxisDirection.up));
-    add('down', const TrainParams(direction: AxisDirection.down));
+
+    add(
+      'left',
+      const TrainParams(
+        duration: Duration(milliseconds: 500),
+        curve: Curves.easeInOut,
+        direction: AxisDirection.left,
+      ),
+    );
+    add(
+      'right',
+      const TrainParams(
+        duration: Duration(milliseconds: 500),
+        curve: Curves.easeInOut,
+        direction: AxisDirection.right,
+      ),
+    );
+    add(
+      'up',
+      const TrainParams(
+        duration: Duration(milliseconds: 500),
+        curve: Curves.easeInOut,
+        direction: AxisDirection.up,
+      ),
+    );
+    add(
+      'down',
+      const TrainParams(
+        duration: Duration(milliseconds: 500),
+        curve: Curves.easeInOut,
+        direction: AxisDirection.down,
+      ),
+    );
   }
 
   static void register(String name, TrainParams params) {

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:gaply/src/core/params/train_params.dart';
+import 'package:gaply/src/widget/trigger_mixin.dart';
 
 class TrainWidget<T> extends StatefulWidget {
   final T currentItem;
@@ -12,7 +13,7 @@ class TrainWidget<T> extends StatefulWidget {
     required this.currentItem,
     required this.previousItem,
     required this.itemBuilder,
-    this.params = const TrainParams(),
+    required this.params,
   });
 
   @override
@@ -34,37 +35,48 @@ class _TrainWidgetState<T> extends State<TrainWidget<T>> with SingleTickerProvid
   void initState() {
     super.initState();
     _controller = AnimationController(vsync: this, duration: widget.params.duration);
+
+    _controller.addStatusListener((status) {
+      if (status == AnimationStatus.completed || status == AnimationStatus.dismissed) {
+        widget.params.onComplete?.call();
+      }
+    });
+
     _curve = CurvedAnimation(parent: _controller, curve: widget.params.curve);
   }
 
   @override
   void didUpdateWidget(TrainWidget<T> oldWidget) {
     super.didUpdateWidget(oldWidget);
+
     if (widget.params.duration != oldWidget.params.duration) {
       _controller.duration = widget.params.duration;
     }
+
     if (widget.params.curve != oldWidget.params.curve) {
       _curve.curve = widget.params.curve;
     }
 
     if (widget.previousItem != oldWidget.previousItem && widget.previousItem != null) {
-      _controller.forward(from: 0).then((_) {
-        widget.params.onComplete?.call();
-      });
+      _controller.forward(from: 0);
     }
 
     if (widget.currentItem != oldWidget.currentItem) {
-      _controller.forward(from: 0).then((_) {
-        widget.params.onComplete?.call();
-      });
+      _controller.forward(from: 0);
     }
   }
 
   @override
   void dispose() {
-    _curve.dispose();
     _controller.dispose();
     super.dispose();
+  }
+
+  void executeParams(TrainParams params) {
+    _controller.duration = params.duration;
+    _curve.curve = params.curve;
+
+    _controller.forward(from: 0);
   }
 
   @override
@@ -115,6 +127,58 @@ class _TrainWidgetState<T> extends State<TrainWidget<T>> with SingleTickerProvid
     return Opacity(
       opacity: widget.params.useOpacity ? opacity.clamp(0.0, 1.0) : 1.0,
       child: SizedBox(width: _isHorizontal ? size : null, height: !_isHorizontal ? size : null, child: child),
+    );
+  }
+}
+
+class TrainTrigger<T> extends StatefulWidget {
+  final T currentItem;
+  final T? previousItem;
+  final Widget Function(T item) itemBuilder;
+  final TrainParams params;
+  final Object? trigger;
+
+  const TrainTrigger({
+    super.key,
+    required this.currentItem,
+    required this.previousItem,
+    required this.itemBuilder,
+    required this.params,
+    this.trigger,
+  });
+
+  @override
+  State<TrainTrigger> createState() => TrainTriggerState();
+}
+
+class TrainTriggerState<T> extends State<TrainTrigger<T>>
+    with GaplyTriggerMixin<TrainTrigger<T>, TrainParams, _TrainWidgetState<T>> {
+  @override
+  Object? get trigger => widget.trigger;
+
+  @override
+  TrainParams get params => widget.params;
+
+  @override
+  void didUpdateWidget(TrainTrigger<T> oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    checkAndExecute(oldWidget.params, oldWidget.trigger);
+  }
+
+  @override
+  void execute(TrainParams params) {
+    triggerKey.currentState?.executeParams(params);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return TrainWidget<T>(
+      key: triggerKey,
+      params: widget.params,
+      currentItem: widget.currentItem,
+      previousItem: widget.previousItem,
+      itemBuilder: widget.itemBuilder,
     );
   }
 }

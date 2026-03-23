@@ -1,41 +1,42 @@
 import 'package:flutter/material.dart';
 import 'package:gaply/src/core/params/slide_params.dart';
+import 'package:gaply/src/widget/trigger_mixin.dart';
 
 class SlideWidget extends StatefulWidget {
   final Widget child;
   final SlideParams params;
 
-  const SlideWidget({super.key, required this.child, this.params = const SlideParams()});
+  const SlideWidget({super.key, required this.child, required this.params});
 
   @override
-  State<SlideWidget> createState() => SlideWidgetState();
+  State<SlideWidget> createState() => _SlideWidgetState();
 }
 
-class SlideWidgetState extends State<SlideWidget> with SingleTickerProviderStateMixin {
+class _SlideWidgetState extends State<SlideWidget> with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
   late final CurvedAnimation _curve;
 
   @override
   void initState() {
     super.initState();
+
     _controller = AnimationController(
       vsync: this,
       duration: widget.params.duration,
       value: widget.params.visible ? 1.0 : 0.0,
     );
 
-    _curve = CurvedAnimation(parent: _controller, curve: widget.params.curve);
-
     _controller.addStatusListener((status) {
       if (status == AnimationStatus.completed || status == AnimationStatus.dismissed) {
         widget.params.onComplete?.call();
       }
     });
+
+    _curve = CurvedAnimation(parent: _controller, curve: widget.params.curve);
   }
 
   @override
   void dispose() {
-    _curve.dispose();
     _controller.dispose();
     super.dispose();
   }
@@ -60,6 +61,17 @@ class SlideWidgetState extends State<SlideWidget> with SingleTickerProviderState
   void toggle() => _controller.isCompleted ? hide() : show();
   void show() => _controller.forward();
   void hide() => _controller.reverse();
+
+  void executeParams(SlideParams params) {
+    _controller.duration = params.duration;
+    _curve.curve = params.curve;
+
+    if (params.visible) {
+      _controller.forward(from: _controller.value == 1.0 ? 0.0 : _controller.value);
+    } else {
+      _controller.reverse(from: _controller.value == 0.0 ? 1.0 : _controller.value);
+    }
+  }
 
   double get _axisAlignment => widget.params.isReversed ? 1.0 : -1.0;
 
@@ -86,5 +98,42 @@ class SlideWidgetState extends State<SlideWidget> with SingleTickerProviderState
       },
       child: widget.child,
     );
+  }
+}
+
+class SlideTrigger extends StatefulWidget {
+  final Widget child;
+  final SlideParams params;
+  final Object? trigger;
+
+  const SlideTrigger({super.key, required this.child, required this.params, this.trigger});
+
+  @override
+  State<SlideTrigger> createState() => SlideTriggerState();
+}
+
+class SlideTriggerState extends State<SlideTrigger>
+    with GaplyTriggerMixin<SlideTrigger, SlideParams, _SlideWidgetState> {
+  @override
+  Object? get trigger => widget.trigger;
+
+  @override
+  SlideParams get params => widget.params;
+
+  @override
+  void didUpdateWidget(SlideTrigger oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    checkAndExecute(oldWidget.params, oldWidget.trigger);
+  }
+
+  @override
+  void execute(SlideParams params) {
+    triggerKey.currentState?.executeParams(params);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SlideWidget(key: triggerKey, params: widget.params, child: widget.child);
   }
 }

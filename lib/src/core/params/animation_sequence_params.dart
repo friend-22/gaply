@@ -1,14 +1,10 @@
-import 'package:equatable/equatable.dart';
 import 'package:flutter/widgets.dart';
 import 'package:gaply/src/core/base/gaply_base.dart';
 import 'package:gaply/src/core/base/params_base.dart';
 import 'package:gaply/src/core/params/scale_params.dart';
 import 'package:gaply/src/core/params/shake_params.dart';
 import 'package:gaply/src/core/params/slide_params.dart';
-import 'package:gaply/src/widget/fade_widget.dart';
-import 'package:gaply/src/widget/scale_widget.dart';
-import 'package:gaply/src/widget/shake_widget.dart';
-import 'package:gaply/src/widget/slide_widget.dart';
+import 'package:gaply/src/core/params/flip_params.dart';
 
 import '../base/animation_params.dart';
 import 'fade_params.dart';
@@ -16,18 +12,29 @@ import 'fade_params.dart';
 @immutable
 class AnimationSequenceParams extends ParamsBase<AnimationSequenceParams> {
   final List<AnimationParams> effects;
+  final List<AnimationSequenceParams> children;
 
-  const AnimationSequenceParams({this.effects = const []});
+  const AnimationSequenceParams({required this.effects, this.children = const []});
+
+  const AnimationSequenceParams.none() : this(effects: const []);
 
   factory AnimationSequenceParams.preset(String name) {
-    return GaplyAnimationSequencePreset.of(name) ?? GaplyAnimationSequencePreset.of('none')!;
+    final params = GaplyAnimationSequencePreset.of(name);
+    if (params == null) {
+      throw ArgumentError('Unknown animation sequence preset: "$name"');
+    }
+    return params;
   }
 
   @override
   bool get isEnabled => effects.isNotEmpty;
 
-  AnimationSequenceParams add(AnimationParams effect) {
-    return AnimationSequenceParams(effects: [...effects, effect]);
+  AnimationSequenceParams addEffect(AnimationParams effect) {
+    return copyWith(effects: [...effects, effect]);
+  }
+
+  AnimationSequenceParams addEffects(List<AnimationParams> newEffects) {
+    return copyWith(effects: [...effects, ...newEffects]);
   }
 
   @override
@@ -61,10 +68,11 @@ mixin AnimationSequenceParamsMixin {
 
   Widget _wrapWithEffect(Widget child, AnimationParams effect) {
     return switch (effect) {
-      ShakeParams p => ShakeWidget(params: p, child: child),
-      SlideParams p => SlideWidget(params: p, child: child),
-      FadeParams p => FadeWidget(params: p, child: child),
-      ScaleParams p => ScaleWidget(params: p, child: child),
+      FadeParams p => p.buildWidget(child: child),
+      ShakeParams p => p.buildWidget(child: child),
+      SlideParams p => p.buildWidget(child: child),
+      ScaleParams p => p.buildWidget(child: child),
+      FlipParams p => p.buildWidget(front: child, back: child), // 추가
       _ => child,
     };
   }
@@ -77,41 +85,61 @@ class GaplyAnimationSequencePreset with GaplyPreset<AnimationSequenceParams> {
   void _ensureInitialized() {
     if (hasPreset) return;
 
-    add('none', const AnimationSequenceParams());
+    add('none', const AnimationSequenceParams.none());
 
     add(
       'error',
       AnimationSequenceParams(
-        effects: [
-          ShakeParams.preset('severe'),
-          FadeParams(duration: const Duration(milliseconds: 100), visible: true),
-        ],
+        effects: [ShakeParams.preset('severe'), FadeParams.preset('fadeIn').copyWith(visible: false)],
       ),
     );
-
     add('success', AnimationSequenceParams(effects: [ScaleParams.preset('pop'), ShakeParams.preset('nod')]));
-
     add(
       'attention',
       AnimationSequenceParams(effects: [FadeParams.preset('fadeIn'), ShakeParams.preset('mild')]),
     );
-
     add(
       'critical',
       AnimationSequenceParams(
         effects: [
           ShakeParams.preset('alert'),
-          ScaleParams(begin: 1.0, end: 1.05, duration: const Duration(milliseconds: 100)),
+          ScaleParams(
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+            begin: 1.0,
+            end: 1.05,
+            isScaled: true,
+          ),
         ],
       ),
     );
-
     add(
       'entrance',
       AnimationSequenceParams(
         effects: [
           FadeParams.preset('fadeIn'),
-          ScaleParams(begin: 0.9, end: 1.0, curve: Curves.easeOutBack),
+          ScaleParams(
+            duration: const Duration(milliseconds: 400),
+            curve: Curves.easeOutBack,
+            begin: 0.9,
+            end: 1.0,
+            isScaled: true,
+          ),
+        ],
+      ),
+    );
+    add(
+      'exit',
+      AnimationSequenceParams(
+        effects: [
+          ScaleParams(
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInBack,
+            begin: 1.0,
+            end: 0.9,
+            isScaled: true,
+          ),
+          FadeParams.preset('fadeOut'),
         ],
       ),
     );

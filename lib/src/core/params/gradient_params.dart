@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'dart:ui';
 
+import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:gaply/src/core/base/gaply_base.dart';
 import 'package:gaply/src/core/base/params_base.dart';
@@ -29,13 +30,18 @@ class GradientParams extends ParamsBase<GradientParams> with _GradientParamsMixi
     this.endAngle = 2 * math.pi,
   });
 
+  const GradientParams.none() : this(type: GradientType.linear, colors: const [], stops: const []);
+
   factory GradientParams.preset(String name, {GradientType? type}) {
-    final params = GaplyGradientPreset.of(name) ?? GaplyGradientPreset.of('none')!;
-    return params.copyWith(type: type);
+    final params = GaplyGradientPreset.of(name);
+    if (params == null) {
+      throw ArgumentError('Unknown gradient preset: "$name"');
+    }
+    return type != null ? params.copyWith(type: type) : params;
   }
 
   @override
-  bool get isEnabled => colors.isNotEmpty;
+  bool get isEnabled => colors.isNotEmpty && stops.isNotEmpty;
 
   @override
   GradientParams copyWith({
@@ -47,6 +53,18 @@ class GradientParams extends ParamsBase<GradientParams> with _GradientParamsMixi
     double? startAngle,
     double? endAngle,
   }) {
+    final newColors = colors ?? this.colors;
+    final newStops = stops ?? this.stops;
+
+    if (newColors.isNotEmpty && newStops.isEmpty ||
+        newColors.isEmpty && newStops.isNotEmpty ||
+        newColors.length != newStops.length) {
+      throw ArgumentError(
+        'colors와 stops는 함께 비어있거나, 길이가 같아야 합니다. '
+        'colors: ${newColors.length}, stops: ${newStops.length}',
+      );
+    }
+
     return GradientParams(
       type: type ?? this.type,
       colors: colors ?? this.colors,
@@ -101,19 +119,22 @@ mixin _GradientParamsMixin {
   Gradient? resolve(BuildContext context) {
     if (!_params.isEnabled) return null;
 
-    final colors = _params.colors.map((p) => p.resolve(context)).whereType<Color>().toList();
-    if (colors.isEmpty) return null;
+    final resolvedColors = _params.colors.map((p) => p.resolve(context)).whereType<Color>().toList();
+
+    if (resolvedColors.length != _params.colors.length) {
+      return null;
+    }
 
     return switch (_params.type) {
       GradientType.linear => LinearGradient(
-        colors: colors,
+        colors: resolvedColors,
         stops: _params.stops,
         begin: _params.begin,
         end: _params.end,
       ),
-      GradientType.radial => RadialGradient(colors: colors, stops: _params.stops),
+      GradientType.radial => RadialGradient(colors: resolvedColors, stops: _params.stops),
       GradientType.sweep => SweepGradient(
-        colors: colors,
+        colors: resolvedColors,
         stops: _params.stops,
         startAngle: _params.startAngle,
         endAngle: _params.endAngle,
@@ -135,7 +156,6 @@ class GaplyGradientPreset with GaplyPreset<GradientParams> {
   void _ensureInitialized() {
     if (hasPreset) return;
 
-    add('none', const GradientParams(colors: [], stops: []));
     add(
       'sunset',
       const GradientParams(
@@ -187,12 +207,15 @@ class GaplyGradientPreset with GaplyPreset<GradientParams> {
       const GradientParams(
         type: GradientType.linear,
         colors: [
-          ColorParams(role: ColorRole.error),
-          ColorParams(role: ColorRole.warning),
-          ColorParams(role: ColorRole.secondary),
-          ColorParams(role: ColorRole.primary),
+          ColorParams.fromColor(Colors.red),
+          ColorParams.fromColor(Colors.orange),
+          ColorParams.fromColor(Colors.yellow),
+          ColorParams.fromColor(Colors.green),
+          ColorParams.fromColor(Colors.blue),
+          ColorParams.fromColor(Colors.indigo),
+          ColorParams.fromColor(Colors.purple),
         ],
-        stops: [0.0, 0.33, 0.66, 1.0],
+        stops: [0.0, 0.16, 0.33, 0.5, 0.67, 0.83, 1.0],
       ),
     );
     add(

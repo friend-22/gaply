@@ -4,6 +4,7 @@ import 'package:gaply/src/core/params/animation_sequence_params.dart';
 import 'package:gaply/src/core/params/blur_params.dart';
 import 'package:gaply/src/core/params/box_params.dart';
 import 'package:gaply/src/core/params/color_params.dart';
+import 'package:gaply/src/core/params/layout_params.dart';
 import 'package:gaply/src/core/params/shadow_params.dart';
 import 'package:gaply/src/core/params/shimmer_params.dart';
 
@@ -13,26 +14,43 @@ mixin BoxStyleModifierMixin<T> {
   T copyWith(BoxParams params);
 
   // Box Types
-  T _updateBox(BoxType value) => copyWith(params.copyWith(boxType: value));
-  T get noBox => _updateBox(BoxType.none);
-  T get box => _updateBox(BoxType.box);
   // T get withFocusOutline => copyWith(params.copyWith(useFocusOutline: true));
   // T get focused => copyWith(params.copyWith(focused: true));
   // T get unfocused => copyWith(params.copyWith(focused: false));
 
   // Color Roles
   T colorParams(ColorParams color) => copyWith(params.copyWith(color: color));
-  T colorR(ColorRole role) => colorParams(params.color.copyWith(role: role));
-  T color(Color? custom) => colorParams(params.color.copyWith(customColor: custom));
-  T colorShade(ColorShade shade) => colorParams(params.color.copyWith(shade: shade));
-  T colorOpacity(ColorOpacity opacity) => colorParams(params.color.copyWith(opacity: opacity));
+  T colorR(
+    ColorRole role, {
+    ColorShade shade = ColorShade.s500,
+    ColorOpacity opacity = ColorOpacity.full,
+    bool autoInvert = true,
+  }) => colorParams(ColorParams.fromRole(role, shade: shade, opacity: opacity, autoInvert: autoInvert));
+
+  T color(
+    Color custom, {
+    ColorShade shade = ColorShade.s500,
+    ColorOpacity opacity = ColorOpacity.full,
+    bool autoInvert = true,
+  }) => colorParams(ColorParams.fromColor(custom, shade: shade, opacity: opacity, autoInvert: autoInvert));
 
   // 테두리 시스템
   T borderColorParams(ColorParams color) => copyWith(params.copyWith(borderColor: color));
-  T borderColorR(ColorRole role) => borderColorParams(params.borderColor.copyWith(role: role));
-  T borderColor(Color? custom) => borderColorParams(params.borderColor.copyWith(customColor: custom));
+  T borderColorR(
+    ColorRole role, {
+    ColorShade shade = ColorShade.s500,
+    ColorOpacity opacity = ColorOpacity.full,
+    bool autoInvert = true,
+  }) => borderColorParams(ColorParams.fromRole(role, shade: shade, opacity: opacity, autoInvert: autoInvert));
+  T borderColor(
+    Color custom, {
+    ColorShade shade = ColorShade.s500,
+    ColorOpacity opacity = ColorOpacity.full,
+    bool autoInvert = true,
+  }) => borderColorParams(
+    ColorParams.fromColor(custom, shade: shade, opacity: opacity, autoInvert: autoInvert),
+  );
   T borderWidth(double value) => copyWith(params.copyWith(borderWidth: value));
-  T borderRadius(BorderRadiusGeometry value) => copyWith(params.copyWith(borderRadius: value));
 
   T boxGlassR(
     ColorRole value, {
@@ -59,7 +77,6 @@ mixin BoxStyleModifierMixin<T> {
   // 효과 시스템 (Shimmer & Blur)
   T shimmer(ShimmerParams shimmer) => copyWith(params.copyWith(shimmer: shimmer));
   T shimmerPreset(String name, {int loop = 0}) => shimmer(ShimmerParams.preset(name, loop: loop));
-  T get useShimmer => shimmer(const ShimmerParams());
 
   T blur(BlurParams blur) => copyWith(params.copyWith(blur: blur));
   T blurPreset(String name) => blur(BlurParams.preset(name));
@@ -67,21 +84,23 @@ mixin BoxStyleModifierMixin<T> {
   // 그림자 시스템 (ShadowParams 리스트 대응)
   T shadows(List<ShadowParams> values) => copyWith(params.copyWith(shadows: values));
   T addShadow(ShadowParams shadow) => shadows([...params.shadows, shadow]);
-  T elevation(double value) => addShadow(ShadowParams.elevation(value));
+  T elevation(double value, {ColorParams? color}) => addShadow(ShadowParams.elevation(value, color: color));
 
   // 🖼️ 레이아웃
-  T boxWidth(double value) => copyWith(params.copyWith(width: value));
-  T boxHeight(double value) => copyWith(params.copyWith(height: value));
-  T boxSize(double? w, double? h) => copyWith(params.copyWith(width: w, height: h));
-  T padding(EdgeInsetsGeometry value) => copyWith(params.copyWith(padding: value));
-  T margin(EdgeInsetsGeometry value) => copyWith(params.copyWith(margin: value));
-  T alignment(AlignmentGeometry value) => copyWith(params.copyWith(alignment: value));
-  T boxRadius(BorderRadiusGeometry value) => copyWith(params.copyWith(borderRadius: value));
+  T layout(LayoutParams layout) => copyWith(params.copyWith(layout: layout));
+  T layoutPreset(String name) => layout(LayoutParams.preset(name));
+  T boxWidth(double value) => layout(params.layout.copyWith(width: value));
+  T boxHeight(double value) => layout(params.layout.copyWith(height: value));
+  T boxSize(double? w, double? h) => layout(params.layout.copyWith(width: w, height: h));
+  T padding(EdgeInsetsGeometry value) => layout(params.layout.copyWith(padding: value));
+  T margin(EdgeInsetsGeometry value) => layout(params.layout.copyWith(margin: value));
+  T alignment(AlignmentGeometry value) => layout(params.layout.copyWith(alignment: value));
+  T boxRadius(BorderRadiusGeometry value) => layout(params.layout.copyWith(borderRadius: value));
 
   // AnimationSequenceParams
   T animation(AnimationSequenceParams anim) => copyWith(params.copyWith(animation: anim));
   T animPreset(String name) => animation(AnimationSequenceParams.preset(name));
-  T addEffect(AnimationParams effect) => animation(params.animation.add(effect));
+  T addEffect(AnimationParams effect) => animation(params.animation.addEffect(effect));
 
   //️ 인터랙션
   T onPressed(VoidCallback? action) => copyWith(params.copyWith(onPressed: action));

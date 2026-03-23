@@ -16,20 +16,35 @@ class ShimmerParams extends ParamsBase<ShimmerParams> {
   final ColorParams highlightColor;
 
   const ShimmerParams({
-    this.period = Duration.zero,
-    this.baseColor = const ColorParams.transparent(),
-    this.highlightColor = const ColorParams.transparent(),
+    this.period = const Duration(milliseconds: 1500),
+    required this.baseColor,
+    required this.highlightColor,
     this.direction = ShimmerDirection.ltr,
     this.loop = 0,
   });
 
-  factory ShimmerParams.preset(String name, {int loop = 0}) {
-    final params = GaplyShimmerPreset.of(name) ?? GaplyShimmerPreset.of('none')!;
-    return params.copyWith(loop: loop);
+  const ShimmerParams.none()
+    : period = Duration.zero,
+      baseColor = const ColorParams.none(),
+      highlightColor = const ColorParams.none(),
+      direction = ShimmerDirection.ltr,
+      loop = 0;
+
+  factory ShimmerParams.preset(String name, {int? loop}) {
+    final params = GaplyShimmerPreset.of(name);
+    if (params == null) {
+      throw ArgumentError('Unknown shimmer preset: "$name"');
+    }
+    return loop != null ? params.copyWith(loop: loop) : params;
+  }
+
+  ShimmerParams withSpeed(double speed) {
+    final resolvePeriod = period.inMilliseconds * speed;
+    return copyWith(period: Duration(milliseconds: resolvePeriod.toInt()));
   }
 
   @override
-  bool get isEnabled => period.inMilliseconds > 0;
+  bool get isEnabled => period.inMilliseconds > 0 && baseColor.isEnabled && highlightColor.isEnabled;
 
   @override
   ShimmerParams copyWith({
@@ -71,8 +86,12 @@ class ShimmerParams extends ParamsBase<ShimmerParams> {
   List<Object?> get props => [period, direction, loop, baseColor, highlightColor];
 
   Widget buildWidget({required BuildContext context, required Widget child}) {
+    if (!isEnabled) return child;
+
     final baseColor = this.baseColor.resolve(context);
     final highlightColor = this.highlightColor.resolve(context);
+
+    if (baseColor == null || highlightColor == null) return child;
 
     return Shimmer.fromColors(
       period: period,
@@ -87,22 +106,12 @@ class ShimmerParams extends ParamsBase<ShimmerParams> {
 
 extension ShimmerExtension on Widget {
   Widget withShimmer(BuildContext context, ShimmerParams params, {bool enabled = true}) {
-    if (!enabled || !params.isEnabled) return this;
-
-    final baseColor = params.baseColor.resolve(context);
-    final highlightColor = params.highlightColor.resolve(context);
-
-    return Shimmer.fromColors(
-      period: params.period,
-      direction: params.direction,
-      loop: params.loop,
-      baseColor: baseColor,
-      highlightColor: highlightColor,
-      child: this,
-    );
+    if (!enabled) return this;
+    return params.buildWidget(context: context, child: this);
   }
 
   Widget shimmerPreset(BuildContext context, String name, {bool enabled = true}) {
+    if (!enabled) return this;
     return withShimmer(context, ShimmerParams.preset(name), enabled: enabled);
   }
 }
@@ -114,7 +123,6 @@ class GaplyShimmerPreset with GaplyPreset<ShimmerParams> {
   void _ensureInitialized() {
     if (hasPreset) return;
 
-    add('none', const ShimmerParams());
     add(
       'light',
       const ShimmerParams(
@@ -161,22 +169,6 @@ class GaplyShimmerPreset with GaplyPreset<ShimmerParams> {
         period: Duration(milliseconds: 2000),
         baseColor: ColorParams(role: ColorRole.surfaceVariant, shade: ColorShade.s200),
         highlightColor: ColorParams(role: ColorRole.surfaceVariant, shade: ColorShade.s100),
-      ),
-    );
-    add(
-      'fast',
-      const ShimmerParams(
-        period: Duration(milliseconds: 800),
-        baseColor: ColorParams(role: ColorRole.surfaceVariant, shade: ColorShade.s200),
-        highlightColor: ColorParams(role: ColorRole.surfaceVariant, shade: ColorShade.s50),
-      ),
-    );
-    add(
-      'slow',
-      const ShimmerParams(
-        period: Duration(milliseconds: 2500),
-        baseColor: ColorParams(role: ColorRole.surfaceVariant, shade: ColorShade.s200),
-        highlightColor: ColorParams(role: ColorRole.surfaceVariant, shade: ColorShade.s50),
       ),
     );
     add(

@@ -15,7 +15,7 @@ class ShakeParams extends AnimationParams {
 
   const ShakeParams({
     super.duration,
-    super.curve = Curves.decelerate,
+    super.curve,
     super.onComplete,
     this.distance = 8.0,
     this.count = 4.0,
@@ -24,20 +24,27 @@ class ShakeParams extends AnimationParams {
     this.isVertical = false,
   });
 
-  factory ShakeParams.preset(String name, {VoidCallback? onComplete}) {
-    final params = GaplyShakePreset.of(name) ?? GaplyShakePreset.of('none')!;
-    return params.copyWith(onComplete: onComplete);
+  const ShakeParams.none() : this(duration: Duration.zero, curve: Curves.linear, distance: 0.0, count: 0.0);
+
+  factory ShakeParams.preset(String name, {double? distance, double? count, bool? isVertical}) {
+    final params = GaplyShakePreset.of(name);
+    if (params == null) {
+      throw ArgumentError('Unknown shake preset: "$name"');
+    }
+    return params.copyWith(distance: distance, count: count, isVertical: isVertical);
   }
 
-  factory ShakeParams.fast(String name, {VoidCallback? onComplete}) {
-    final params = GaplyShakePreset.of(name) ?? GaplyShakePreset.of('none')!;
-    return params.copyWith(duration: Duration(milliseconds: 300), onComplete: onComplete);
+  ShakeParams withSpeed(double speed) {
+    final resolveDuration = duration.inMilliseconds * speed;
+    return copyWith(duration: Duration(milliseconds: resolveDuration.toInt()));
   }
 
-  factory ShakeParams.slow(String name, {VoidCallback? onComplete}) {
-    final params = GaplyShakePreset.of(name) ?? GaplyShakePreset.of('none')!;
-    return params.copyWith(duration: Duration(milliseconds: 800), onComplete: onComplete);
+  ShakeParams withIntensity(double intensity) {
+    return copyWith(distance: distance * intensity, count: (count * intensity).toDouble());
   }
+
+  @override
+  bool get isEnabled => duration.inMilliseconds > 0 && distance > 0;
 
   @override
   ShakeParams copyWith({
@@ -81,12 +88,12 @@ class ShakeParams extends AnimationParams {
   List<Object?> get props => [...super.props, distance, count, useHaptic, useRepaintBoundary, isVertical];
 
   Widget buildWidget({required Widget child}) {
-    return ShakeWidget(params: this, child: child);
+    return ShakeTrigger(params: this, trigger: DateTime.now(), child: child);
   }
 }
 
 extension ShakeParamsExtension on Widget {
-  Widget withShake(ShakeParams params) => ShakeWidget(params: params, child: this);
+  Widget withShake(ShakeParams params) => ShakeTrigger(params: params, trigger: DateTime.now(), child: this);
 }
 
 class GaplyShakePreset with GaplyPreset<ShakeParams> {
@@ -95,13 +102,66 @@ class GaplyShakePreset with GaplyPreset<ShakeParams> {
 
   void _ensureInitialized() {
     if (hasPreset) return;
-    add('none', const ShakeParams(duration: Duration.zero));
-    add('mild', const ShakeParams(distance: 4.0, count: 2.0, isVertical: false));
-    add('normal', const ShakeParams(distance: 8.0, count: 4.0, isVertical: false));
-    add('severe', const ShakeParams(distance: 12.0, count: 7.0, isVertical: false));
-    add('alert', const ShakeParams(distance: 6.0, count: 7.0, isVertical: false));
-    add('nod', const ShakeParams(distance: 6.0, count: 2.0, isVertical: true));
-    add('celebrate', const ShakeParams(distance: 10.0, count: 3.0, isVertical: true));
+    add(
+      'mild',
+      const ShakeParams(
+        duration: Duration(milliseconds: 400),
+        curve: Curves.decelerate,
+        distance: 4.0,
+        count: 2.0,
+        isVertical: false,
+      ),
+    );
+    add(
+      'normal',
+      const ShakeParams(
+        duration: Duration(milliseconds: 500),
+        curve: Curves.decelerate,
+        distance: 8.0,
+        count: 4.0,
+        isVertical: false,
+      ),
+    );
+    add(
+      'severe',
+      const ShakeParams(
+        duration: Duration(milliseconds: 600),
+        curve: Curves.decelerate,
+        distance: 12.0,
+        count: 7.0,
+        isVertical: false,
+      ),
+    );
+    add(
+      'alert',
+      const ShakeParams(
+        duration: Duration(milliseconds: 500),
+        curve: Curves.decelerate,
+        distance: 6.0,
+        count: 7.0,
+        isVertical: false,
+      ),
+    );
+    add(
+      'nod',
+      const ShakeParams(
+        duration: Duration(milliseconds: 400),
+        curve: Curves.decelerate,
+        distance: 6.0,
+        count: 2.0,
+        isVertical: true,
+      ),
+    );
+    add(
+      'celebrate',
+      const ShakeParams(
+        duration: Duration(milliseconds: 500),
+        curve: Curves.decelerate,
+        distance: 10.0,
+        count: 3.0,
+        isVertical: true,
+      ),
+    );
   }
 
   static void register(String name, ShakeParams params) {
