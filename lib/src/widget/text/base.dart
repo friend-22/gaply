@@ -1,7 +1,7 @@
 // import 'package:flutter/material.dart';
 //
 // import 'mixin.dart';
-// import 'gaply_box_mixin.dart';
+// import 'box_style_modifier.dart';
 //
 // abstract class TextStyleWidget<T extends TextStyleWidget<T>> extends StatelessWidget
 //     with AniStyleMixin, TextStyleMixin, TextStyleModifierMixin<T> {

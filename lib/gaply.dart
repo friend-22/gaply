@@ -1,6 +1,7 @@
 library;
 
-export 'src/core/core.dart';
-export 'src/core/gaply_animation.dart';
-export 'src/core/params/params.dart';
+export 'src/gaply/core/core.dart';
+export 'src/gaply/animations/animations.dart';
+export 'src/gaply/styles/styles.dart';
+export 'src/utils/utils.dart';
 export 'src/widget/widget.dart';

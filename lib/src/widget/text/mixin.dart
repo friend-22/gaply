@@ -14,11 +14,11 @@
 //
 //     List<Shadow> shadows = [];
 //
-//     if (textSpec.effects.contains(TextEffect.glow)) {
+//     if (textSpec.styles.contains(TextEffect.glow)) {
 //       shadows.add(Shadow(blurRadius: 12.0, color: color.withValues(alpha: 0.8), offset: Offset.zero));
 //     }
 //
-//     if (textSpec.effects.contains(TextEffect.shadow)) {
+//     if (textSpec.styles.contains(TextEffect.shadow)) {
 //       shadows.add(
 //         Shadow(
 //           blurRadius: 5.0,
@@ -115,13 +115,13 @@
 //       color: textSpec.colorParams.resolve(context),
 //       shadows: getRoleShadows(context),
 //       fontFeatures: uiFeatures(textSpec.features),
-//       overflow: textSpec.effects.contains(TextEffect.ellipsis) ? TextOverflow.ellipsis : null,
+//       overflow: textSpec.styles.contains(TextEffect.ellipsis) ? TextOverflow.ellipsis : null,
 //     );
 //   }
 //
 //   Widget buildText(BuildContext context, String text) {
 //     final style = getStyle(context);
-//     final effects = textSpec.effects;
+//     final styles = textSpec.styles;
 //
 //     final strutStyle = textSpec.forceStrutHeight
 //         ? StrutStyle(fontSize: style.fontSize, height: style.height ?? 1.2, forceStrutHeight: true)
@@ -131,24 +131,24 @@
 //       text,
 //       style: style,
 //       textAlign: textSpec.alignRole,
-//       maxLines: effects.contains(TextEffect.ellipsis) ? 1 : null,
+//       maxLines: styles.contains(TextEffect.ellipsis) ? 1 : null,
 //       strutStyle: strutStyle,
 //     );
 //
 //     // 레이아웃/애니메이션 효과 적용 (순서가 중요함)
 //     // 1. Fitted -> 2. Marquee -> 3. Shimmer -> 4. Glass/Blur
 //
-//     if (effects.contains(TextEffect.fitted)) {
+//     if (styles.contains(TextEffect.fitted)) {
 //       current = FittedBox(fit: BoxFit.scaleDown, alignment: Alignment.centerLeft, child: current);
 //     }
 //
-//     if (effects.contains(TextEffect.marquee)) {
-//       if (effects.contains(TextEffect.ellipsis) == false) {
+//     if (styles.contains(TextEffect.marquee)) {
+//       if (styles.contains(TextEffect.ellipsis) == false) {
 //         current = OverflowMarquee(child: current);
 //       }
 //     }
 //
-//     if (effects.contains(TextEffect.shimmer)) {
+//     if (styles.contains(TextEffect.shimmer)) {
 //       final colorScheme = Theme.of(context).colorScheme;
 //       current = Shimmer.fromColors(
 //         baseColor: style.color ?? colorScheme.mutedForeground,
@@ -157,14 +157,14 @@
 //       );
 //     }
 //
-//     if (effects.contains(TextEffect.blur)) {
+//     if (styles.contains(TextEffect.blur)) {
 //       current = ImageFiltered(
 //         imageFilter: ImageFilter.blur(sigmaX: 1.0, sigmaY: 1.0, tileMode: TileMode.decal),
 //         child: current,
 //       );
 //     }
 //
-//     if (effects.contains(TextEffect.glass)) {
+//     if (styles.contains(TextEffect.glass)) {
 //       current = _buildGlassEffect(style.color, current);
 //     }
 //

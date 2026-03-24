@@ -2,10 +2,10 @@
 //
 // import 'package:features/style/text/spec.dart';
 //
-// import '../common/animation/spec.dart';
-// import '../common/color_params.dart';
+// import '../common/animations/spec.dart';
+// import '../common/gaply_color.dart';
 // import '../common/trigger/shake_trigger.dart';
-// import '../common/trigger/slide_trigger.dart';
+// import '../common/trigger/translate_trigger.dart';
 //
 // mixin TextStyleModifierMixin<T> {
 //   TextStyleSpec get textSpec;
@@ -13,20 +13,20 @@
 //   T copyWithTextSpec(TextStyleSpec textSpec);
 //
 //   T _addEffect(TextEffect effect) {
-//     final newEffects = Set<TextEffect>.from(textSpec.effects)..add(effect);
-//     return copyWithTextSpec(textSpec.copyWith(effects: newEffects));
+//     final newEffects = Set<TextEffect>.from(textSpec.styles)..add(effect);
+//     return copyWithTextSpec(textSpec.copyWith(styles: newEffects));
 //   }
 //
 //   T _removeEffect(TextEffect effect) {
-//     final newEffects = Set<TextEffect>.from(textSpec.effects)..remove(effect);
-//     return copyWithTextSpec(textSpec.copyWith(effects: newEffects));
+//     final newEffects = Set<TextEffect>.from(textSpec.styles)..remove(effect);
+//     return copyWithTextSpec(textSpec.copyWith(styles: newEffects));
 //   }
 //
 //   // 📄 Font Size
 //   T fSize(double? value) => copyWithTextSpec(textSpec.copyWith(fontSize: value));
 //
-//   T tColorParams(ColorParams? params) {
-//     return copyWithTextSpec(textSpec.copyWith(colorParams: params));
+//   T tColorParams(GaplyColor? effect) {
+//     return copyWithTextSpec(textSpec.copyWith(colorParams: effect));
 //   }
 //
 //   // 📄 Font Size
@@ -99,14 +99,14 @@
 //   T get textSmall => fStyle(StyleRole.textSmall);
 //   T get underline => fStyle(StyleRole.underline);
 //
-//   // ✂️ Text effects
-//   T get behaviorNone => copyWithTextSpec(textSpec.copyWith(effects: const {}));
+//   // ✂️ Text styles
+//   T get behaviorNone => copyWithTextSpec(textSpec.copyWith(styles: const {}));
 //   T get fitted => _addEffect(TextEffect.fitted);
 //   T get marquee {
-//     final newEffects = Set<TextEffect>.from(textSpec.effects)
+//     final newEffects = Set<TextEffect>.from(textSpec.styles)
 //       ..remove(TextEffect.ellipsis)
 //       ..add(TextEffect.marquee);
-//     return copyWithTextSpec(textSpec.copyWith(effects: newEffects));
+//     return copyWithTextSpec(textSpec.copyWith(styles: newEffects));
 //   }
 //
 //   T get glow => _addEffect(TextEffect.glow);
@@ -127,8 +127,8 @@
 //   T get fEnd => fAlignment(TextAlign.end);
 //
 //   // 📦 Shake Effects
-//   T tAniParams(AniParam? params) {
-//     return copyWithTextSpec(textSpec.copyWith(aniParam: params));
+//   T tAniParams(AniParam? effect) {
+//     return copyWithTextSpec(textSpec.copyWith(aniParam: effect));
 //   }
 //
 //   T tShake(ShakeType newType) {

@@ -1,7 +1,7 @@
 // import 'dart:ui';
 //
 // import 'package:equatable/equatable.dart';
-// import 'package:gaply/src/core/params/color_params.dart';
+// import 'package:gaply/src/core/effect/gaply_color.dart';
 //
 // enum StyleRole {
 //   none,
@@ -84,9 +84,9 @@
 //   final StyleRole styleRole;
 //   final TextAlign alignRole;
 //
-//   //effects
-//   final Set<TextEffect> effects;
-//   final ColorParams colorParams;
+//   //styles
+//   final Set<TextEffect> styles;
+//   final GaplyColor colorParams;
 //   final AniParam aniParam;
 //
 //   final Set<FontFeature> features;
@@ -96,9 +96,9 @@
 //     this.forceStrutHeight = false,
 //     this.styleRole = StyleRole.none,
 //     this.alignRole = TextAlign.start,
-//     this.effects = const {},
+//     this.styles = const {},
 //     this.features = const {},
-//     this.colorParams = const ColorParams(),
+//     this.colorParams = const GaplyColor(),
 //     this.aniParam = const AniParam(),
 //   });
 //
@@ -107,9 +107,9 @@
 //     this.forceStrutHeight = false,
 //     this.styleRole = StyleRole.none,
 //     this.alignRole = TextAlign.center,
-//     this.effects = const {},
+//     this.styles = const {},
 //     this.features = const {},
-//     this.colorParams = const ColorParams(),
+//     this.colorParams = const GaplyColor(),
 //     this.aniParam = const AniParam(),
 //   });
 //
@@ -118,9 +118,9 @@
 //     this.forceStrutHeight = true,
 //     this.styleRole = StyleRole.mono,
 //     this.alignRole = TextAlign.center,
-//     this.effects = const {},
+//     this.styles = const {},
 //     this.features = const {FontFeature.tabularFigures, FontFeature.liningFigures},
-//     this.colorParams = const ColorParams(),
+//     this.colorParams = const GaplyColor(),
 //     this.aniParam = const AniParam(),
 //   });
 //
@@ -130,7 +130,7 @@
 //     forceStrutHeight,
 //     styleRole,
 //     alignRole,
-//     effects,
+//     styles,
 //     features,
 //     aniParam,
 //     colorParams,
@@ -141,16 +141,16 @@
 //     bool? forceStrutHeight,
 //     StyleRole? styleRole,
 //     TextAlign? alignRole,
-//     Set<TextEffect>? effects,
+//     Set<TextEffect>? styles,
 //     Set<FontFeature>? features,
 //     AniParam? aniParam,
-//     ColorParams? colorParams,
+//     GaplyColor? colorParams,
 //   }) {
 //     return TextStyleSpec(
 //       fontSize: fontSize ?? this.fontSize,
 //       styleRole: styleRole ?? this.styleRole,
 //       alignRole: alignRole ?? this.alignRole,
-//       effects: effects ?? this.effects,
+//       styles: styles ?? this.styles,
 //       features: features ?? this.features,
 //       aniParam: aniParam ?? this.aniParam,
 //       colorParams: colorParams ?? this.colorParams,

@@ -8,21 +8,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:example/main.dart';
 import 'package:gaply/gaply.dart';
 
 void main() {
   testWidgets('Gaply 시퀀스 애니메이션 콜백 순서 및 완료 테스트', (WidgetTester tester) async {
     List<String> logs = [];
 
-    final complexAnim = AnimationSequenceParams(
-      effects: [
-        ShakeParams(duration: const Duration(milliseconds: 200)).copyWith(onComplete: () => logs.add('1완료')),
+    final complexAnim = GaplyMotion(
+      animations: [
+        ShakeStyle(duration: const Duration(milliseconds: 200)).copyWith(onComplete: () => logs.add('1완료')),
       ],
       children: [
-        AnimationSequenceParams(
-          effects: [
-            ShakeParams(
+        GaplyMotion(
+          animations: [
+            ShakeStyle(
               duration: const Duration(milliseconds: 200),
             ).copyWith(onComplete: () => logs.add('2완료')),
           ],
@@ -70,14 +69,14 @@ void main() {
 //   testWidgets('Gaply 시퀀스 애니메이션 콜백 순서 및 완료 테스트', (WidgetTester tester) async {
 //     List<String> logs = [];
 //
-//     final complexAnim = AnimationSequenceParams(
-//       effects: [
-//         ShakeParams(duration: const Duration(milliseconds: 200)).copyWith(onComplete: () => logs.add('1완료')),
+//     final complexAnim = GaplyMotion(
+//       styles: [
+//         ShakeStyle(duration: const Duration(milliseconds: 200)).copyWith(onComplete: () => logs.add('1완료')),
 //       ],
 //       children: [
-//         AnimationSequenceParams(
-//           effects: [
-//             ShakeParams(
+//         GaplyMotion(
+//           styles: [
+//             ShakeStyle(
 //               duration: const Duration(milliseconds: 200),
 //             ).copyWith(onComplete: () => logs.add('2완료')),
 //           ],

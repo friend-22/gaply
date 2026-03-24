@@ -1,20 +1,36 @@
 import 'package:flutter/material.dart';
+import 'package:gaply/gaply.dart';
 
 import 'demo.dart';
+import 'demo_animation.dart';
 
 void main() {
-  runApp(const MyApp());
-}
+  BoxStyle.register(
+    'glassCard',
+    const BoxStyle()
+        .boxSize(340, 200)
+        .boxPadding(const EdgeInsets.all(24))
+        .boxRadius(BorderRadius.circular(24))
+        .boxBorderWidth(1.5)
+        .boxBorderColor(Colors.white.withValues(alpha: 0.2))
+        .boxBlurPreset('apple')
+        .boxColorRole(ColorRole.surface, opacity: ColorOpacity.transparent)
+        .boxElevation(12),
+  );
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  BoxStyle.register(
+    'animCard',
+    const BoxStyle()
+        .boxSize(300, 300)
+        .boxRadius(BorderRadius.circular(32))
+        .boxPadding(const EdgeInsets.all(24))
+        .boxColorRole(ColorRole.surface, opacity: ColorOpacity.transparent)
+        .boxBlurPreset('apple')
+        .boxBorderWidth(1)
+        .boxBorderColor(Colors.white.withValues(alpha: 0.1))
+        .boxDuration(const Duration(milliseconds: 400))
+        .boxCurve(Curves.easeOutBack),
+  );
 
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(colorScheme: .fromSeed(seedColor: Colors.deepPurple)),
-      home: const GaplyDemoPage(),
-    );
-  }
+  runApp(const MaterialApp(home: GaplyAnimDemo()));
 }
