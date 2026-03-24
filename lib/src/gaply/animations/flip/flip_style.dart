@@ -11,6 +11,21 @@ import 'flip_presets.dart';
 
 part 'flip_trigger.dart';
 
+/// A configuration style for 3D flip animations.
+///
+/// [FlipStyle] defines the physical properties of a flip, such as the axis
+/// of rotation, the total angle, and which side is currently visible.
+///
+/// ### Example Usage:
+///
+/// ```dart
+/// final flipStyle = FlipStyle(
+///   axis: Axis.horizontal,
+///   isFlipped: _isFlipped,
+///   duration: Duration(milliseconds: 600),
+///   backWidget: Center(child: Text('Back Side')),
+/// );
+/// ```
 @immutable
 class FlipStyle extends GaplyAnimStyle with GaplyAnimMixin<FlipStyle> {
   final Axis axis;
@@ -19,27 +34,69 @@ class FlipStyle extends GaplyAnimStyle with GaplyAnimMixin<FlipStyle> {
   final Widget? backWidget;
 
   const FlipStyle({
-    super.duration,
-    super.curve,
+    super.duration = const Duration(milliseconds: 500),
+    super.curve = Curves.fastOutSlowIn,
+    super.delay = Duration.zero,
     super.onComplete,
-    super.delay,
     required this.axis,
-    this.angleRange = math.pi,
     required this.isFlipped,
+    this.angleRange = math.pi,
     this.backWidget,
-  }) : assert(angleRange > 0 && angleRange <= 2 * math.pi, 'angleRange은 0~2π 범위여야 합니다');
+  }) : assert(angleRange > 0 && angleRange <= 2 * math.pi, 'angleRange must be in the range of 0 to 2π.');
 
   const FlipStyle.none() : this(duration: Duration.zero, axis: Axis.horizontal, isFlipped: false);
 
+  /// Creates a [FlipStyle] from a pre-registered preset name.
+  ///
+  /// Available default presets: 'vertical', 'horizontal'.
+  /// Throws [ArgumentError] if the [name] is not registered.
   static void register(String name, FlipStyle style) => GaplyFlipPreset.register(name, style);
 
   factory FlipStyle.preset(String name, {Widget? backWidget, bool? isFlipped, VoidCallback? onComplete}) {
     final style = GaplyFlipPreset.of(name);
+
     if (style == null) {
-      throw ArgumentError('Unknown flip preset: "$name"');
+      throw ArgumentError(
+        'Unknown flip preset: "$name". '
+        'Available presets: ${GaplyFlipPreset.instance.allKeys.join(", ")}',
+      );
     }
     return style.copyWith(isFlipped: isFlipped, backWidget: backWidget, onComplete: onComplete);
   }
+
+  const FlipStyle.vertical(
+    Widget backWidget, {
+    Duration duration = const Duration(milliseconds: 500),
+    Curve curve = Curves.fastOutSlowIn,
+    Duration delay = Duration.zero,
+    VoidCallback? onComplete,
+    bool isFlipped = true,
+  }) : this(
+         backWidget: backWidget,
+         duration: duration,
+         curve: curve,
+         delay: delay,
+         onComplete: onComplete,
+         axis: Axis.vertical,
+         isFlipped: isFlipped,
+       );
+
+  const FlipStyle.horizontal(
+    Widget backWidget, {
+    Duration duration = const Duration(milliseconds: 500),
+    Duration delay = Duration.zero,
+    Curve curve = Curves.fastOutSlowIn,
+    VoidCallback? onComplete,
+    bool isFlipped = true,
+  }) : this(
+         backWidget: backWidget,
+         duration: duration,
+         curve: curve,
+         delay: delay,
+         onComplete: onComplete,
+         axis: Axis.horizontal,
+         isFlipped: isFlipped,
+       );
 
   @override
   FlipStyle copyWith({
@@ -82,6 +139,9 @@ class FlipStyle extends GaplyAnimStyle with GaplyAnimMixin<FlipStyle> {
 
   @override
   List<Object?> get props => [...super.props, axis, angleRange, isFlipped, backWidget];
+
+  @override
+  bool get isEnabled => duration.inMilliseconds > 0 || isFlipped;
 
   @override
   Widget buildWidget({required Widget child, Object? trigger}) {

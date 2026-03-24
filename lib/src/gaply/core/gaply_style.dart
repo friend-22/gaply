@@ -22,19 +22,14 @@ abstract class GaplyAnimStyle extends GaplyStyle<GaplyAnimStyle> {
   final Duration delay;
   final VoidCallback? onComplete;
 
-  const GaplyAnimStyle({
-    this.duration = const Duration(milliseconds: 500),
-    this.curve = Curves.linear,
-    this.onComplete,
-    this.delay = Duration.zero,
-  });
+  const GaplyAnimStyle({required this.duration, required this.curve, required this.delay, this.onComplete});
 
   GaplyAnimStyle withDelay(Duration delay);
   GaplyAnimStyle withDurationScale(double scale);
   Widget buildWidget({required Widget child, Object? trigger});
 
   @override
-  bool get isEnabled => duration.inMilliseconds > 0;
+  bool get isEnabled; // => duration.inMilliseconds > 0;
 
   @override
   List<Object?> get props => [duration, curve, onComplete, delay];

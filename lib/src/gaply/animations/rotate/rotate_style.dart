@@ -18,14 +18,14 @@ class RotateStyle extends GaplyAnimStyle with GaplyAnimMixin<RotateStyle> {
   final bool useRadians;
 
   const RotateStyle({
-    super.duration,
-    super.curve,
+    super.duration = const Duration(milliseconds: 250),
+    super.curve = Curves.easeInOut,
+    super.delay = Duration.zero,
     super.onComplete,
-    super.delay,
     required this.begin,
     required this.end,
-    this.alignment = Alignment.center,
     required this.isRotated,
+    this.alignment = Alignment.center,
     this.useRadians = false,
   });
 
@@ -33,6 +33,7 @@ class RotateStyle extends GaplyAnimStyle with GaplyAnimMixin<RotateStyle> {
     : this(
         duration: Duration.zero,
         curve: Curves.linear,
+        delay: Duration.zero,
         begin: 0.0,
         end: 1.0,
         alignment: Alignment.center,
@@ -46,14 +47,90 @@ class RotateStyle extends GaplyAnimStyle with GaplyAnimMixin<RotateStyle> {
     final style = GaplyRotatePreset.of(name);
 
     if (style == null) {
-      throw ArgumentError('Unknown rotate preset: "$name"');
+      throw ArgumentError(
+        'Unknown rotate preset: "$name". '
+        'Available presets: ${GaplyRotatePreset.instance.allKeys.join(", ")}',
+      );
     }
 
     return style.copyWith(alignment: alignment, isRotated: isRotated, onComplete: onComplete);
   }
 
-  @override
-  bool get isEnabled => isRotated && duration.inMilliseconds > 0;
+  const RotateStyle.rotate90({
+    Duration duration = const Duration(milliseconds: 250),
+    Curve curve = Curves.easeInOut,
+    Duration delay = Duration.zero,
+    VoidCallback? onComplete,
+    bool isRotated = true,
+    bool useRadians = false,
+  }) : this(
+         duration: duration,
+         curve: curve,
+         delay: delay,
+         onComplete: onComplete,
+         begin: 0,
+         end: 90,
+         alignment: Alignment.center,
+         isRotated: isRotated,
+         useRadians: useRadians,
+       );
+
+  const RotateStyle.rotate180({
+    Duration duration = const Duration(milliseconds: 250),
+    Curve curve = Curves.easeInOut,
+    Duration delay = Duration.zero,
+    VoidCallback? onComplete,
+    bool isRotated = true,
+    bool useRadians = false,
+  }) : this(
+         duration: duration,
+         curve: curve,
+         delay: delay,
+         onComplete: onComplete,
+         begin: 0,
+         end: 180,
+         alignment: Alignment.center,
+         isRotated: isRotated,
+         useRadians: useRadians,
+       );
+
+  const RotateStyle.rotate270({
+    Duration duration = const Duration(milliseconds: 250),
+    Curve curve = Curves.easeInOut,
+    Duration delay = Duration.zero,
+    VoidCallback? onComplete,
+    bool isRotated = true,
+    bool useRadians = false,
+  }) : this(
+         duration: duration,
+         curve: curve,
+         delay: delay,
+         onComplete: onComplete,
+         begin: 0,
+         end: 270,
+         alignment: Alignment.center,
+         isRotated: isRotated,
+         useRadians: useRadians,
+       );
+
+  const RotateStyle.rotate360({
+    Duration duration = const Duration(milliseconds: 250),
+    Curve curve = Curves.easeInOut,
+    Duration delay = Duration.zero,
+    VoidCallback? onComplete,
+    bool isRotated = true,
+    bool useRadians = false,
+  }) : this(
+         duration: duration,
+         curve: curve,
+         delay: delay,
+         onComplete: onComplete,
+         begin: 0,
+         end: 360,
+         alignment: Alignment.center,
+         isRotated: isRotated,
+         useRadians: useRadians,
+       );
 
   @override
   RotateStyle copyWith({
@@ -99,6 +176,9 @@ class RotateStyle extends GaplyAnimStyle with GaplyAnimMixin<RotateStyle> {
 
   @override
   List<Object?> get props => [...super.props, begin, end, alignment, isRotated, useRadians];
+
+  @override
+  bool get isEnabled => isRotated || duration.inMilliseconds > 0;
 
   @override
   Widget buildWidget({required Widget child, Object? trigger}) {

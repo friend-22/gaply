@@ -4,6 +4,19 @@ import 'package:flutter/material.dart';
 
 import 'flip_style.dart';
 
+/// A widget that performs a 3D flip transition between a front and back widget.
+///
+/// ### Example with GlobalKey:
+///
+/// ```dart
+/// final flipKey = GlobalKey<GaplyFlipState>();
+///
+/// GaplyFlip(
+///   key: flipKey,
+///   front: MyFrontWidget(),
+///   back: MyBackWidget(),
+///   style: FlipStyle(axis: Axis.vertical, isFlipped: false),
+/// );
 class GaplyFlip extends StatefulWidget {
   final Widget front;
   final Widget back;

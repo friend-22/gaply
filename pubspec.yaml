@@ -1,12 +1,17 @@
 name: gaply
+
 description: >
   A utility-first Flutter UI kit that fills the gaps in standard widgets. 
   Focuses on seamless animations, enhanced text styling, and status-aware forms.
+
 version: 0.0.1
-publish_to: 'none'
+
+publish_to: https://pub.dev
+
 homepage: https://github.com/friend-22/gaply
 repository: https://github.com/friend-22/gaply
 issue_tracker: https://github.com/friend-22/gaply/issues
+documentation: https://pub.dev/packages/gaply
 
 environment:
   sdk: ^3.11.1

@@ -17,20 +17,21 @@ class ScaleStyle extends GaplyAnimStyle with GaplyAnimMixin<ScaleStyle> {
   final bool isScaled;
 
   const ScaleStyle({
-    super.duration,
-    super.curve,
+    super.duration = const Duration(milliseconds: 250),
+    super.curve = Curves.easeInOut,
+    super.delay = Duration.zero,
     super.onComplete,
-    super.delay,
     required this.begin,
     required this.end,
-    this.alignment = Alignment.center,
     required this.isScaled,
+    this.alignment = Alignment.center,
   });
 
   const ScaleStyle.none()
     : this(
         duration: Duration.zero,
         curve: Curves.linear,
+        delay: Duration.zero,
         begin: 0.0,
         end: 1.0,
         alignment: Alignment.center,
@@ -43,14 +44,17 @@ class ScaleStyle extends GaplyAnimStyle with GaplyAnimMixin<ScaleStyle> {
     final style = GaplyScalePreset.of(name);
 
     if (style == null) {
-      throw ArgumentError('Unknown scale preset: "$name"');
+      throw ArgumentError(
+        'Unknown scale preset: "$name". '
+        'Available presets: ${GaplyScalePreset.instance.allKeys.join(", ")}',
+      );
     }
 
     return style.copyWith(alignment: alignment, isScaled: isScaled, onComplete: onComplete);
   }
 
   @override
-  bool get isEnabled => isScaled && duration.inMilliseconds > 0;
+  bool get isEnabled => isScaled || duration.inMilliseconds > 0;
 
   @override
   ScaleStyle copyWith({

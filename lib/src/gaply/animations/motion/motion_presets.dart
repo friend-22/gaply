@@ -1,11 +1,7 @@
 import 'package:flutter/animation.dart';
 
-import 'package:gaply/src/gaply/animations/fade/fade_style.dart';
-import 'package:gaply/src/gaply/animations/scale/scale_style.dart';
-import 'package:gaply/src/gaply/animations/shake/shake_style.dart';
 import 'package:gaply/src/gaply/core/gaply_preset.dart';
-
-import 'gaply_motion.dart';
+import 'package:gaply/src/gaply/animations/animations.dart';
 
 class GaplyMotionPreset with GaplyPreset<GaplyMotion> {
   static final GaplyMotionPreset instance = GaplyMotionPreset._internal();
@@ -15,55 +11,76 @@ class GaplyMotionPreset with GaplyPreset<GaplyMotion> {
     if (hasPreset) return;
 
     add(
-      'error',
-      GaplyMotion(
-        animations: [ShakeStyle.preset('severe'), FadeStyle.preset('fadeIn').copyWith(visible: false)],
-      ),
-    );
-    add('success', GaplyMotion(animations: [ScaleStyle.preset('pop'), ShakeStyle.preset('nod')]));
-    add('attention', GaplyMotion(animations: [FadeStyle.preset('fadeIn'), ShakeStyle.preset('mild')]));
-    add(
-      'critical',
-      GaplyMotion(
+      'entrance',
+      const GaplyMotion(
         animations: [
-          ShakeStyle.preset('alert'),
-          ScaleStyle(
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeInOut,
-            begin: 1.0,
-            end: 1.05,
-            isScaled: true,
+          FadeStyle(isVisible: true, duration: Duration(milliseconds: 500)),
+          TranslateStyle(
+            begin: Offset(0, 10),
+            end: Offset.zero,
+            isMoved: true,
+            duration: Duration(milliseconds: 400),
+            curve: Curves.easeOutCubic,
           ),
         ],
       ),
     );
+
     add(
-      'entrance',
-      GaplyMotion(
+      'pop',
+      const GaplyMotion(
         animations: [
-          FadeStyle.preset('fadeIn'),
           ScaleStyle(
-            duration: const Duration(milliseconds: 400),
-            curve: Curves.easeOutBack,
-            begin: 0.9,
+            begin: 0.8,
             end: 1.0,
             isScaled: true,
+            duration: Duration(milliseconds: 500),
+            curve: Curves.elasticOut,
+          ),
+          RotateStyle(
+            begin: -5,
+            end: 0,
+            isRotated: true,
+            duration: Duration(milliseconds: 600),
+            curve: Curves.elasticOut,
           ),
         ],
       ),
     );
+
     add(
-      'exit',
-      GaplyMotion(
+      'attention',
+      const GaplyMotion(
         animations: [
-          ScaleStyle(
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeInBack,
-            begin: 1.0,
-            end: 0.9,
-            isScaled: true,
+          ScaleStyle(begin: 1.0, end: 1.05, isScaled: true, duration: Duration(milliseconds: 200)),
+          ShakeStyle(duration: Duration(milliseconds: 500), distance: 4.0, count: 3.0, curve: Curves.linear),
+        ],
+      ),
+    );
+
+    add(
+      'cardHover',
+      const GaplyMotion(
+        animations: [
+          TranslateStyle(
+            begin: Offset.zero,
+            end: Offset(0, -6),
+            isMoved: true,
+            duration: Duration(milliseconds: 300),
           ),
-          FadeStyle.preset('fadeOut'),
+          ScaleStyle(begin: 1.0, end: 1.02, isScaled: true, duration: Duration(milliseconds: 300)),
+        ],
+      ),
+    );
+
+    add(
+      'introAndShake',
+      GaplyMotion(
+        animations: [FadeStyle(isVisible: true, duration: const Duration(milliseconds: 400))],
+        children: [
+          const GaplyMotion(
+            animations: [ShakeStyle(distance: 2.0, count: 2.0, duration: Duration(milliseconds: 300))],
+          ),
         ],
       ),
     );

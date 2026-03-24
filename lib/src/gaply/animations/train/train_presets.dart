@@ -11,35 +11,29 @@ class GaplyTrainPreset with GaplyPreset<TrainStyle> {
     if (hasPreset) return;
 
     add(
-      'left',
+      'express',
       const TrainStyle(
-        duration: Duration(milliseconds: 500),
-        curve: Curves.easeInOut,
-        direction: AxisDirection.left,
-      ),
-    );
-    add(
-      'right',
-      const TrainStyle(
-        duration: Duration(milliseconds: 500),
-        curve: Curves.easeInOut,
+        duration: Duration(milliseconds: 400),
+        curve: Curves.easeOutExpo,
         direction: AxisDirection.right,
       ),
     );
+
     add(
-      'up',
+      'link',
       const TrainStyle(
-        duration: Duration(milliseconds: 500),
-        curve: Curves.easeInOut,
-        direction: AxisDirection.up,
+        duration: Duration(milliseconds: 600),
+        curve: Curves.easeInOutCubic,
+        direction: AxisDirection.left,
       ),
     );
+
     add(
-      'down',
+      'scenic',
       const TrainStyle(
-        duration: Duration(milliseconds: 500),
-        curve: Curves.easeInOut,
-        direction: AxisDirection.down,
+        duration: Duration(milliseconds: 1200),
+        curve: Curves.linearToEaseOut,
+        direction: AxisDirection.right,
       ),
     );
   }

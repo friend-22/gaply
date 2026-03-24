@@ -11,32 +11,45 @@ class GaplyScalePreset with GaplyPreset<ScaleStyle> {
     if (hasPreset) return;
 
     add(
-      'pop',
+      'pressed',
       const ScaleStyle(
-        duration: Duration(milliseconds: 500),
-        curve: Curves.easeInBack,
-        begin: 0.0,
-        end: 1.1,
-        isScaled: true,
-      ),
-    );
-    add(
-      'shrink',
-      const ScaleStyle(
-        duration: Duration(milliseconds: 500),
-        curve: Curves.easeIn,
         begin: 1.0,
-        end: 0.0,
+        end: 0.95,
+        duration: Duration(milliseconds: 100),
+        curve: Curves.easeOutCubic,
         isScaled: true,
       ),
     );
+
     add(
-      'grow',
+      'hover',
       const ScaleStyle(
-        duration: Duration(milliseconds: 500),
-        curve: Curves.easeOut,
+        begin: 1.0,
+        end: 1.05,
+        duration: Duration(milliseconds: 200),
+        curve: Curves.easeOutBack,
+        isScaled: true,
+      ),
+    );
+
+    add(
+      'popIn',
+      const ScaleStyle(
         begin: 0.0,
         end: 1.0,
+        duration: Duration(milliseconds: 400),
+        curve: Curves.elasticOut,
+        isScaled: true,
+      ),
+    );
+
+    add(
+      'shrinkOut',
+      const ScaleStyle(
+        begin: 1.0,
+        end: 0.0,
+        duration: Duration(milliseconds: 250),
+        curve: Curves.easeInBack,
         isScaled: true,
       ),
     );

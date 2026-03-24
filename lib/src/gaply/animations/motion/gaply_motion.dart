@@ -26,9 +26,6 @@ class GaplyMotion extends GaplyStyle<GaplyMotion> with GaplyMotionMixin {
     return style;
   }
 
-  @override
-  bool get isEnabled => animations.isNotEmpty || children.isNotEmpty;
-
   GaplyMotion addAnimation(GaplyAnimStyle style) {
     return copyWith(animations: [...animations, style]);
   }
@@ -89,6 +86,9 @@ class GaplyMotion extends GaplyStyle<GaplyMotion> with GaplyMotionMixin {
 
   @override
   List<Object?> get props => [animations, children, onComplete];
+
+  @override
+  bool get isEnabled => animations.isNotEmpty || children.isNotEmpty;
 
   Duration get maxDuration {
     if (animations.isEmpty) return Duration.zero;

@@ -9,25 +9,6 @@ class GaplyFlipPreset with GaplyPreset<FlipStyle> {
 
   void _ensureInitialized() {
     if (hasPreset) return;
-
-    add(
-      'vertical',
-      const FlipStyle(
-        duration: Duration(milliseconds: 500),
-        curve: Curves.fastOutSlowIn,
-        axis: Axis.vertical,
-        isFlipped: true,
-      ),
-    );
-    add(
-      'horizontal',
-      const FlipStyle(
-        duration: Duration(milliseconds: 500),
-        curve: Curves.fastOutSlowIn,
-        axis: Axis.horizontal,
-        isFlipped: true,
-      ),
-    );
   }
 
   static void register(String name, FlipStyle style) {

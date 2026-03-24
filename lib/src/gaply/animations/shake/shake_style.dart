@@ -18,10 +18,10 @@ class ShakeStyle extends GaplyAnimStyle with GaplyAnimMixin<ShakeStyle> {
   final bool isVertical;
 
   const ShakeStyle({
-    super.duration,
-    super.curve,
+    super.duration = const Duration(milliseconds: 500),
+    super.curve = Curves.linear,
+    super.delay = Duration.zero,
     super.onComplete,
-    super.delay,
     this.distance = 8.0,
     this.count = 4.0,
     this.useHaptic = true,
@@ -41,9 +41,14 @@ class ShakeStyle extends GaplyAnimStyle with GaplyAnimMixin<ShakeStyle> {
     VoidCallback? onComplete,
   }) {
     final style = GaplyShakePreset.of(name);
+
     if (style == null) {
-      throw ArgumentError('Unknown shake preset: "$name"');
+      throw ArgumentError(
+        'Unknown shake preset: "$name". '
+        'Available presets: ${GaplyShakePreset.instance.allKeys.join(", ")}',
+      );
     }
+
     return style.copyWith(distance: distance, count: count, isVertical: isVertical, onComplete: onComplete);
   }
 

@@ -1,8 +1,14 @@
 import 'package:flutter/material.dart';
 import 'fade_style.dart';
 
+/// A widget that applies a fade animation to its child based on [FadeStyle].
+///
+/// It uses [FadeTransition] internally for high-performance opacity changes.
 class GaplyFade extends StatefulWidget {
+  /// The widget to apply the fade effect to.
   final Widget child;
+
+  /// The configuration for the fade animation.
   final FadeStyle style;
 
   const GaplyFade({super.key, required this.child, required this.style});
@@ -11,6 +17,7 @@ class GaplyFade extends StatefulWidget {
   State<GaplyFade> createState() => GaplyFadeState();
 }
 
+/// State for [GaplyFade] that manages the [AnimationController].
 class GaplyFadeState extends State<GaplyFade> with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
   late final CurvedAnimation _opacity;
@@ -22,7 +29,7 @@ class GaplyFadeState extends State<GaplyFade> with SingleTickerProviderStateMixi
     _controller = AnimationController(
       vsync: this,
       duration: widget.style.duration,
-      value: widget.style.visible ? 0.0 : 1.0,
+      value: widget.style.isVisible ? 0.0 : 1.0,
     );
 
     _controller.addStatusListener((status) {
@@ -48,24 +55,29 @@ class GaplyFadeState extends State<GaplyFade> with SingleTickerProviderStateMixi
       _opacity.curve = widget.style.curve;
     }
 
-    if (widget.style.visible != oldWidget.style.visible) {
+    if (widget.style.isVisible != oldWidget.style.isVisible) {
       _execute(widget.style);
     }
   }
 
-  void reverse() => widget.style.visible ? _controller.reverse() : _controller.forward();
+  /// Reverses the current animation direction.
+  void reverse() => widget.style.isVisible ? _controller.reverse() : _controller.forward();
+
+  /// Resets the animation to its beginning.
   void reset() => _controller.reset();
 
+  /// Internal execution logic to start the animation.
   void _execute(FadeStyle style) {
     if (!mounted) return;
 
-    if (style.visible) {
+    if (style.isVisible) {
       _controller.forward();
     } else {
       _controller.reverse();
     }
   }
 
+  /// Executes the animation with custom parameters, respecting the [style.delay].
   void executeParams(FadeStyle style) {
     Future.delayed(style.delay, () {
       if (!mounted) return;

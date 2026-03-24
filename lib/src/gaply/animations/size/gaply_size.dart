@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
 
-import 'slide_style.dart';
+import 'size_style.dart';
 
-class GaplySlide extends StatefulWidget {
+class GaplySize extends StatefulWidget {
   final Widget child;
-  final SlideStyle style;
+  final SizeStyle style;
 
-  const GaplySlide({super.key, required this.child, required this.style});
+  const GaplySize({super.key, required this.child, required this.style});
 
   @override
-  State<GaplySlide> createState() => GaplySlideState();
+  State<GaplySize> createState() => GaplySizeState();
 }
 
-class GaplySlideState extends State<GaplySlide> with SingleTickerProviderStateMixin {
+class GaplySizeState extends State<GaplySize> with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
   late final CurvedAnimation _curve;
 
@@ -23,7 +23,7 @@ class GaplySlideState extends State<GaplySlide> with SingleTickerProviderStateMi
     _controller = AnimationController(
       vsync: this,
       duration: widget.style.duration,
-      value: widget.style.visible ? 1.0 : 0.0,
+      value: widget.style.isExpanded ? 1.0 : 0.0,
     );
 
     _controller.addStatusListener((status) {
@@ -44,7 +44,7 @@ class GaplySlideState extends State<GaplySlide> with SingleTickerProviderStateMi
   }
 
   @override
-  void didUpdateWidget(covariant GaplySlide oldWidget) {
+  void didUpdateWidget(covariant GaplySize oldWidget) {
     super.didUpdateWidget(oldWidget);
 
     if (widget.style.duration != oldWidget.style.duration) {
@@ -55,7 +55,7 @@ class GaplySlideState extends State<GaplySlide> with SingleTickerProviderStateMi
       _curve.curve = widget.style.curve;
     }
 
-    if (widget.style.visible != oldWidget.style.visible) {
+    if (widget.style.isExpanded != oldWidget.style.isExpanded) {
       _execute(widget.style);
     }
   }
@@ -64,17 +64,17 @@ class GaplySlideState extends State<GaplySlide> with SingleTickerProviderStateMi
   void show() => _controller.forward();
   void hide() => _controller.reverse();
 
-  void _execute(SlideStyle style) {
+  void _execute(SizeStyle style) {
     if (!mounted) return;
 
-    if (style.visible) {
+    if (style.isExpanded) {
       _controller.forward();
     } else {
       _controller.reverse();
     }
   }
 
-  void executeParams(SlideStyle style) {
+  void executeParams(SizeStyle style) {
     Future.delayed(style.delay, () {
       if (!mounted) return;
 
@@ -85,8 +85,6 @@ class GaplySlideState extends State<GaplySlide> with SingleTickerProviderStateMi
     });
   }
 
-  double get _axisAlignment => widget.style.isReversed ? 1.0 : -1.0;
-
   @override
   Widget build(BuildContext context) {
     if (!widget.style.isEnabled) return widget.child;
@@ -94,24 +92,16 @@ class GaplySlideState extends State<GaplySlide> with SingleTickerProviderStateMi
     return AnimatedBuilder(
       animation: _curve,
       builder: (context, child) {
-        if (_controller.isDismissed && !widget.style.visible) {
+        if (_controller.isDismissed && !widget.style.isExpanded) {
           return const SizedBox.shrink();
         }
-
-        Widget content = child!;
-
-        if (widget.style.useOpacity) {
-          content = FadeTransition(opacity: _curve, child: content);
-        }
-
-        if (widget.style.fixedSize) return content;
 
         return ClipRect(
           child: SizeTransition(
             sizeFactor: _curve,
             axis: widget.style.axis,
-            axisAlignment: _axisAlignment,
-            child: content,
+            axisAlignment: widget.style.axisAlignment,
+            child: child,
           ),
         );
       },

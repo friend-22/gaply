@@ -29,7 +29,7 @@ class _GaplyDemoState extends State<GaplyDemo> {
   List<Widget> _buildDemo1() {
     return [
       FadeStyle(
-        visible: _isVisible,
+        isVisible: _isVisible,
         duration: const Duration(milliseconds: 800),
         curve: Curves.easeOutCubic,
       ).buildWidget(

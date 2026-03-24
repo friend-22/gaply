@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:gaply/src/gaply/core/gaply_style.dart';
 import 'package:gaply/src/gaply/core/gaply_trigger.dart';
 
-import 'translate_preset.dart';
+import 'translate_presets.dart';
 import 'gaply_translate.dart';
 
 part 'translate_trigger.dart';
@@ -15,13 +15,13 @@ class TranslateStyle extends GaplyAnimStyle with GaplyAnimMixin<TranslateStyle> 
   final bool isMoved;
 
   const TranslateStyle({
-    super.duration,
-    super.curve,
+    super.duration = const Duration(milliseconds: 250),
+    super.curve = Curves.easeInOut,
+    super.delay = Duration.zero,
     super.onComplete,
-    super.delay,
-    this.begin = Offset.zero,
     required this.end,
     required this.isMoved,
+    this.begin = Offset.zero,
   });
 
   const TranslateStyle.none()
@@ -32,7 +32,10 @@ class TranslateStyle extends GaplyAnimStyle with GaplyAnimMixin<TranslateStyle> 
   factory TranslateStyle.preset(String name, {bool? isMoved, VoidCallback? onComplete}) {
     final style = GaplyTranslatePreset.of(name);
     if (style == null) {
-      throw ArgumentError('Unknown translate preset: "$name"');
+      throw ArgumentError(
+        'Unknown translate preset: "$name". '
+        'Available presets: ${GaplyTranslatePreset.instance.allKeys.join(", ")}',
+      );
     }
     return style.copyWith(isMoved: isMoved, onComplete: onComplete);
   }
@@ -75,6 +78,9 @@ class TranslateStyle extends GaplyAnimStyle with GaplyAnimMixin<TranslateStyle> 
 
   @override
   List<Object?> get props => [...super.props, begin, end, isMoved];
+
+  @override
+  bool get isEnabled => duration.inMilliseconds > 0 || isMoved;
 
   @override
   Widget buildWidget({required Widget child, Object? trigger}) {

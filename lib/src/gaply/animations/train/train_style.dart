@@ -16,10 +16,10 @@ class TrainStyle extends GaplyAnimStyle with GaplyAnimMixin<TrainStyle>, GaplyDi
   final bool useOpacity;
 
   const TrainStyle({
-    super.duration,
-    super.curve,
+    super.duration = const Duration(milliseconds: 500),
+    super.curve = Curves.easeOutQuart,
+    super.delay = Duration.zero,
     super.onComplete,
-    super.delay,
     required this.direction,
     this.useOpacity = true,
   });
@@ -31,11 +31,76 @@ class TrainStyle extends GaplyAnimStyle with GaplyAnimMixin<TrainStyle>, GaplyDi
 
   factory TrainStyle.preset(String name, {bool? useOpacity, VoidCallback? onComplete}) {
     final style = GaplyTrainPreset.of(name);
+
     if (style == null) {
-      throw ArgumentError('Unknown train preset: "$name"');
+      throw ArgumentError(
+        'Unknown train preset: "$name". '
+        'Available presets: ${GaplyTrainPreset.instance.allKeys.join(", ")}',
+      );
     }
+
     return style.copyWith(useOpacity: useOpacity, onComplete: onComplete);
   }
+
+  const TrainStyle.left({
+    Duration duration = const Duration(milliseconds: 500),
+    Curve curve = Curves.easeOutQuart,
+    Duration delay = Duration.zero,
+    VoidCallback? onComplete,
+    bool useOpacity = true,
+  }) : this(
+         duration: duration,
+         curve: curve,
+         delay: delay,
+         onComplete: onComplete,
+         direction: AxisDirection.left,
+         useOpacity: useOpacity,
+       );
+
+  const TrainStyle.right({
+    Duration duration = const Duration(milliseconds: 500),
+    Curve curve = Curves.easeOutQuart,
+    Duration delay = Duration.zero,
+    VoidCallback? onComplete,
+    bool useOpacity = true,
+  }) : this(
+         duration: duration,
+         curve: curve,
+         delay: delay,
+         onComplete: onComplete,
+         direction: AxisDirection.right,
+         useOpacity: useOpacity,
+       );
+
+  const TrainStyle.up({
+    Duration duration = const Duration(milliseconds: 500),
+    Curve curve = Curves.easeOutQuart,
+    Duration delay = Duration.zero,
+    VoidCallback? onComplete,
+    bool useOpacity = true,
+  }) : this(
+         duration: duration,
+         curve: curve,
+         delay: delay,
+         onComplete: onComplete,
+         direction: AxisDirection.up,
+         useOpacity: useOpacity,
+       );
+
+  const TrainStyle.down({
+    Duration duration = const Duration(milliseconds: 500),
+    Curve curve = Curves.easeOutQuart,
+    Duration delay = Duration.zero,
+    VoidCallback? onComplete,
+    bool useOpacity = true,
+  }) : this(
+         duration: duration,
+         curve: curve,
+         delay: delay,
+         onComplete: onComplete,
+         direction: AxisDirection.down,
+         useOpacity: useOpacity,
+       );
 
   TrainStyle get reversed {
     return copyWith(direction: reversedDirection);

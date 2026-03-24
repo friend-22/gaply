@@ -19,7 +19,7 @@ extension HapticHelper on Object {
   void hapticDouble(HapticType type, {bool enabled = true}) {
     if (enabled) {
       type.feedback();
-      onMilliDelay(60, () => type.feedback());
+      Future.delayed(const Duration(milliseconds: 60), () => type.feedback());
     }
   }
 }
