@@ -32,12 +32,16 @@ class FadeStyle extends GaplyAnimStyle with GaplyAnimMixin<FadeStyle> {
   final bool isVisible;
 
   const FadeStyle({
-    super.duration = const Duration(milliseconds: 500),
-    super.curve = Curves.easeInOut,
-    super.delay = Duration.zero,
+    Duration? duration,
+    Curve? curve,
+    Duration? delay,
     super.onComplete,
     required this.isVisible,
-  });
+  }) : super(
+         duration: duration ?? const Duration(milliseconds: 500),
+         curve: curve ?? Curves.easeInOut,
+         delay: delay ?? Duration.zero,
+       );
 
   const FadeStyle.none() : this(duration: Duration.zero, isVisible: false);
 
@@ -60,26 +64,24 @@ class FadeStyle extends GaplyAnimStyle with GaplyAnimMixin<FadeStyle> {
     return (onComplete != null) ? style.copyWith(onComplete: onComplete) : style;
   }
 
-  const FadeStyle.fadeIn({
-    Duration duration = const Duration(milliseconds: 500),
-    Duration delay = Duration.zero,
-    Curve curve = Curves.easeInOut,
-    VoidCallback? onComplete,
-  }) : this(duration: duration, curve: curve, delay: delay, onComplete: onComplete, isVisible: true);
+  const FadeStyle.fadeIn({Duration? duration, Duration? delay, Curve? curve, VoidCallback? onComplete})
+    : this(duration: duration, curve: curve, delay: delay, onComplete: onComplete, isVisible: true);
 
-  const FadeStyle.fadeOut({
-    Duration duration = const Duration(milliseconds: 500),
-    Duration delay = Duration.zero,
-    Curve curve = Curves.easeOut,
-    VoidCallback? onComplete,
-  }) : this(duration: duration, curve: curve, delay: delay, onComplete: onComplete, isVisible: false);
+  const FadeStyle.fadeOut({Duration? duration, Duration? delay, Curve? curve, VoidCallback? onComplete})
+    : this(
+        duration: duration,
+        curve: curve ?? Curves.easeOut,
+        delay: delay,
+        onComplete: onComplete,
+        isVisible: false,
+      );
 
   @override
   FadeStyle copyWith({
     Duration? duration,
     Curve? curve,
-    VoidCallback? onComplete,
     Duration? delay,
+    VoidCallback? onComplete,
     bool? isVisible,
   }) {
     return FadeStyle(
@@ -107,13 +109,12 @@ class FadeStyle extends GaplyAnimStyle with GaplyAnimMixin<FadeStyle> {
   @override
   List<Object?> get props => [...super.props, isVisible];
 
-  //todo : isEnabled 정리하자
   @override
-  bool get isEnabled => duration.inMilliseconds > 0;
+  bool get hasEffect => duration.inMilliseconds > 0;
 
   @override
   Widget buildWidget({required Widget child, Object? trigger}) {
-    if (!isEnabled) return child;
+    if (!hasEffect) return child;
 
     return _GaplyFadeTrigger(style: this, trigger: trigger ?? DateTime.now(), child: child);
   }

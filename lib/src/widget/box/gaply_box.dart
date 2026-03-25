@@ -48,7 +48,7 @@ class _GaplyAnimatedBoxState extends AnimatedWidgetBaseState<_GaplyAnimatedBox> 
     Widget result = widget.child;
 
     // [최적화 2] Shimmer나 Blur 같이 연산량이 많은 효과가 있을 때만 RepaintBoundary 적용
-    final bool needsBoundary = currentStyle.shimmer.isEnabled || currentStyle.blur.isEnabled;
+    final bool needsBoundary = currentStyle.shimmer.hasEffect || currentStyle.blur.hasEffect;
 
     final decoration = _buildDecoration(context, currentStyle);
 
@@ -63,11 +63,11 @@ class _GaplyAnimatedBoxState extends AnimatedWidgetBaseState<_GaplyAnimatedBox> 
       child: result,
     );
 
-    if (currentStyle.shimmer.isEnabled) {
+    if (currentStyle.shimmer.hasEffect) {
       result = currentStyle.shimmer.buildWidget(context: context, child: result);
     }
 
-    if (currentStyle.blur.isEnabled) {
+    if (currentStyle.blur.hasEffect) {
       result = currentStyle.blur.buildWidget(
         context: context,
         borderRadius: currentStyle.layout.borderRadius,
@@ -98,11 +98,11 @@ class _GaplyAnimatedBoxState extends AnimatedWidgetBaseState<_GaplyAnimatedBox> 
 
   BoxDecoration? _buildDecoration(BuildContext context, BoxStyle style) {
     final hasDecoration =
-        style.color.isEnabled ||
-        style.borderColor.isEnabled ||
+        style.color.hasEffect ||
+        style.borderColor.hasEffect ||
         style.borderWidth > 0 ||
         style.shadows.isNotEmpty ||
-        style.gradient.isEnabled;
+        style.gradient.hasEffect;
 
     if (!hasDecoration) return null;
 

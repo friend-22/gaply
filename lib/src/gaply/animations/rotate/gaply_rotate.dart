@@ -109,7 +109,7 @@ class GaplyRotateState extends State<GaplyRotate> with SingleTickerProviderState
 
   @override
   Widget build(BuildContext context) {
-    if (!widget.style.isEnabled) return widget.child;
+    if (!widget.style.hasEffect) return widget.child;
 
     return RotationTransition(turns: _turns, alignment: widget.style.alignment, child: widget.child);
   }

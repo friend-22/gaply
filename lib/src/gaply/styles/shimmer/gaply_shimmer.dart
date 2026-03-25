@@ -45,9 +45,6 @@ class GaplyShimmer extends GaplyStyle<GaplyShimmer> with _GShimmerMixin {
   }
 
   @override
-  bool get isEnabled => period.inMilliseconds > 0 && baseColor.isEnabled && highlightColor.isEnabled;
-
-  @override
   GaplyShimmer copyWith({
     Duration? period,
     ShimmerDirection? direction,
@@ -85,13 +82,16 @@ class GaplyShimmer extends GaplyStyle<GaplyShimmer> with _GShimmerMixin {
 
   @override
   List<Object?> get props => [period, direction, loop, baseColor, highlightColor];
+
+  @override
+  bool get hasEffect => period.inMilliseconds > 0 && baseColor.hasEffect && highlightColor.hasEffect;
 }
 
 mixin _GShimmerMixin {
   GaplyShimmer get _params => this as GaplyShimmer;
 
   Widget buildWidget({required BuildContext context, required Widget child}) {
-    if (!_params.isEnabled) return child;
+    if (!_params.hasEffect) return child;
 
     final baseColor = _params.baseColor.resolve(context);
     final highlightColor = _params.highlightColor.resolve(context);

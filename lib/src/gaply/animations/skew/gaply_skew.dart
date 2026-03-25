@@ -92,7 +92,7 @@ class GaplySkewState extends State<GaplySkew> with SingleTickerProviderStateMixi
 
   @override
   Widget build(BuildContext context) {
-    if (!widget.style.isEnabled) return widget.child;
+    if (!widget.style.hasEffect) return widget.child;
 
     return AnimatedBuilder(
       animation: _skewAnimation,

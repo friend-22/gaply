@@ -33,8 +33,6 @@ class _GaplyShakeTriggerState extends State<_GaplyShakeTrigger>
 
   @override
   Widget build(BuildContext context) {
-    if (!widget.style.isEnabled) return widget.child;
-
     return GaplyShake(key: triggerKey, style: widget.style, child: widget.child);
   }
 }

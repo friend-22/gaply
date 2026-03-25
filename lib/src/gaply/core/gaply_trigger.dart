@@ -15,7 +15,7 @@ mixin GaplyMotionTrigger<W extends StatefulWidget, MST extends GaplyAnimStyle, S
   void initState() {
     super.initState();
 
-    if (style.isEnabled) {
+    if (style.hasEffect) {
       onNextRender(() => _delayAndExecute(style));
     }
   }
@@ -47,7 +47,7 @@ mixin GaplyMotionTrigger<W extends StatefulWidget, MST extends GaplyAnimStyle, S
     final isStyleChanged = style != oldStyle;
     final isTriggered = trigger != oldTrigger;
 
-    if ((isStyleChanged || isTriggered) && style.isEnabled) {
+    if ((isStyleChanged || isTriggered) && style.hasEffect) {
       _delayAndExecute(style);
     }
   }

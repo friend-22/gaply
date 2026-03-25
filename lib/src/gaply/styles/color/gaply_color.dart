@@ -188,10 +188,10 @@ class GaplyColor extends GaplyStyle<GaplyColor> with _GColorMixin {
     : this(role: role, shade: shade, opacity: ColorOpacity.solid);
 
   @override
-  bool get isEnabled => role != ColorRole.none || customColor != null;
+  bool get hasEffect => role != ColorRole.none || customColor != null;
 
   bool get isVisible {
-    if (!isEnabled) return false;
+    if (!hasEffect) return false;
     if (customColor == Colors.transparent) return false;
     if (opacity == ColorOpacity.transparent) return false;
     return true;

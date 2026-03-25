@@ -97,7 +97,7 @@ class GaplyFadeState extends State<GaplyFade> with SingleTickerProviderStateMixi
 
   @override
   Widget build(BuildContext context) {
-    if (!widget.style.isEnabled) return widget.child;
+    if (!widget.style.hasEffect) return widget.child;
 
     return FadeTransition(opacity: _opacity, child: widget.child);
   }

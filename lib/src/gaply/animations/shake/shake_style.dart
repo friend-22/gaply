@@ -18,18 +18,22 @@ class ShakeStyle extends GaplyAnimStyle with GaplyAnimMixin<ShakeStyle> {
   final bool isVertical;
 
   const ShakeStyle({
-    super.duration = const Duration(milliseconds: 500),
-    super.curve = Curves.linear,
-    super.delay = Duration.zero,
+    Duration? duration,
+    Curve? curve,
+    Duration? delay,
     super.onComplete,
     this.distance = 8.0,
     this.count = 4.0,
     this.useHaptic = true,
     this.useRepaintBoundary = true,
     this.isVertical = false,
-  });
+  }) : super(
+         duration: duration ?? const Duration(milliseconds: 500),
+         curve: curve ?? Curves.linear,
+         delay: delay ?? Duration.zero,
+       );
 
-  const ShakeStyle.none() : this(duration: Duration.zero, curve: Curves.linear, distance: 0.0, count: 0.0);
+  const ShakeStyle.none() : this(duration: Duration.zero, distance: 0.0, count: 0.0);
 
   static void register(String name, ShakeStyle style) => GaplyShakePreset.register(name, style);
 
@@ -55,9 +59,6 @@ class ShakeStyle extends GaplyAnimStyle with GaplyAnimMixin<ShakeStyle> {
   ShakeStyle withIntensity(double intensity) {
     return copyWith(distance: distance * intensity, count: (count * intensity).toDouble());
   }
-
-  @override
-  bool get isEnabled => duration.inMilliseconds > 0 && distance > 0;
 
   @override
   ShakeStyle copyWith({
@@ -104,8 +105,11 @@ class ShakeStyle extends GaplyAnimStyle with GaplyAnimMixin<ShakeStyle> {
   List<Object?> get props => [...super.props, distance, count, useHaptic, useRepaintBoundary, isVertical];
 
   @override
+  bool get hasEffect => duration.inMilliseconds > 0 && distance > 0 && count > 0;
+
+  @override
   Widget buildWidget({required Widget child, Object? trigger}) {
-    if (!isEnabled) return child;
+    if (!hasEffect) return child;
 
     return _GaplyShakeTrigger(style: this, trigger: trigger ?? DateTime.now(), child: child);
   }

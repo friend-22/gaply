@@ -94,7 +94,7 @@ class GaplyScaleState extends State<GaplyScale> with SingleTickerProviderStateMi
 
   @override
   Widget build(BuildContext context) {
-    if (!widget.style.isEnabled) return widget.child;
+    if (!widget.style.hasEffect) return widget.child;
 
     return ScaleTransition(scale: _scale, alignment: widget.style.alignment, child: widget.child);
   }

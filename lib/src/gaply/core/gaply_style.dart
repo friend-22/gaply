@@ -5,7 +5,7 @@ import 'package:flutter/widgets.dart';
 abstract class GaplyStyle<T> extends Equatable {
   const GaplyStyle();
 
-  bool get isEnabled;
+  bool get hasEffect;
 
   T lerp(T? other, double t);
 
@@ -27,9 +27,6 @@ abstract class GaplyAnimStyle extends GaplyStyle<GaplyAnimStyle> {
   GaplyAnimStyle withDelay(Duration delay);
   GaplyAnimStyle withDurationScale(double scale);
   Widget buildWidget({required Widget child, Object? trigger});
-
-  @override
-  bool get isEnabled; // => duration.inMilliseconds > 0;
 
   @override
   List<Object?> get props => [duration, curve, onComplete, delay];

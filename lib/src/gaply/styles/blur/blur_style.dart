@@ -29,9 +29,6 @@ class BlurStyle extends GaplyStyle<BlurStyle> {
     return color != null ? style.copyWith(color: color) : style;
   }
 
-  @override
-  bool get isEnabled => sigma > 0 && color.isEnabled;
-
   BlurStyle withIntensity(double intensity) {
     return copyWith(sigma: sigma * intensity);
   }
@@ -51,8 +48,11 @@ class BlurStyle extends GaplyStyle<BlurStyle> {
   @override
   List<Object?> get props => [sigma, color];
 
+  @override
+  bool get hasEffect => sigma > 0 && color.hasEffect;
+
   ImageFilter? resolve() {
-    if (!isEnabled) return null;
+    if (!hasEffect) return null;
 
     return ImageFilter.blur(sigmaX: sigma, sigmaY: sigma);
   }
@@ -62,7 +62,7 @@ class BlurStyle extends GaplyStyle<BlurStyle> {
     required Widget child,
     BorderRadiusGeometry? borderRadius,
   }) {
-    if (!isEnabled) return child;
+    if (!hasEffect) return child;
 
     return _GaplyBlurWidget(style: this, borderRadius: borderRadius, child: child);
   }

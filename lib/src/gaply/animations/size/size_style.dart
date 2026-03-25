@@ -15,23 +15,34 @@ class SizeStyle extends GaplyAnimStyle with GaplyAnimMixin<SizeStyle> {
   final Axis axis;
   final double axisAlignment;
   final bool isExpanded;
+  final double minFactor;
 
   const SizeStyle({
-    super.duration = const Duration(milliseconds: 400),
-    super.curve = Curves.easeOutCubic,
-    super.delay = Duration.zero,
+    Duration? duration,
+    Curve? curve,
+    Duration? delay,
     super.onComplete,
     required this.axis,
     required this.isExpanded,
+    this.minFactor = 0.0,
     this.axisAlignment = -1.0,
-  });
+  }) : super(
+         duration: duration ?? const Duration(milliseconds: 400),
+         curve: curve ?? Curves.easeOutCubic,
+         delay: delay ?? Duration.zero,
+       );
 
-  const SizeStyle.none()
-    : this(duration: Duration.zero, curve: Curves.linear, axis: Axis.vertical, isExpanded: false);
+  const SizeStyle.none() : this(duration: Duration.zero, axis: Axis.vertical, isExpanded: false);
 
   static void register(String name, SizeStyle style) => GaplySizePreset.register(name, style);
 
-  factory SizeStyle.preset(String name, {double? axisAlignment, bool? isExpanded, VoidCallback? onComplete}) {
+  factory SizeStyle.preset(
+    String name, {
+    double? axisAlignment,
+    bool? isExpanded,
+    double? minFactor,
+    VoidCallback? onComplete,
+  }) {
     final style = GaplySizePreset.of(name);
 
     if (style == null) {
@@ -41,15 +52,21 @@ class SizeStyle extends GaplyAnimStyle with GaplyAnimMixin<SizeStyle> {
       );
     }
 
-    return style.copyWith(axisAlignment: axisAlignment, isExpanded: isExpanded, onComplete: onComplete);
+    return style.copyWith(
+      axisAlignment: axisAlignment,
+      isExpanded: isExpanded,
+      minFactor: minFactor,
+      onComplete: onComplete,
+    );
   }
 
   const SizeStyle.left({
-    Duration duration = const Duration(milliseconds: 400),
-    Curve curve = Curves.easeOutCubic,
-    Duration delay = Duration.zero,
+    Duration? duration,
+    Duration? delay,
+    Curve? curve,
     VoidCallback? onComplete,
     bool isExpanded = true,
+    double minFactor = 0.0,
   }) : this(
          duration: duration,
          curve: curve,
@@ -58,14 +75,16 @@ class SizeStyle extends GaplyAnimStyle with GaplyAnimMixin<SizeStyle> {
          axis: Axis.horizontal,
          axisAlignment: 1.0,
          isExpanded: isExpanded,
+         minFactor: minFactor,
        );
 
   const SizeStyle.right({
-    Duration duration = const Duration(milliseconds: 400),
-    Curve curve = Curves.easeOutCubic,
-    Duration delay = Duration.zero,
+    Duration? duration,
+    Duration? delay,
+    Curve? curve,
     VoidCallback? onComplete,
     bool isExpanded = true,
+    double minFactor = 0.0,
   }) : this(
          duration: duration,
          curve: curve,
@@ -74,14 +93,16 @@ class SizeStyle extends GaplyAnimStyle with GaplyAnimMixin<SizeStyle> {
          axis: Axis.horizontal,
          axisAlignment: -1.0,
          isExpanded: isExpanded,
+         minFactor: minFactor,
        );
 
   const SizeStyle.up({
-    Duration duration = const Duration(milliseconds: 400),
-    Curve curve = Curves.easeOutCubic,
-    Duration delay = Duration.zero,
+    Duration? duration,
+    Duration? delay,
+    Curve? curve,
     VoidCallback? onComplete,
     bool isExpanded = true,
+    double minFactor = 0.0,
   }) : this(
          duration: duration,
          curve: curve,
@@ -90,14 +111,16 @@ class SizeStyle extends GaplyAnimStyle with GaplyAnimMixin<SizeStyle> {
          axis: Axis.vertical,
          axisAlignment: 1.0,
          isExpanded: isExpanded,
+         minFactor: minFactor,
        );
 
   const SizeStyle.down({
-    Duration duration = const Duration(milliseconds: 400),
-    Curve curve = Curves.easeOutCubic,
-    Duration delay = Duration.zero,
+    Duration? duration,
+    Duration? delay,
+    Curve? curve,
     VoidCallback? onComplete,
     bool isExpanded = true,
+    double minFactor = 0.0,
   }) : this(
          duration: duration,
          curve: curve,
@@ -106,14 +129,16 @@ class SizeStyle extends GaplyAnimStyle with GaplyAnimMixin<SizeStyle> {
          axis: Axis.vertical,
          axisAlignment: -1.0,
          isExpanded: isExpanded,
+         minFactor: minFactor,
        );
 
   const SizeStyle.vertical({
-    Duration duration = const Duration(milliseconds: 400),
-    Curve curve = Curves.easeOutCubic,
-    Duration delay = Duration.zero,
+    Duration? duration,
+    Duration? delay,
+    Curve? curve,
     VoidCallback? onComplete,
     bool isExpanded = true,
+    double minFactor = 0.0,
   }) : this(
          duration: duration,
          curve: curve,
@@ -122,14 +147,16 @@ class SizeStyle extends GaplyAnimStyle with GaplyAnimMixin<SizeStyle> {
          axis: Axis.vertical,
          axisAlignment: 0.0,
          isExpanded: isExpanded,
+         minFactor: minFactor,
        );
 
   const SizeStyle.horizontal({
-    Duration duration = const Duration(milliseconds: 400),
-    Curve curve = Curves.easeOutCubic,
-    Duration delay = Duration.zero,
+    Duration? duration,
+    Duration? delay,
+    Curve? curve,
     VoidCallback? onComplete,
     bool isExpanded = true,
+    double minFactor = 0.0,
   }) : this(
          duration: duration,
          curve: curve,
@@ -138,6 +165,7 @@ class SizeStyle extends GaplyAnimStyle with GaplyAnimMixin<SizeStyle> {
          axis: Axis.horizontal,
          axisAlignment: 0.0,
          isExpanded: isExpanded,
+         minFactor: minFactor,
        );
 
   @override
@@ -149,6 +177,7 @@ class SizeStyle extends GaplyAnimStyle with GaplyAnimMixin<SizeStyle> {
     Axis? axis,
     double? axisAlignment,
     bool? isExpanded,
+    double? minFactor,
   }) {
     return SizeStyle(
       duration: duration ?? this.duration,
@@ -158,6 +187,7 @@ class SizeStyle extends GaplyAnimStyle with GaplyAnimMixin<SizeStyle> {
       axis: axis ?? this.axis,
       axisAlignment: axisAlignment ?? this.axisAlignment,
       isExpanded: isExpanded ?? this.isExpanded,
+      minFactor: minFactor ?? this.minFactor,
     );
   }
 
@@ -173,18 +203,21 @@ class SizeStyle extends GaplyAnimStyle with GaplyAnimMixin<SizeStyle> {
       axis: t < 0.5 ? axis : other.axis,
       axisAlignment: lerpDouble(axisAlignment, other.axisAlignment, t) ?? axisAlignment,
       isExpanded: t < 0.5 ? isExpanded : other.isExpanded,
+      minFactor: lerpDouble(minFactor, other.minFactor, t) ?? minFactor,
     );
   }
 
   @override
-  List<Object?> get props => [...super.props, axis, axisAlignment, isExpanded];
+  List<Object?> get props => [...super.props, axis, axisAlignment, isExpanded, minFactor];
 
   @override
-  bool get isEnabled => duration.inMilliseconds > 0 || !isExpanded;
+  bool get hasEffect => duration.inMilliseconds > 0 || target < 1.0;
+
+  double get target => isExpanded ? 1.0 : minFactor;
 
   @override
   Widget buildWidget({required Widget child, Object? trigger}) {
-    if (!isEnabled) return child;
+    if (!hasEffect) return child;
 
     return _GaplySizeTrigger(style: this, trigger: trigger ?? DateTime.now(), child: child);
   }

@@ -99,6 +99,8 @@ class GaplyShakeState extends State<GaplyShake> with SingleTickerProviderStateMi
 
   @override
   Widget build(BuildContext context) {
+    if (!widget.style.hasEffect) return widget.child;
+
     Widget result = AnimatedBuilder(
       animation: _controller,
       builder: (context, child) {

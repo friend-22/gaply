@@ -17,15 +17,19 @@ class ScaleStyle extends GaplyAnimStyle with GaplyAnimMixin<ScaleStyle> {
   final bool isScaled;
 
   const ScaleStyle({
-    super.duration = const Duration(milliseconds: 250),
-    super.curve = Curves.easeInOut,
-    super.delay = Duration.zero,
+    Duration? duration,
+    Curve? curve,
+    Duration? delay,
     super.onComplete,
     required this.begin,
     required this.end,
     required this.isScaled,
     this.alignment = Alignment.center,
-  });
+  }) : super(
+         duration: duration ?? const Duration(milliseconds: 400),
+         curve: curve ?? Curves.easeInOut,
+         delay: delay ?? Duration.zero,
+       );
 
   const ScaleStyle.none()
     : this(
@@ -34,7 +38,6 @@ class ScaleStyle extends GaplyAnimStyle with GaplyAnimMixin<ScaleStyle> {
         delay: Duration.zero,
         begin: 0.0,
         end: 1.0,
-        alignment: Alignment.center,
         isScaled: false,
       );
 
@@ -52,9 +55,6 @@ class ScaleStyle extends GaplyAnimStyle with GaplyAnimMixin<ScaleStyle> {
 
     return style.copyWith(alignment: alignment, isScaled: isScaled, onComplete: onComplete);
   }
-
-  @override
-  bool get isEnabled => isScaled || duration.inMilliseconds > 0;
 
   @override
   ScaleStyle copyWith({
@@ -99,8 +99,11 @@ class ScaleStyle extends GaplyAnimStyle with GaplyAnimMixin<ScaleStyle> {
   List<Object?> get props => [...super.props, begin, end, alignment, isScaled];
 
   @override
+  bool get hasEffect => duration.inMilliseconds > 0;
+
+  @override
   Widget buildWidget({required Widget child, Object? trigger}) {
-    if (!isEnabled) return child;
+    if (!hasEffect) return child;
 
     return _GaplyScaleTrigger(style: this, trigger: trigger ?? DateTime.now(), child: child);
   }

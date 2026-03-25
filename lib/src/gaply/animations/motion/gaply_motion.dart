@@ -88,7 +88,11 @@ class GaplyMotion extends GaplyStyle<GaplyMotion> with GaplyMotionMixin {
   List<Object?> get props => [animations, children, onComplete];
 
   @override
-  bool get isEnabled => animations.isNotEmpty || children.isNotEmpty;
+  bool get hasEffect {
+    final hasActiveAnimation = animations.any((anim) => anim.hasEffect);
+    final hasActiveChildren = children.any((child) => child.hasEffect);
+    return hasActiveAnimation || hasActiveChildren;
+  }
 
   Duration get maxDuration {
     if (animations.isEmpty) return Duration.zero;
@@ -109,7 +113,7 @@ class GaplyMotion extends GaplyStyle<GaplyMotion> with GaplyMotionMixin {
 
 mixin GaplyMotionMixin {
   Widget applyMotion(GaplyMotion motion, Widget child, {Object? trigger}) {
-    if (!motion.isEnabled) return child;
+    if (!motion.hasEffect) return child;
 
     Widget result = child;
 

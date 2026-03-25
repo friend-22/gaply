@@ -14,16 +14,19 @@ class SkewStyle extends GaplyAnimStyle with GaplyAnimMixin<SkewStyle> {
   final bool isSkewed;
 
   const SkewStyle({
-    super.duration = const Duration(milliseconds: 400),
-    super.curve = Curves.easeOutCubic,
-    super.delay = Duration.zero,
+    Duration? duration,
+    Curve? curve,
+    Duration? delay,
     super.onComplete,
     required this.skew,
     required this.isSkewed,
-  });
+  }) : super(
+         duration: duration ?? const Duration(milliseconds: 400),
+         curve: curve ?? Curves.easeOutCubic,
+         delay: delay ?? Duration.zero,
+       );
 
-  const SkewStyle.none()
-    : this(duration: Duration.zero, curve: Curves.linear, skew: Offset.zero, isSkewed: false);
+  const SkewStyle.none() : this(duration: Duration.zero, skew: Offset.zero, isSkewed: false);
 
   static void register(String name, SkewStyle style) => GaplySkewPreset.register(name, style);
 
@@ -42,9 +45,9 @@ class SkewStyle extends GaplyAnimStyle with GaplyAnimMixin<SkewStyle> {
 
   SkewStyle.horizontal(
     double amount, {
-    Duration duration = const Duration(milliseconds: 400),
-    Curve curve = Curves.easeOutCubic,
-    Duration delay = Duration.zero,
+    Duration? duration,
+    Curve? curve,
+    Duration? delay,
     VoidCallback? onComplete,
     bool isSkewed = true,
   }) : this(
@@ -58,9 +61,9 @@ class SkewStyle extends GaplyAnimStyle with GaplyAnimMixin<SkewStyle> {
 
   SkewStyle.vertical(
     double amount, {
-    Duration duration = const Duration(milliseconds: 400),
-    Curve curve = Curves.easeOutCubic,
-    Duration delay = Duration.zero,
+    Duration? duration,
+    Curve? curve,
+    Duration? delay,
     VoidCallback? onComplete,
     bool isSkewed = true,
   }) : this(
@@ -109,11 +112,11 @@ class SkewStyle extends GaplyAnimStyle with GaplyAnimMixin<SkewStyle> {
   List<Object?> get props => [...super.props, skew, isSkewed];
 
   @override
-  bool get isEnabled => duration.inMilliseconds > 0 || isSkewed;
+  bool get hasEffect => duration.inMilliseconds > 0 || isSkewed;
 
   @override
   Widget buildWidget({required Widget child, Object? trigger}) {
-    if (!isEnabled) return child;
+    if (!hasEffect) return child;
 
     return _GaplySkewTrigger(style: this, trigger: trigger ?? DateTime.now(), child: child);
   }

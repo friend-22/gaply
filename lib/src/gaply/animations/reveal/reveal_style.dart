@@ -1,13 +1,9 @@
 import 'package:flutter/widgets.dart';
-import 'package:gaply/src/gaply/core/gaply_trigger.dart';
 import 'package:gaply/src/gaply/core/gaply_style.dart';
 import 'package:gaply/src/gaply/core/gaply_direction.dart';
 import 'package:gaply/src/gaply/animations/animations.dart';
 
-import 'gaply_reveal.dart';
 import 'reveal_presets.dart';
-
-//part 'reveal_trigger.dart';
 
 @immutable
 class RevealStyle extends GaplyAnimStyle with GaplyAnimMixin<RevealStyle>, GaplyDirectionAnimMixin {
@@ -18,18 +14,21 @@ class RevealStyle extends GaplyAnimStyle with GaplyAnimMixin<RevealStyle>, Gaply
   final bool useFade;
 
   const RevealStyle({
-    super.duration = const Duration(milliseconds: 400),
-    super.curve = Curves.easeOutCubic,
-    super.delay = Duration.zero,
+    Duration? duration,
+    Curve? curve,
+    Duration? delay,
     super.onComplete,
     required this.direction,
     required this.isVisible,
     this.fixedSize = false,
     this.useFade = true,
-  });
+  }) : super(
+         duration: duration ?? const Duration(milliseconds: 400),
+         curve: curve ?? Curves.easeOutCubic,
+         delay: delay ?? Duration.zero,
+       );
 
-  const RevealStyle.none()
-    : this(duration: Duration.zero, curve: Curves.linear, direction: AxisDirection.up, isVisible: false);
+  const RevealStyle.none() : this(duration: Duration.zero, direction: AxisDirection.up, isVisible: false);
 
   static void register(String name, RevealStyle style) => GaplyRevealPreset.register(name, style);
 
@@ -58,9 +57,9 @@ class RevealStyle extends GaplyAnimStyle with GaplyAnimMixin<RevealStyle>, Gaply
   }
 
   const RevealStyle.up({
-    Duration duration = const Duration(milliseconds: 400),
-    Curve curve = Curves.easeOutCubic,
-    Duration delay = Duration.zero,
+    Duration? duration,
+    Curve? curve,
+    Duration? delay,
     VoidCallback? onComplete,
     bool isVisible = true,
     bool fixedSize = false,
@@ -77,9 +76,9 @@ class RevealStyle extends GaplyAnimStyle with GaplyAnimMixin<RevealStyle>, Gaply
        );
 
   const RevealStyle.down({
-    Duration duration = const Duration(milliseconds: 400),
-    Curve curve = Curves.easeOutCubic,
-    Duration delay = Duration.zero,
+    Duration? duration,
+    Curve? curve,
+    Duration? delay,
     VoidCallback? onComplete,
     bool isVisible = true,
     bool fixedSize = false,
@@ -96,9 +95,9 @@ class RevealStyle extends GaplyAnimStyle with GaplyAnimMixin<RevealStyle>, Gaply
        );
 
   const RevealStyle.left({
-    Duration duration = const Duration(milliseconds: 400),
-    Curve curve = Curves.easeOutCubic,
-    Duration delay = Duration.zero,
+    Duration? duration,
+    Curve? curve,
+    Duration? delay,
     VoidCallback? onComplete,
     bool isVisible = true,
     bool fixedSize = false,
@@ -115,9 +114,9 @@ class RevealStyle extends GaplyAnimStyle with GaplyAnimMixin<RevealStyle>, Gaply
        );
 
   const RevealStyle.right({
-    Duration duration = const Duration(milliseconds: 400),
-    Curve curve = Curves.easeOutCubic,
-    Duration delay = Duration.zero,
+    Duration? duration,
+    Curve? curve,
+    Duration? delay,
     VoidCallback? onComplete,
     bool isVisible = true,
     bool fixedSize = false,
@@ -132,9 +131,6 @@ class RevealStyle extends GaplyAnimStyle with GaplyAnimMixin<RevealStyle>, Gaply
          fixedSize: fixedSize,
          useFade: useFade,
        );
-
-  @override
-  bool get isEnabled => isVisible && duration.inMilliseconds > 0;
 
   @override
   RevealStyle copyWith({
@@ -178,6 +174,9 @@ class RevealStyle extends GaplyAnimStyle with GaplyAnimMixin<RevealStyle>, Gaply
   @override
   List<Object?> get props => [...super.props, direction, isVisible, fixedSize, useFade];
 
+  @override
+  bool get hasEffect => duration.inMilliseconds > 0;
+
   FadeStyle get _fade =>
       FadeStyle(duration: duration, curve: curve, isVisible: useFade ? isVisible : true, delay: delay);
 
@@ -192,7 +191,7 @@ class RevealStyle extends GaplyAnimStyle with GaplyAnimMixin<RevealStyle>, Gaply
 
   @override
   Widget buildWidget({required Widget child, Object? trigger}) {
-    if (!isEnabled) return child;
+    if (!hasEffect) return child;
 
     final List<GaplyAnimStyle> animations = [];
     if (useFade) animations.add(_fade);

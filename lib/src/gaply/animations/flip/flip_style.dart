@@ -34,15 +34,20 @@ class FlipStyle extends GaplyAnimStyle with GaplyAnimMixin<FlipStyle> {
   final Widget? backWidget;
 
   const FlipStyle({
-    super.duration = const Duration(milliseconds: 500),
-    super.curve = Curves.fastOutSlowIn,
-    super.delay = Duration.zero,
+    Duration? duration,
+    Curve? curve,
+    Duration? delay,
     super.onComplete,
     required this.axis,
     required this.isFlipped,
     this.angleRange = math.pi,
     this.backWidget,
-  }) : assert(angleRange > 0 && angleRange <= 2 * math.pi, 'angleRange must be in the range of 0 to 2π.');
+  }) : assert(angleRange > 0 && angleRange <= 2 * math.pi, 'angleRange must be in the range of 0 to 2π.'),
+       super(
+         duration: duration ?? const Duration(milliseconds: 500),
+         curve: curve ?? Curves.fastOutSlowIn,
+         delay: delay ?? Duration.zero,
+       );
 
   const FlipStyle.none() : this(duration: Duration.zero, axis: Axis.horizontal, isFlipped: false);
 
@@ -66,9 +71,9 @@ class FlipStyle extends GaplyAnimStyle with GaplyAnimMixin<FlipStyle> {
 
   const FlipStyle.vertical(
     Widget backWidget, {
-    Duration duration = const Duration(milliseconds: 500),
-    Curve curve = Curves.fastOutSlowIn,
-    Duration delay = Duration.zero,
+    Duration? duration,
+    Curve? curve,
+    Duration? delay,
     VoidCallback? onComplete,
     bool isFlipped = true,
   }) : this(
@@ -83,9 +88,9 @@ class FlipStyle extends GaplyAnimStyle with GaplyAnimMixin<FlipStyle> {
 
   const FlipStyle.horizontal(
     Widget backWidget, {
-    Duration duration = const Duration(milliseconds: 500),
-    Duration delay = Duration.zero,
-    Curve curve = Curves.fastOutSlowIn,
+    Duration? duration,
+    Curve? curve,
+    Duration? delay,
     VoidCallback? onComplete,
     bool isFlipped = true,
   }) : this(
@@ -141,11 +146,11 @@ class FlipStyle extends GaplyAnimStyle with GaplyAnimMixin<FlipStyle> {
   List<Object?> get props => [...super.props, axis, angleRange, isFlipped, backWidget];
 
   @override
-  bool get isEnabled => duration.inMilliseconds > 0 || isFlipped;
+  bool get hasEffect => duration.inMilliseconds > 0;
 
   @override
   Widget buildWidget({required Widget child, Object? trigger}) {
-    if (!isEnabled) return child;
+    if (!hasEffect) return child;
 
     return _GaplyFlipTrigger(
       front: child,

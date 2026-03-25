@@ -15,6 +15,7 @@ class GaplySize extends StatefulWidget {
 class GaplySizeState extends State<GaplySize> with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
   late final CurvedAnimation _curve;
+  late Animation<double> _sizeAnimation;
 
   @override
   void initState() {
@@ -33,7 +34,7 @@ class GaplySizeState extends State<GaplySize> with SingleTickerProviderStateMixi
     });
 
     _curve = CurvedAnimation(parent: _controller, curve: widget.style.curve);
-
+    _updateAnimation();
     _execute(widget.style);
   }
 
@@ -55,6 +56,10 @@ class GaplySizeState extends State<GaplySize> with SingleTickerProviderStateMixi
       _curve.curve = widget.style.curve;
     }
 
+    if (widget.style.minFactor != oldWidget.style.minFactor) {
+      _updateAnimation();
+    }
+
     if (widget.style.isExpanded != oldWidget.style.isExpanded) {
       _execute(widget.style);
     }
@@ -63,6 +68,10 @@ class GaplySizeState extends State<GaplySize> with SingleTickerProviderStateMixi
   void toggle() => _controller.isCompleted ? hide() : show();
   void show() => _controller.forward();
   void hide() => _controller.reverse();
+
+  void _updateAnimation() {
+    _sizeAnimation = Tween<double>(begin: widget.style.minFactor, end: 1.0).animate(_curve);
+  }
 
   void _execute(SizeStyle style) {
     if (!mounted) return;
@@ -87,18 +96,18 @@ class GaplySizeState extends State<GaplySize> with SingleTickerProviderStateMixi
 
   @override
   Widget build(BuildContext context) {
-    if (!widget.style.isEnabled) return widget.child;
+    if (!widget.style.hasEffect) return widget.child;
 
     return AnimatedBuilder(
-      animation: _curve,
+      animation: _sizeAnimation,
       builder: (context, child) {
-        if (_controller.isDismissed && !widget.style.isExpanded) {
+        if (_controller.isDismissed && widget.style.minFactor == 0) {
           return const SizedBox.shrink();
         }
 
         return ClipRect(
           child: SizeTransition(
-            sizeFactor: _curve,
+            sizeFactor: _sizeAnimation,
             axis: widget.style.axis,
             axisAlignment: widget.style.axisAlignment,
             child: child,

@@ -103,7 +103,7 @@ class GaplyFlipState extends State<GaplyFlip> with SingleTickerProviderStateMixi
 
   @override
   Widget build(BuildContext context) {
-    if (!widget.style.isEnabled) return widget.front;
+    if (!widget.style.hasEffect) return widget.front;
 
     return AnimatedBuilder(
       animation: _curve,

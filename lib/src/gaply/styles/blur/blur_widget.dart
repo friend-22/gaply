@@ -9,7 +9,7 @@ class _GaplyBlurWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (!style.isEnabled) return child;
+    if (!style.hasEffect) return child;
 
     return Stack(
       children: [

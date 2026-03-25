@@ -58,8 +58,8 @@ class BoxStyle extends GaplyStyle<BoxStyle> with BoxStyleModifier<BoxStyle> {
   }
 
   @override
-  bool get isEnabled {
-    return layout.isEnabled;
+  bool get hasEffect {
+    return layout.hasEffect;
   }
 
   @override

@@ -86,9 +86,6 @@ class GaplyLayout extends GaplyStyle<GaplyLayout> {
   }
 
   @override
-  bool get isEnabled => true;
-
-  @override
   GaplyLayout lerp(GaplyLayout? other, double t) {
     if (other == null) return this;
 
@@ -105,4 +102,7 @@ class GaplyLayout extends GaplyStyle<GaplyLayout> {
 
   @override
   List<Object?> get props => [padding, margin, borderRadius, alignment, width, height, scale];
+
+  @override
+  bool get hasEffect => true;
 }

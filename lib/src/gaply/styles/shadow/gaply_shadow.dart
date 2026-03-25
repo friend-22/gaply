@@ -59,9 +59,6 @@ class GaplyShadow extends GaplyStyle<GaplyShadow> with _GShadowMixin {
     );
   }
 
-  @override
-  bool get isEnabled => color.isEnabled;
-
   GaplyShadow withIntensity(double intensity) {
     return copyWith(blurRadius: blurRadius * intensity, spreadRadius: spreadRadius * intensity);
   }
@@ -98,6 +95,9 @@ class GaplyShadow extends GaplyStyle<GaplyShadow> with _GShadowMixin {
 
   @override
   List<Object?> get props => [spreadRadius, blurRadius, color, offset, blurStyle];
+
+  @override
+  bool get hasEffect => color.hasEffect;
 }
 
 mixin _GShadowMixin {

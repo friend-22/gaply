@@ -16,16 +16,19 @@ class TrainStyle extends GaplyAnimStyle with GaplyAnimMixin<TrainStyle>, GaplyDi
   final bool useOpacity;
 
   const TrainStyle({
-    super.duration = const Duration(milliseconds: 500),
-    super.curve = Curves.easeOutQuart,
-    super.delay = Duration.zero,
+    Duration? duration,
+    Curve? curve,
+    Duration? delay,
     super.onComplete,
     required this.direction,
     this.useOpacity = true,
-  });
+  }) : super(
+         duration: duration ?? const Duration(milliseconds: 500),
+         curve: curve ?? Curves.easeOutQuart,
+         delay: delay ?? Duration.zero,
+       );
 
-  const TrainStyle.none()
-    : this(duration: Duration.zero, curve: Curves.linear, direction: AxisDirection.down, useOpacity: false);
+  const TrainStyle.none() : this(duration: Duration.zero, direction: AxisDirection.down);
 
   static void register(String name, TrainStyle style) => GaplyTrainPreset.register(name, style);
 
@@ -43,9 +46,9 @@ class TrainStyle extends GaplyAnimStyle with GaplyAnimMixin<TrainStyle>, GaplyDi
   }
 
   const TrainStyle.left({
-    Duration duration = const Duration(milliseconds: 500),
-    Curve curve = Curves.easeOutQuart,
-    Duration delay = Duration.zero,
+    Duration? duration,
+    Duration? delay,
+    Curve? curve,
     VoidCallback? onComplete,
     bool useOpacity = true,
   }) : this(
@@ -58,9 +61,9 @@ class TrainStyle extends GaplyAnimStyle with GaplyAnimMixin<TrainStyle>, GaplyDi
        );
 
   const TrainStyle.right({
-    Duration duration = const Duration(milliseconds: 500),
-    Curve curve = Curves.easeOutQuart,
-    Duration delay = Duration.zero,
+    Duration? duration,
+    Duration? delay,
+    Curve? curve,
     VoidCallback? onComplete,
     bool useOpacity = true,
   }) : this(
@@ -73,9 +76,9 @@ class TrainStyle extends GaplyAnimStyle with GaplyAnimMixin<TrainStyle>, GaplyDi
        );
 
   const TrainStyle.up({
-    Duration duration = const Duration(milliseconds: 500),
-    Curve curve = Curves.easeOutQuart,
-    Duration delay = Duration.zero,
+    Duration? duration,
+    Duration? delay,
+    Curve? curve,
     VoidCallback? onComplete,
     bool useOpacity = true,
   }) : this(
@@ -88,9 +91,9 @@ class TrainStyle extends GaplyAnimStyle with GaplyAnimMixin<TrainStyle>, GaplyDi
        );
 
   const TrainStyle.down({
-    Duration duration = const Duration(milliseconds: 500),
-    Curve curve = Curves.easeOutQuart,
-    Duration delay = Duration.zero,
+    Duration? duration,
+    Duration? delay,
+    Curve? curve,
     VoidCallback? onComplete,
     bool useOpacity = true,
   }) : this(
@@ -140,7 +143,10 @@ class TrainStyle extends GaplyAnimStyle with GaplyAnimMixin<TrainStyle>, GaplyDi
   }
 
   @override
-  List<Object?> get props => [...super.props, useOpacity];
+  List<Object?> get props => [...super.props, direction, useOpacity];
+
+  @override
+  bool get hasEffect => duration.inMilliseconds > 0;
 
   @override
   Widget buildWidget({required Widget child, Object? trigger}) {

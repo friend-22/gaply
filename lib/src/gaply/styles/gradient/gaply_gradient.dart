@@ -40,9 +40,6 @@ class GaplyGradient extends GaplyStyle<GaplyGradient> with _GGradientMixin {
   }
 
   @override
-  bool get isEnabled => colors.isNotEmpty && stops.isNotEmpty;
-
-  @override
   GaplyGradient copyWith({
     GradientType? type,
     List<GaplyColor>? colors,
@@ -110,13 +107,16 @@ class GaplyGradient extends GaplyStyle<GaplyGradient> with _GGradientMixin {
 
   @override
   List<Object?> get props => [type, colors, stops, begin, end, startAngle, endAngle];
+
+  @override
+  bool get hasEffect => colors.isNotEmpty && stops.isNotEmpty;
 }
 
 mixin _GGradientMixin {
   GaplyGradient get _params => this as GaplyGradient;
 
   Gradient? resolve(BuildContext context) {
-    if (!_params.isEnabled) return null;
+    if (!_params.hasEffect) return null;
 
     final resolvedColors = _params.colors.map((p) => p.resolve(context)).whereType<Color>().toList();
 

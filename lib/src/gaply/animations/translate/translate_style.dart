@@ -15,14 +15,18 @@ class TranslateStyle extends GaplyAnimStyle with GaplyAnimMixin<TranslateStyle> 
   final bool isMoved;
 
   const TranslateStyle({
-    super.duration = const Duration(milliseconds: 250),
-    super.curve = Curves.easeInOut,
-    super.delay = Duration.zero,
+    Duration? duration,
+    Curve? curve,
+    Duration? delay,
     super.onComplete,
     required this.end,
     required this.isMoved,
     this.begin = Offset.zero,
-  });
+  }) : super(
+         duration: duration ?? const Duration(milliseconds: 500),
+         curve: curve ?? Curves.easeInOut,
+         delay: delay ?? Duration.zero,
+       );
 
   const TranslateStyle.none()
     : this(duration: Duration.zero, curve: Curves.linear, end: Offset.zero, isMoved: false);
@@ -80,11 +84,11 @@ class TranslateStyle extends GaplyAnimStyle with GaplyAnimMixin<TranslateStyle> 
   List<Object?> get props => [...super.props, begin, end, isMoved];
 
   @override
-  bool get isEnabled => duration.inMilliseconds > 0 || isMoved;
+  bool get hasEffect => duration.inMilliseconds > 0 || isMoved;
 
   @override
   Widget buildWidget({required Widget child, Object? trigger}) {
-    if (!isEnabled) return child;
+    if (!hasEffect) return child;
 
     return _GaplyTranslateTrigger(style: this, trigger: trigger ?? DateTime.now(), child: child);
   }
