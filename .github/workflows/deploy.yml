@@ -30,3 +30,4 @@ jobs:
           folder: demo/build/web
           branch: gh-pages
           clean: true
+          force: true
