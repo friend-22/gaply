@@ -2,14 +2,16 @@ name: Deploy Flutter Demo
 
 on:
   push:
-    branches: ["main"]
-  workflow_dispatch:
+    branches: ["main"] # main 브랜치에 푸시될 때 실행
+  workflow_dispatch:   # 수동 실행 버튼 활성화
 
+# Pages 배포를 위한 필수 권한 설정
 permissions:
   contents: read
   pages: write
   id-token: write
 
+# 동시 배포 충돌 방지 (새로운 배포가 시작되면 이전 배포 취소)
 concurrency:
   group: "pages"
   cancel-in-progress: true
@@ -18,28 +20,31 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
-      
-      - name: Build Flutter Web
+          # flutter-version: '3.x.x' # 특정 버전이 필요하면 명시 (생략 시 최신 stable)
+
+      - name: Prepare and Build Web
         run: |
           cd demo
           flutter pub get
-#          flutter create . --platforms web
-          flutter build web --base-href /gaply/ --release
-      
-      - name: Create .nojekyll
+          # 웹 설정이 없어도 자동으로 생성 (핵심!)
+          flutter create . --platforms web
+          # CanvasKit 렌더러를 사용하여 더 매끄러운 성능 제공
+          flutter build web --base-href /gaply/ --release --web-renderer canvaskit
+        
+      - name: Prevent Jekyll Processing
         run: touch demo/build/web/.nojekyll
 
-      - name: Setup Pages
+      - name: Setup Pages Infrastructure
         uses: actions/configure-pages@v5
 
-      - name: Upload artifact
+      - name: Upload Build Artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: 'demo/build/web'
