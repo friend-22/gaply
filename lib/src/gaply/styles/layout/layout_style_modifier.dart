@@ -23,7 +23,12 @@ mixin LayoutStyleModifier<T> {
 
   T layoutAlignment(AlignmentGeometry value) => copyWithLayout(layoutStyle.copyWith(alignment: value));
 
-  T layoutRadius(BorderRadiusGeometry value) => copyWithLayout(layoutStyle.copyWith(borderRadius: value));
-
   T layoutScale(double value) => copyWithLayout(layoutStyle.copyWith(scale: value));
+
+  T layoutRadius(double value) =>
+      copyWithLayout(layoutStyle.copyWith(borderRadius: BorderRadius.circular(value)));
+
+  T layoutBorderWidth(double width) => copyWithLayout(layoutStyle.copyWith(borderWidth: width));
+
+  T layoutBorderNone() => copyWithLayout(layoutStyle.copyWith(borderWidth: 0.0));
 }

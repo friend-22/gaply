@@ -15,6 +15,7 @@ class GaplyLayout extends GaplyStyle<GaplyLayout> with _GaplyLayoutMixin, Layout
   final double? width;
   final double? height;
   final double scale;
+  final double borderWidth;
 
   const GaplyLayout({
     this.padding,
@@ -24,6 +25,7 @@ class GaplyLayout extends GaplyStyle<GaplyLayout> with _GaplyLayoutMixin, Layout
     this.width,
     this.height,
     this.scale = 1.0,
+    this.borderWidth = 0.0,
   });
 
   const GaplyLayout.none()
@@ -32,6 +34,7 @@ class GaplyLayout extends GaplyStyle<GaplyLayout> with _GaplyLayoutMixin, Layout
       borderRadius = BorderRadius.zero,
       alignment = Alignment.center,
       scale = 1.0,
+      borderWidth = 0.0,
       width = null,
       height = null;
 
@@ -59,6 +62,7 @@ class GaplyLayout extends GaplyStyle<GaplyLayout> with _GaplyLayoutMixin, Layout
     double? width,
     double? height,
     double? scale,
+    double? borderWidth,
   }) {
     return GaplyLayout(
       padding: padding ?? this.padding,
@@ -68,6 +72,7 @@ class GaplyLayout extends GaplyStyle<GaplyLayout> with _GaplyLayoutMixin, Layout
       width: width ?? this.width,
       height: height ?? this.height,
       scale: scale ?? this.scale,
+      borderWidth: borderWidth ?? this.borderWidth,
     );
   }
 
@@ -83,11 +88,12 @@ class GaplyLayout extends GaplyStyle<GaplyLayout> with _GaplyLayoutMixin, Layout
       width: lerpDouble(width, other.width, t),
       height: lerpDouble(height, other.height, t),
       scale: lerpDouble(scale, other.scale, t) ?? scale,
+      borderWidth: lerpDouble(borderWidth, other.borderWidth, t) ?? borderWidth,
     );
   }
 
   @override
-  List<Object?> get props => [padding, margin, borderRadius, alignment, width, height, scale];
+  List<Object?> get props => [padding, margin, borderRadius, alignment, width, height, scale, borderWidth];
 
   @override
   bool get hasEffect => true;
@@ -105,6 +111,7 @@ mixin _GaplyLayoutMixin {
       width: layout.width,
       height: layout.height,
       scale: layout.scale,
+      borderWidth: layout.borderWidth,
     );
   }
 }

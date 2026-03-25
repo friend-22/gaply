@@ -104,6 +104,19 @@ class GaplyColor extends GaplyStyle<GaplyColor> with _GaplyColorMixin, ColorStyl
     bool autoInvert = true,
   }) : this(role: ColorRole.none, customColor: color, shade: shade, opacity: opacity, autoInvert: autoInvert);
 
+  GaplyColor.fromInt(
+    int value, {
+    ColorShade shade = ColorShade.s500,
+    ColorOpacity opacity = ColorOpacity.full,
+    bool autoInvert = true,
+  }) : this(
+         role: ColorRole.none,
+         customColor: Color(value),
+         shade: shade,
+         opacity: opacity,
+         autoInvert: autoInvert,
+       );
+
   const GaplyColor.transparent()
     : this(role: ColorRole.none, customColor: Colors.transparent, opacity: ColorOpacity.transparent);
 

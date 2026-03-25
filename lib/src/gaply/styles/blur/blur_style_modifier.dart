@@ -19,4 +19,6 @@ mixin BlurStyleModifier<T> {
   T blurPreset(String name) => copyWithBlur(BlurStyle.preset(name));
 
   T blurIntensity(double factor) => copyWithBlur(blurStyle.copyWith(sigma: blurStyle.sigma * factor));
+
+  T blurClear() => copyWithBlur(const BlurStyle.none());
 }

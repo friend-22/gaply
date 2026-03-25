@@ -21,4 +21,6 @@ mixin ShimmerStyleModifier<T> {
       copyWithShimmer(shimmerStyle.copyWith(direction: direction));
 
   T shimmerLoop(int loop) => copyWithShimmer(shimmerStyle.copyWith(loop: loop));
+
+  T shimmerClear() => copyWithShimmer(const GaplyShimmer.none());
 }

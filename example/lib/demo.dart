@@ -37,9 +37,9 @@ class _GaplyDemoState extends State<GaplyDemo> {
           onEnter: (_) => setState(() => _isHovered = true),
           onExit: (_) => setState(() => _isHovered = false),
           child: BoxStyle.preset('glassCard')
-              .boxBorderColor(_isHovered ? Colors.blueAccent : Colors.white.withValues(alpha: .2))
-              .boxElevation(_isHovered ? 30 : 12)
-              .boxScale(_isHovered ? 1.05 : 1.0)
+              .borderColorCustom(_isHovered ? Colors.blueAccent : Colors.white.withValues(alpha: .2))
+              .shadowElevation(_isHovered ? 30 : 12)
+              .layoutScale(_isHovered ? 1.05 : 1.0)
               .buildWidget(child: _buildCardContent()),
         ),
       ),

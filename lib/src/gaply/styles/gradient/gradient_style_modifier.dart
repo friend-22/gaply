@@ -30,4 +30,6 @@ mixin GradientStyleModifier<T> {
 
   T gradientAngle({double? start, double? end}) =>
       copyWithGradient(gradientStyle.copyWith(startAngle: start, endAngle: end));
+
+  T gradientClear() => copyWithGradient(const GaplyGradient.none());
 }

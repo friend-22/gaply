@@ -31,16 +31,18 @@ mixin ShadowStyleModifier<T> {
       ),
     );
   }
+
+  T shadowClear() => copyWithShadow(const GaplyShadow.none());
 }
 
 mixin ManyShadowStyleModifier<T> {
   List<GaplyShadow> get shadowStyle;
 
-  T copyWithManyShadows(List<GaplyShadow> shadows);
+  T copyWithShadow(List<GaplyShadow> shadows);
 
-  T shadows(List<GaplyShadow> values) => copyWithManyShadows(values);
+  T shadowAll(List<GaplyShadow> values) => copyWithShadow(values);
 
-  T shadowAdd(GaplyShadow shadow) => copyWithManyShadows([...shadowStyle, shadow]);
+  T shadowAdd(GaplyShadow shadow) => copyWithShadow([...shadowStyle, shadow]);
 
   T shadowElevation(double value, {GaplyColor? color}) =>
       shadowAdd(GaplyShadow.elevation(value, color: color));
@@ -49,12 +51,12 @@ mixin ManyShadowStyleModifier<T> {
     if (index < 0 || index >= shadowStyle.length) return this as T;
     final newShadows = List<GaplyShadow>.from(shadowStyle);
     newShadows[index] = newShadows[index].copyWith(color: color);
-    return copyWithManyShadows(newShadows);
+    return copyWithShadow(newShadows);
   }
 
-  T shadowClear() => copyWithManyShadows(const []);
+  T shadowClear() => copyWithShadow(const []);
 
   T shadowIntensity(double factor) {
-    return copyWithManyShadows(shadowStyle.map((s) => s.shadowIntensity(factor)).toList());
+    return copyWithShadow(shadowStyle.map((s) => s.shadowIntensity(factor)).toList());
   }
 }

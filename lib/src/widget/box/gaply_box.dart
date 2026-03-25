@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:gaply/src/utils/tap_gesture_detector.dart';
 
 import 'package:gaply/src/gaply/styles/styles.dart';
+import 'package:gaply/src/gaply/animations/animations.dart';
+
 import 'box_style.dart';
 import 'box_style_modifier.dart';
 
@@ -30,7 +32,18 @@ import 'box_style_modifier.dart';
 /// - [BoxStyle] for styling configuration
 /// - [BoxStyleModifier] for fluent API
 class GaplyBox extends StatelessWidget
-    with BlurStyleModifier<GaplyBox>, GradientStyleModifier<GaplyBox>, BoxStyleModifier<GaplyBox> {
+    with
+        ColorStyleModifier<GaplyBox>,
+        BorderColorStyleModifier<GaplyBox>,
+        LayoutStyleModifier<GaplyBox>,
+        BlurStyleModifier<GaplyBox>,
+        GradientStyleModifier<GaplyBox>,
+        ShimmerStyleModifier<GaplyBox>,
+        FilterStyleModifier<GaplyBox>,
+        NoiseStyleModifier<GaplyBox>,
+        ManyShadowStyleModifier<GaplyBox>,
+        MotionStyleModifier<GaplyBox>,
+        BoxStyleModifier<GaplyBox> {
   @override
   BoxStyle get boxStyle => style;
 
@@ -118,6 +131,14 @@ class _GaplyAnimatedBoxState extends AnimatedWidgetBaseState<_GaplyAnimatedBox> 
       );
     }
 
+    if (currentStyle.filter.hasEffect) {
+      result = currentStyle.filter.buildWidget(context: context, child: result);
+    }
+
+    if (currentStyle.noise.hasEffect) {
+      result = currentStyle.noise.buildWidget(context: context, child: result);
+    }
+
     if (currentStyle.layout.scale != 1.0) {
       result = Transform.scale(scale: currentStyle.layout.scale, child: result);
     }
@@ -146,7 +167,7 @@ class _GaplyAnimatedBoxState extends AnimatedWidgetBaseState<_GaplyAnimatedBox> 
     final hasDecoration =
         style.color.hasEffect ||
         style.borderColor.hasEffect ||
-        style.borderWidth > 0 ||
+        style.layout.borderWidth > 0 ||
         style.shadows.isNotEmpty ||
         style.gradient.hasEffect;
 
@@ -155,10 +176,10 @@ class _GaplyAnimatedBoxState extends AnimatedWidgetBaseState<_GaplyAnimatedBox> 
     return BoxDecoration(
       color: style.color.isVisible ? style.color.resolve(context) : null,
       borderRadius: style.layout.borderRadius,
-      border: style.borderWidth > 0
+      border: style.layout.borderWidth > 0
           ? Border.all(
               color: style.borderColor.resolve(context) ?? Colors.transparent,
-              width: style.borderWidth,
+              width: style.layout.borderWidth,
             )
           : null,
       boxShadow: style.shadows.map((s) => s.resolve(context)).whereType<BoxShadow>().toList(),

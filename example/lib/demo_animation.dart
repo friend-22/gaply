@@ -15,9 +15,9 @@ class _GaplyAnimDemoState extends State<GaplyAnimDemo> {
   @override
   Widget build(BuildContext context) {
     final cardStyle = BoxStyle.preset('animCard')
-        .boxScale(_isHovered ? (_isPressed ? 0.95 : 1.08) : 1.0)
-        .boxBorderColor(_isHovered ? Colors.blueAccent : Colors.white.withValues(alpha: 0.1))
-        .boxElevation(_isHovered ? 40 : 0)
+        .layoutScale(_isHovered ? (_isPressed ? 0.95 : 1.08) : 1.0)
+        .borderColorCustom(_isHovered ? Colors.blueAccent : Colors.white.withValues(alpha: 0.1))
+        .shadowElevation(_isHovered ? 40 : 0)
         .blurSigma(_isPressed ? 30 : 20)
         .boxCurve(_isPressed ? Curves.easeOutCubic : Curves.elasticOut);
 

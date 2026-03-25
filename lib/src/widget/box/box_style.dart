@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 
 import 'package:gaply/src/gaply/core/core.dart';
@@ -12,20 +10,33 @@ import 'box_style_modifier.dart';
 
 @immutable
 class BoxStyle extends GaplyStyle<BoxStyle>
-    with BlurStyleModifier<BoxStyle>, GradientStyleModifier<BoxStyle>, BoxStyleModifier<BoxStyle> {
+    with
+        _BoxStyleMixin,
+        ColorStyleModifier<BoxStyle>,
+        BorderColorStyleModifier<BoxStyle>,
+        LayoutStyleModifier<BoxStyle>,
+        BlurStyleModifier<BoxStyle>,
+        GradientStyleModifier<BoxStyle>,
+        ShimmerStyleModifier<BoxStyle>,
+        FilterStyleModifier<BoxStyle>,
+        NoiseStyleModifier<BoxStyle>,
+        ManyShadowStyleModifier<BoxStyle>,
+        MotionStyleModifier<BoxStyle>,
+        BoxStyleModifier<BoxStyle> {
   // 1. Layout & Shape
   final GaplyLayout layout;
 
   // 2. Static Style
   final GaplyColor color;
   final GaplyColor borderColor;
-  final double borderWidth;
   final List<GaplyShadow> shadows;
   final BlurStyle blur;
   final GaplyGradient gradient;
 
   // 3. Dynamic Effects
   final GaplyShimmer shimmer;
+  final GaplyFilter filter;
+  final GaplyNoise noise;
   final GaplyMotion motion;
 
   // 4. button Style
@@ -37,11 +48,12 @@ class BoxStyle extends GaplyStyle<BoxStyle>
     this.layout = const GaplyLayout.none(),
     this.color = const GaplyColor.none(),
     this.borderColor = const GaplyColor.none(),
-    this.borderWidth = 0.0,
     this.shadows = const [],
     this.blur = const BlurStyle.none(),
     this.gradient = const GaplyGradient.none(),
     this.shimmer = const GaplyShimmer.none(),
+    this.filter = const GaplyFilter.none(),
+    this.noise = const GaplyNoise.none(),
     this.motion = const GaplyMotion.none(),
     this.onPressed,
     this.curve = Curves.linear,
@@ -52,19 +64,15 @@ class BoxStyle extends GaplyStyle<BoxStyle>
 
   factory BoxStyle.preset(String name) {
     final style = GaplyBoxPreset.of(name);
+
     if (style == null) {
-      throw ArgumentError('Unknown box preset: "$name"');
+      throw ArgumentError(
+        'Unknown box preset: "$name". '
+        'Available presets: ${GaplyBoxPreset.instance.allKeys.join(", ")}',
+      );
     }
     return style;
   }
-
-  @override
-  bool get hasEffect {
-    return layout.hasEffect;
-  }
-
-  @override
-  BoxStyle get boxStyle => this;
 
   @override
   BoxStyle copyWithStyle(BoxStyle style) {
@@ -72,11 +80,12 @@ class BoxStyle extends GaplyStyle<BoxStyle>
       layout: style.layout,
       color: style.color,
       borderColor: style.borderColor,
-      borderWidth: style.borderWidth,
       shadows: style.shadows,
       blur: style.blur,
       gradient: style.gradient,
       shimmer: style.shimmer,
+      filter: style.filter,
+      noise: style.noise,
       motion: style.motion,
       onPressed: style.onPressed,
       duration: style.duration,
@@ -94,35 +103,23 @@ class BoxStyle extends GaplyStyle<BoxStyle>
     BlurStyle? blur,
     GaplyGradient? gradient,
     GaplyShimmer? shimmer,
+    GaplyFilter? filter,
+    GaplyNoise? noise,
     GaplyMotion? motion,
     VoidCallback? onPressed,
     Duration? duration,
     Curve? curve,
   }) {
-    if ((layout == null || layout == this.layout) &&
-        (color == null || color == this.color) &&
-        (borderColor == null || borderColor == this.borderColor) &&
-        (borderWidth == null || borderWidth == this.borderWidth) &&
-        (shadows == null || shadows == this.shadows) &&
-        (blur == null || blur == this.blur) &&
-        (gradient == null || gradient == this.gradient) &&
-        (shimmer == null || shimmer == this.shimmer) &&
-        (motion == null || motion == this.motion) &&
-        (onPressed == null || onPressed == this.onPressed) &&
-        (duration == null || duration == this.duration) &&
-        (curve == null || curve == this.curve)) {
-      return this;
-    }
-
     return BoxStyle(
       layout: layout ?? this.layout,
       color: color ?? this.color,
       borderColor: borderColor ?? this.borderColor,
-      borderWidth: borderWidth ?? this.borderWidth,
       shadows: shadows ?? this.shadows,
       blur: blur ?? this.blur,
       gradient: gradient ?? this.gradient,
       shimmer: shimmer ?? this.shimmer,
+      filter: filter ?? this.filter,
+      noise: noise ?? this.noise,
       motion: motion ?? this.motion,
 
       // useFocusOutline: useFocusOutline ?? this.useFocusOutline,
@@ -142,11 +139,12 @@ class BoxStyle extends GaplyStyle<BoxStyle>
       layout: layout.lerp(other.layout, t),
       color: color.lerp(other.color, t),
       borderColor: borderColor.lerp(other.borderColor, t),
-      borderWidth: lerpDouble(borderWidth, other.borderWidth, t),
       shadows: _lerpShadowList(shadows, other.shadows, t),
       blur: blur.lerp(other.blur, t),
       gradient: gradient.lerp(other.gradient, t),
       shimmer: shimmer.lerp(other.shimmer, t),
+      filter: filter.lerp(other.filter, t),
+      noise: noise.lerp(other.noise, t),
       motion: motion.lerp(other.motion, t),
       onPressed: t < 0.5 ? onPressed : other.onPressed,
       duration: t < 0.5 ? duration : other.duration,
@@ -164,18 +162,28 @@ class BoxStyle extends GaplyStyle<BoxStyle>
     layout,
     color,
     borderColor,
-    borderWidth,
     shadows,
     blur,
     gradient,
     shimmer,
+    filter,
+    noise,
     motion,
     onPressed,
     duration,
     curve,
   ];
 
+  @override
+  bool get hasEffect {
+    return layout.hasEffect;
+  }
+}
+
+mixin _BoxStyleMixin {
+  BoxStyle get boxStyle => this as BoxStyle;
+
   Widget buildWidget({required Widget child}) {
-    return GaplyBox(style: this, child: child);
+    return GaplyBox(style: boxStyle, child: child);
   }
 }
