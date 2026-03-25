@@ -1,4 +1,3 @@
-import 'package:flutter/animation.dart';
 import 'package:gaply/src/gaply/core/gaply_preset.dart';
 
 import 'fade_style.dart';

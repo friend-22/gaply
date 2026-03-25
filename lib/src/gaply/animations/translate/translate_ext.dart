@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 
 import 'translate_style.dart';
+import 'gaply_translate.dart';
 
 /// Extension to easily wrap any [Widget] with a translate animation.
 ///

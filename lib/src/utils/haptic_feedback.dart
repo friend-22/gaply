@@ -1,5 +1,4 @@
 import 'package:flutter/services.dart' as services;
-import 'package:gaply/src/utils/task_extension.dart';
 
 enum HapticType {
   selection(services.HapticFeedback.selectionClick),
