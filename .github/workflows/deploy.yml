@@ -21,7 +21,7 @@ jobs:
         working-directory: demo
 
       - name: Build Web
-        run: flutter build web --web-renderer canvaskit --base-href /gaply/
+        run: flutter build web --base-href /gaply/ --release
         working-directory: demo
             
       - name: Deploy to GitHub Pages
