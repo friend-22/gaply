@@ -3,21 +3,30 @@ on:
   push:
     branches: [ main ]
 
+permissions:
+  contents: write
+  
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+        
       - uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
-      
-      - run: flutter pub get
-      - run: flutter build web --web-renderer html --base-href /gaply/
+
+      - name: Install dependencies
+        run: flutter pub get
         working-directory: demo
-      
+
+      - name: Build Web
+        run: flutter build web --web-renderer canvaskit --base-href /gaply/
+        working-directory: demo
+            
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           folder: demo/build/web
           branch: gh-pages
+          clean: true
