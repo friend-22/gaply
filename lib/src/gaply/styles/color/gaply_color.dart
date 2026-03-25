@@ -192,8 +192,8 @@ class GaplyColor extends GaplyStyle<GaplyColor> with _GColorMixin {
 
   bool get isVisible {
     if (!hasEffect) return false;
-    if (customColor == Colors.transparent) return false;
-    if (opacity == ColorOpacity.transparent) return false;
+    if (opacity.value < 0.001) return false;
+    if (customColor != null && customColor!.a < 0.001) return false;
     return true;
   }
 
@@ -222,7 +222,6 @@ class GaplyColor extends GaplyStyle<GaplyColor> with _GColorMixin {
     if (other == null) return this;
 
     final double lerpOpacityValue = lerpDouble(opacity.value, other.opacity.value, t) ?? opacity.value;
-    final finalOpacity = GColorOpacityExt.fromValue(lerpOpacityValue);
 
     final double lerpShadeIndex =
         lerpDouble(shade.index.toDouble(), other.shade.index.toDouble(), t) ?? shade.index.toDouble();
@@ -230,7 +229,7 @@ class GaplyColor extends GaplyStyle<GaplyColor> with _GColorMixin {
 
     return GaplyColor(
       role: t < 0.5 ? role : other.role,
-      opacity: finalOpacity,
+      opacity: GColorOpacityExt.fromValue(lerpOpacityValue),
       shade: finalShade,
       autoInvert: t < 0.5 ? autoInvert : other.autoInvert,
       customColor: Color.lerp(customColor, other.customColor, t),
@@ -241,12 +240,53 @@ class GaplyColor extends GaplyStyle<GaplyColor> with _GColorMixin {
 mixin _GColorMixin {
   GaplyColor get _params => this as GaplyColor;
 
+  static final Expando<Map<int, Color>> _cacheStorage = Expando();
+
+  Color? resolve(BuildContext context, {bool useCache = true}) {
+    if (!_params.hasEffect) return null;
+
+    final theme = Theme.of(context);
+    final themeHash = theme.hashCode;
+
+    if (!useCache) return _resolveImpl(context);
+
+    var objectCache = _cacheStorage[this];
+    if (objectCache == null) {
+      objectCache = {};
+      _cacheStorage[this] = objectCache;
+    }
+
+    if (objectCache.containsKey(themeHash)) {
+      return objectCache[themeHash];
+    }
+
+    final resolvedColor = _resolveImpl(context);
+    if (resolvedColor != null) {
+      objectCache[themeHash] = resolvedColor;
+    }
+
+    return resolvedColor;
+  }
+
+  Color? _resolveImpl(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    Color? baseColor = _params.customColor ?? _resolveByRole(theme.colorScheme);
+    if (baseColor == null) return null;
+
+    if (baseColor is MaterialColor) {
+      baseColor = _getMaterialColorShade(baseColor, isDark);
+    } else {
+      baseColor = _applySmartShade(baseColor, isDark);
+    }
+
+    return baseColor.withValues(alpha: _params.opacity.value);
+  }
+
   Color _getMaterialColorShade(MaterialColor materialColor, bool isDark) {
     var shade = _params.shade;
-
-    if (_params.autoInvert && isDark) {
-      shade = _invertShade(shade);
-    }
+    if (_params.autoInvert && isDark) shade = _invertShade(shade);
 
     return switch (shade) {
       ColorShade.s50 => materialColor.shade50,
@@ -268,20 +308,22 @@ mixin _GColorMixin {
   }
 
   Color _applySmartShade(Color color, bool isDark) {
-    final double shadeValue = _params.shade.value;
-    if (shadeValue == 0.5 && !_params.autoInvert) return color;
+    if (_params.shade == ColorShade.s500 && !_params.autoInvert) return color;
 
+    final double shadeValue = _params.shade.value; // 0.0(s50) ~ 1.0(s950)
     final double effectiveValue = (_params.autoInvert && isDark) ? 1.0 - shadeValue : shadeValue;
 
     final hsl = HSLColor.fromColor(color);
 
     if (effectiveValue < 0.5) {
-      final factor = (0.5 - effectiveValue) * 2; // 0.0 ~ 1.0 (연속적)
-      return hsl.withLightness(lerpDouble(hsl.lightness, 0.98, factor)!).toColor();
-    } else {
-      final factor = (effectiveValue - 0.5) * 2; // 0.0 ~ 1.0 (연속적)
-      return hsl.withLightness(lerpDouble(hsl.lightness, 0.05, factor)!).toColor();
+      final factor = (0.5 - effectiveValue) * 2;
+      return hsl.withLightness(lerpDouble(hsl.lightness, 0.95, factor)!).toColor();
+    } else if (effectiveValue > 0.5) {
+      final factor = (effectiveValue - 0.5) * 2;
+      return hsl.withLightness(lerpDouble(hsl.lightness, 0.1, factor)!).toColor();
     }
+
+    return color;
   }
 
   Color? _resolveByRole(ColorScheme scheme) {
@@ -317,26 +359,5 @@ mixin _GColorMixin {
 
       ColorRole.none => null,
     };
-  }
-
-  Color? resolve(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-
-    if (_params.role == ColorRole.none && _params.customColor == null) {
-      return null;
-    }
-
-    Color baseColor = _params.customColor ?? _resolveByRole(theme.colorScheme)!;
-
-    if (baseColor is MaterialColor) {
-      baseColor = _getMaterialColorShade(baseColor, isDark);
-    } else {
-      baseColor = _applySmartShade(baseColor, isDark);
-    }
-
-    final alpha = _params.opacity.value;
-
-    return baseColor.withValues(alpha: alpha);
   }
 }

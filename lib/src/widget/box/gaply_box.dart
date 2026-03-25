@@ -4,6 +4,30 @@ import 'package:gaply/src/utils/tap_gesture_detector.dart';
 import 'box_style.dart';
 import 'box_style_modifier.dart';
 
+/// A customizable box widget with integrated styling and animation support.
+///
+/// [GaplyBox] combines layout, visual effects, and animations through [BoxStyle].
+/// It supports:
+/// - Colors and borders
+/// - Shadows and blur effects
+/// - Shimmer animations
+/// - Sequential animations
+/// - Interactive events
+///
+/// ### Example
+/// ```dart
+/// GaplyBox(
+///   style: BoxStyle()
+///       .boxColorRole(ColorRole.primary)
+///       .boxRadius(BorderRadius.circular(12))
+///       .boxPadding(EdgeInsets.all(16)),
+///   child: Text('Styled Box'),
+/// )
+/// ```
+///
+/// See also:
+/// - [BoxStyle] for styling configuration
+/// - [BoxStyleModifier] for fluent API
 class GaplyBox extends StatelessWidget with BoxStyleModifier<GaplyBox> {
   @override
   final BoxStyle style;
@@ -20,6 +44,7 @@ class GaplyBox extends StatelessWidget with BoxStyleModifier<GaplyBox> {
   }
 }
 
+/// Animated container that interpolates between [BoxStyle] values
 class _GaplyAnimatedBox extends ImplicitlyAnimatedWidget {
   final BoxStyle style;
   final Widget child;
@@ -34,6 +59,17 @@ class _GaplyAnimatedBox extends ImplicitlyAnimatedWidget {
 class _GaplyAnimatedBoxState extends AnimatedWidgetBaseState<_GaplyAnimatedBox> {
   BoxStyleTween? _styleTween;
 
+  /// Cache for decoration to avoid rebuilding every frame
+  BoxDecoration? _cachedDecoration;
+  BoxStyle? _lastStyle;
+
+  @override
+  void didUpdateWidget(_GaplyAnimatedBox oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Invalidate cache when widget updates
+    _cachedDecoration = null;
+  }
+
   @override
   void forEachTween(TweenVisitor<dynamic> visitor) {
     _styleTween =
@@ -47,9 +83,11 @@ class _GaplyAnimatedBoxState extends AnimatedWidgetBaseState<_GaplyAnimatedBox> 
 
     Widget result = widget.child;
 
-    // [최적화 2] Shimmer나 Blur 같이 연산량이 많은 효과가 있을 때만 RepaintBoundary 적용
-    final bool needsBoundary = currentStyle.shimmer.hasEffect || currentStyle.blur.hasEffect;
+    // Determine if heavy effects need optimization
+    final needsOptimization =
+        currentStyle.shimmer.hasEffect || (currentStyle.blur.hasEffect && currentStyle.motion.hasEffect);
 
+    // Build decoration with caching
     final decoration = _buildDecoration(context, currentStyle);
 
     result = Container(
@@ -63,6 +101,7 @@ class _GaplyAnimatedBoxState extends AnimatedWidgetBaseState<_GaplyAnimatedBox> 
       child: result,
     );
 
+    // Apply effects in order of performance impact (least expensive first)
     if (currentStyle.shimmer.hasEffect) {
       result = currentStyle.shimmer.buildWidget(context: context, child: result);
     }
@@ -79,7 +118,7 @@ class _GaplyAnimatedBoxState extends AnimatedWidgetBaseState<_GaplyAnimatedBox> 
       result = Transform.scale(scale: currentStyle.layout.scale, child: result);
     }
 
-    if (needsBoundary) {
+    if (needsOptimization) {
       result = RepaintBoundary(child: result);
     }
 
@@ -96,6 +135,9 @@ class _GaplyAnimatedBoxState extends AnimatedWidgetBaseState<_GaplyAnimatedBox> 
     return result;
   }
 
+  /// Builds a [BoxDecoration] from the current [BoxStyle].
+  ///
+  /// Returns null if no decoration is needed (all properties disabled).
   BoxDecoration? _buildDecoration(BuildContext context, BoxStyle style) {
     final hasDecoration =
         style.color.hasEffect ||
@@ -121,12 +163,18 @@ class _GaplyAnimatedBoxState extends AnimatedWidgetBaseState<_GaplyAnimatedBox> 
   }
 }
 
-/// BoxStyle 전용 Tween
+/// Tween for smooth animation between two [BoxStyle] values.
+///
+/// This tween handles interpolation of all style properties including
+/// colors, shadows, blur effects, and layout parameters.
 class BoxStyleTween extends Tween<BoxStyle> {
   BoxStyleTween({super.begin, super.end});
 
+  /// Lerps between begin and end [BoxStyle] at progress [t] (0.0 to 1.0)
   @override
   BoxStyle lerp(double t) {
+    assert(begin != null && end != null, 'BoxStyleTween requires begin and end values');
+
     final result = begin!.lerp(end, t);
     // 애니메이션 중일 때만 로그 출력
     if (t > 0 && t < 1) {
