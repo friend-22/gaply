@@ -6,11 +6,17 @@ import 'package:gaply/src/gaply/core/gaply_trigger.dart';
 
 import 'gaply_train.dart';
 import 'train_presets.dart';
+import 'train_style_modifier.dart';
 
 part 'train_trigger.dart';
 
 @immutable
-class TrainStyle extends GaplyAnimStyle with GaplyAnimMixin<TrainStyle>, GaplyDirectionAnimMixin {
+class TrainStyle extends GaplyAnimStyle
+    with
+        GaplyAnimMixin<TrainStyle>,
+        GaplyDirectionAnimMixin,
+        _TrainStyleMixin,
+        TrainStyleModifier<TrainStyle> {
   @override
   final AxisDirection direction;
   final bool useOpacity;
@@ -147,8 +153,22 @@ class TrainStyle extends GaplyAnimStyle with GaplyAnimMixin<TrainStyle>, GaplyDi
 
   @override
   bool get hasEffect => duration.inMilliseconds > 0;
+}
 
-  @override
+mixin _TrainStyleMixin {
+  TrainStyle get trainStyle => this as TrainStyle;
+
+  TrainStyle copyWithTrain(TrainStyle train) {
+    return trainStyle.copyWith(
+      duration: train.duration,
+      curve: train.curve,
+      delay: train.delay,
+      onComplete: train.onComplete,
+      direction: train.direction,
+      useOpacity: train.useOpacity,
+    );
+  }
+
   Widget buildWidget({required Widget child, Object? trigger}) {
     return child;
   }
@@ -157,13 +177,14 @@ class TrainStyle extends GaplyAnimStyle with GaplyAnimMixin<TrainStyle>, GaplyDi
     required T currentItem,
     required T? previousItem,
     required Widget Function(T) itemBuilder,
+    Object? trigger,
   }) {
     return _GaplyTrainTrigger<T>(
       currentItem: currentItem,
       previousItem: previousItem,
       itemBuilder: itemBuilder,
       trigger: DateTime.now(),
-      style: this,
+      style: trainStyle,
     );
   }
 }

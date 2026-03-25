@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'fade_style.dart';
+import 'gaply_fade.dart';
 
 extension GaplyFadeX on FadeStyle {}
 

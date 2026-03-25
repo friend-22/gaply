@@ -5,12 +5,14 @@ import 'package:flutter/material.dart';
 import 'package:gaply/src/gaply/core/gaply_style.dart';
 
 import '../color/gaply_color.dart';
+import 'gradient_style_modifier.dart';
 import 'gradient_presets.dart';
 
 enum GradientType { linear, radial, sweep }
 
 @immutable
-class GaplyGradient extends GaplyStyle<GaplyGradient> with _GGradientMixin {
+class GaplyGradient extends GaplyStyle<GaplyGradient>
+    with _GaplyGradientMixin, GradientStyleModifier<GaplyGradient> {
   final GradientType type;
   final List<GaplyColor> colors;
   final List<double> stops;
@@ -31,11 +33,18 @@ class GaplyGradient extends GaplyStyle<GaplyGradient> with _GGradientMixin {
 
   const GaplyGradient.none() : this(type: GradientType.linear, colors: const [], stops: const []);
 
+  static void register(String name, GaplyGradient style) => GaplyGradientPreset.register(name, style);
+
   factory GaplyGradient.preset(String name, {GradientType? type}) {
     final style = GaplyGradientPreset.of(name);
+
     if (style == null) {
-      throw ArgumentError('Unknown gradient preset: "$name"');
+      throw ArgumentError(
+        'Unknown gradient preset: "$name". '
+        'Available presets: ${GaplyGradientPreset.instance.allKeys.join(", ")}',
+      );
     }
+
     return type != null ? style.copyWith(type: type) : style;
   }
 
@@ -112,31 +121,43 @@ class GaplyGradient extends GaplyStyle<GaplyGradient> with _GGradientMixin {
   bool get hasEffect => colors.isNotEmpty && stops.isNotEmpty;
 }
 
-mixin _GGradientMixin {
-  GaplyGradient get _params => this as GaplyGradient;
+mixin _GaplyGradientMixin {
+  GaplyGradient get gradientStyle => this as GaplyGradient;
+
+  GaplyGradient copyWithGradient(GaplyGradient gradient) {
+    return gradientStyle.copyWith(
+      type: gradient.type,
+      colors: gradient.colors,
+      stops: gradient.stops,
+      begin: gradient.begin,
+      end: gradient.end,
+      startAngle: gradient.startAngle,
+      endAngle: gradient.endAngle,
+    );
+  }
 
   Gradient? resolve(BuildContext context) {
-    if (!_params.hasEffect) return null;
+    if (!gradientStyle.hasEffect) return null;
 
-    final resolvedColors = _params.colors.map((p) => p.resolve(context)).whereType<Color>().toList();
+    final resolvedColors = gradientStyle.colors.map((p) => p.resolve(context)).whereType<Color>().toList();
 
-    if (resolvedColors.length != _params.colors.length) {
+    if (resolvedColors.length != gradientStyle.colors.length) {
       return null;
     }
 
-    return switch (_params.type) {
+    return switch (gradientStyle.type) {
       GradientType.linear => LinearGradient(
         colors: resolvedColors,
-        stops: _params.stops,
-        begin: _params.begin,
-        end: _params.end,
+        stops: gradientStyle.stops,
+        begin: gradientStyle.begin,
+        end: gradientStyle.end,
       ),
-      GradientType.radial => RadialGradient(colors: resolvedColors, stops: _params.stops),
+      GradientType.radial => RadialGradient(colors: resolvedColors, stops: gradientStyle.stops),
       GradientType.sweep => SweepGradient(
         colors: resolvedColors,
-        stops: _params.stops,
-        startAngle: _params.startAngle,
-        endAngle: _params.endAngle,
+        stops: gradientStyle.stops,
+        startAngle: gradientStyle.startAngle,
+        endAngle: gradientStyle.endAngle,
       ),
     };
   }

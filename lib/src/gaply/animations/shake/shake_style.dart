@@ -6,6 +6,7 @@ import 'package:gaply/src/gaply/core/gaply_trigger.dart';
 
 import 'shake_presets.dart';
 import 'gaply_shake.dart';
+import 'shake_style_modifier.dart';
 
 part 'shake_trigger.dart';
 
@@ -41,7 +42,8 @@ part 'shake_trigger.dart';
 /// )
 /// ```
 @immutable
-class ShakeStyle extends GaplyAnimStyle with GaplyAnimMixin<ShakeStyle> {
+class ShakeStyle extends GaplyAnimStyle
+    with GaplyAnimMixin<ShakeStyle>, _ShakeStyleMixin, ShakeStyleModifier<ShakeStyle> {
   /// Maximum translation distance in logical pixels
   final double distance;
 
@@ -158,11 +160,28 @@ class ShakeStyle extends GaplyAnimStyle with GaplyAnimMixin<ShakeStyle> {
 
   @override
   bool get hasEffect => duration.inMilliseconds > 0 && distance > 0 && count > 0;
+}
 
-  @override
+mixin _ShakeStyleMixin {
+  ShakeStyle get shakeStyle => this as ShakeStyle;
+
+  ShakeStyle copyWithShake(ShakeStyle shake) {
+    return shakeStyle.copyWith(
+      duration: shake.duration,
+      curve: shake.curve,
+      delay: shake.delay,
+      onComplete: shake.onComplete,
+      distance: shake.distance,
+      count: shake.count,
+      useHaptic: shake.useHaptic,
+      useRepaintBoundary: shake.useRepaintBoundary,
+      isVertical: shake.isVertical,
+    );
+  }
+
   Widget buildWidget({required Widget child, Object? trigger}) {
-    if (!hasEffect) return child;
+    if (!shakeStyle.hasEffect) return child;
 
-    return _GaplyShakeTrigger(style: this, trigger: trigger ?? DateTime.now(), child: child);
+    return _GaplyShakeTrigger(style: shakeStyle, trigger: trigger ?? DateTime.now(), child: child);
   }
 }

@@ -7,10 +7,13 @@ import 'package:gaply/src/gaply/core/gaply_trigger.dart';
 import 'gaply_scale.dart';
 import 'scale_presets.dart';
 
+import 'scale_style_modifier.dart';
+
 part 'scale_trigger.dart';
 
 @immutable
-class ScaleStyle extends GaplyAnimStyle with GaplyAnimMixin<ScaleStyle> {
+class ScaleStyle extends GaplyAnimStyle
+    with GaplyAnimMixin<ScaleStyle>, _ScaleStyleMixin, ScaleStyleModifier<ScaleStyle> {
   final double begin;
   final double end;
   final Alignment alignment;
@@ -100,11 +103,27 @@ class ScaleStyle extends GaplyAnimStyle with GaplyAnimMixin<ScaleStyle> {
 
   @override
   bool get hasEffect => duration.inMilliseconds > 0;
+}
 
-  @override
+mixin _ScaleStyleMixin {
+  ScaleStyle get scaleStyle => this as ScaleStyle;
+
+  ScaleStyle copyWithScale(ScaleStyle scale) {
+    return scaleStyle.copyWith(
+      duration: scale.duration,
+      curve: scale.curve,
+      delay: scale.delay,
+      onComplete: scale.onComplete,
+      begin: scale.begin,
+      end: scale.end,
+      alignment: scale.alignment,
+      isScaled: scale.isScaled,
+    );
+  }
+
   Widget buildWidget({required Widget child, Object? trigger}) {
-    if (!hasEffect) return child;
+    if (!scaleStyle.hasEffect) return child;
 
-    return _GaplyScaleTrigger(style: this, trigger: trigger ?? DateTime.now(), child: child);
+    return _GaplyScaleTrigger(style: scaleStyle, trigger: trigger ?? DateTime.now(), child: child);
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 
 import 'skew_style.dart';
+import 'gaply_skew.dart';
 
 /// Extension to easily wrap any [Widget] with a skew animation.
 ///

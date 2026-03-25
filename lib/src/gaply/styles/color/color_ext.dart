@@ -2,13 +2,6 @@ import 'package:flutter/widgets.dart';
 
 import 'gaply_color.dart';
 
-extension GColorExt on GaplyColor {
-  GaplyColor opacity(ColorOpacity newOpacity) => copyWith(opacity: newOpacity);
-  GaplyColor opacityValue(double value) => copyWith(opacity: GColorOpacityExt.fromValue(value));
-  GaplyColor shade(ColorShade newShade) => copyWith(shade: newShade);
-  GaplyColor shadeValue(double value) => copyWith(shade: GColorShadeExt.fromValue(value));
-}
-
 extension GColorExtLerp on GaplyColor {
   static Color? lerpResult(BuildContext context, GaplyColor? a, GaplyColor? b, double t) {
     final colorA = a?.resolve(context);

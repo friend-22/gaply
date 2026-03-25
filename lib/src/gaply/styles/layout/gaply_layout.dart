@@ -4,9 +4,10 @@ import 'package:flutter/widgets.dart';
 import 'package:gaply/src/gaply/core/gaply_style.dart';
 
 import 'layout_presets.dart';
+import 'layout_style_modifier.dart';
 
 @immutable
-class GaplyLayout extends GaplyStyle<GaplyLayout> {
+class GaplyLayout extends GaplyStyle<GaplyLayout> with _GaplyLayoutMixin, LayoutStyleModifier<GaplyLayout> {
   final EdgeInsetsGeometry? padding;
   final EdgeInsetsGeometry? margin;
   final BorderRadiusGeometry? borderRadius;
@@ -38,31 +39,16 @@ class GaplyLayout extends GaplyStyle<GaplyLayout> {
 
   factory GaplyLayout.preset(String name) {
     final style = GaplyLayoutPreset.of(name);
+
     if (style == null) {
-      throw ArgumentError('Unknown box preset: "$name"');
+      throw ArgumentError(
+        'Unknown layout preset: "$name". '
+        'Available presets: ${GaplyLayoutPreset.instance.allKeys.join(", ")}',
+      );
     }
+
     return style;
   }
-
-  // GaplyLayout boxSize(double width, double height) {
-  //   return copyWith(width: width, height: height);
-  // }
-  //
-  // GaplyLayout padding(EdgeInsetsGeometry padding) {
-  //   return copyWith(padding: padding);
-  // }
-  //
-  // GaplyLayout margin(EdgeInsetsGeometry margin) {
-  //   return copyWith(margin: margin);
-  // }
-  //
-  // GaplyLayout borderRadius(BorderRadiusGeometry borderRadius) {
-  //   return copyWith(borderRadius: borderRadius);
-  // }
-  //
-  // GaplyLayout alignment(AlignmentGeometry alignment) {
-  //   return copyWith(alignment: alignment);
-  // }
 
   @override
   GaplyLayout copyWith({
@@ -105,4 +91,20 @@ class GaplyLayout extends GaplyStyle<GaplyLayout> {
 
   @override
   bool get hasEffect => true;
+}
+
+mixin _GaplyLayoutMixin {
+  GaplyLayout get layoutStyle => this as GaplyLayout;
+
+  GaplyLayout copyWithLayout(GaplyLayout layout) {
+    return layoutStyle.copyWith(
+      padding: layout.padding,
+      margin: layout.margin,
+      borderRadius: layout.borderRadius,
+      alignment: layout.alignment,
+      width: layout.width,
+      height: layout.height,
+      scale: layout.scale,
+    );
+  }
 }

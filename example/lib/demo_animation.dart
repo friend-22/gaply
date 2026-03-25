@@ -18,7 +18,7 @@ class _GaplyAnimDemoState extends State<GaplyAnimDemo> {
         .boxScale(_isHovered ? (_isPressed ? 0.95 : 1.08) : 1.0)
         .boxBorderColor(_isHovered ? Colors.blueAccent : Colors.white.withValues(alpha: 0.1))
         .boxElevation(_isHovered ? 40 : 0)
-        .boxBlur(_isPressed ? 30 : 20)
+        .blurSigma(_isPressed ? 30 : 20)
         .boxCurve(_isPressed ? Curves.easeOutCubic : Curves.elasticOut);
 
     return Scaffold(

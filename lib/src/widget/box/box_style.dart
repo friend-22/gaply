@@ -11,7 +11,8 @@ import 'gaply_box.dart';
 import 'box_style_modifier.dart';
 
 @immutable
-class BoxStyle extends GaplyStyle<BoxStyle> with BoxStyleModifier<BoxStyle> {
+class BoxStyle extends GaplyStyle<BoxStyle>
+    with BlurStyleModifier<BoxStyle>, GradientStyleModifier<BoxStyle>, BoxStyleModifier<BoxStyle> {
   // 1. Layout & Shape
   final GaplyLayout layout;
 
@@ -63,7 +64,7 @@ class BoxStyle extends GaplyStyle<BoxStyle> with BoxStyleModifier<BoxStyle> {
   }
 
   @override
-  BoxStyle get style => this;
+  BoxStyle get boxStyle => this;
 
   @override
   BoxStyle copyWithStyle(BoxStyle style) {

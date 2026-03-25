@@ -1,11 +1,11 @@
 part of 'blur_style.dart';
 
-class _GaplyBlurWidget extends StatelessWidget {
+class _BlurWidget extends StatelessWidget {
   final BlurStyle style;
   final Widget child;
   final BorderRadiusGeometry? borderRadius;
 
-  const _GaplyBlurWidget({required this.style, required this.child, this.borderRadius});
+  const _BlurWidget({required this.style, required this.child, this.borderRadius});
 
   @override
   Widget build(BuildContext context) {

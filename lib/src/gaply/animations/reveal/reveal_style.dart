@@ -1,12 +1,21 @@
 import 'package:flutter/widgets.dart';
+
 import 'package:gaply/src/gaply/core/gaply_style.dart';
 import 'package:gaply/src/gaply/core/gaply_direction.dart';
-import 'package:gaply/src/gaply/animations/animations.dart';
+import 'package:gaply/src/gaply/animations/fade/fade_style.dart';
+import 'package:gaply/src/gaply/animations/size/size_style.dart';
+import 'package:gaply/src/gaply/animations/motion/gaply_motion.dart';
 
 import 'reveal_presets.dart';
+import 'reveal_style_modifier.dart';
 
 @immutable
-class RevealStyle extends GaplyAnimStyle with GaplyAnimMixin<RevealStyle>, GaplyDirectionAnimMixin {
+class RevealStyle extends GaplyAnimStyle
+    with
+        GaplyAnimMixin<RevealStyle>,
+        GaplyDirectionAnimMixin,
+        _RevealStyleMixin,
+        RevealStyleModifier<RevealStyle> {
   @override
   final AxisDirection direction;
   final bool isVisible;
@@ -176,30 +185,52 @@ class RevealStyle extends GaplyAnimStyle with GaplyAnimMixin<RevealStyle>, Gaply
 
   @override
   bool get hasEffect => duration.inMilliseconds > 0;
+}
 
-  FadeStyle get _fade =>
-      FadeStyle(duration: duration, curve: curve, isVisible: useFade ? isVisible : true, delay: delay);
+mixin _RevealStyleMixin {
+  RevealStyle get revealStyle => this as RevealStyle;
 
-  SizeStyle get _size => SizeStyle(
-    duration: duration,
-    curve: curve,
-    axis: axis,
-    axisAlignment: (direction == AxisDirection.up || direction == AxisDirection.left) ? 1.0 : -1.0,
-    isExpanded: fixedSize ? true : isVisible,
-    delay: delay,
-  );
+  RevealStyle copyWithReveal(RevealStyle reveal) {
+    return revealStyle.copyWith(
+      duration: reveal.duration,
+      curve: reveal.curve,
+      delay: reveal.delay,
+      onComplete: reveal.onComplete,
+      direction: reveal.direction,
+      isVisible: reveal.isVisible,
+      fixedSize: reveal.fixedSize,
+      useFade: reveal.useFade,
+    );
+  }
 
-  @override
   Widget buildWidget({required Widget child, Object? trigger}) {
-    if (!hasEffect) return child;
+    if (!revealStyle.hasEffect) return child;
 
     final List<GaplyAnimStyle> animations = [];
-    if (useFade) animations.add(_fade);
-    if (!fixedSize) animations.add(_size);
+    if (revealStyle.useFade) animations.add(_fade);
+    if (!revealStyle.fixedSize) animations.add(_size);
 
     return GaplyMotion(
       animations: animations,
-      onComplete: onComplete,
+      onComplete: revealStyle.onComplete,
     ).buildWidget(child: child, trigger: trigger ?? DateTime.now());
   }
+
+  FadeStyle get _fade => FadeStyle(
+    duration: revealStyle.duration,
+    curve: revealStyle.curve,
+    isVisible: revealStyle.useFade ? revealStyle.isVisible : true,
+    delay: revealStyle.delay,
+  );
+
+  SizeStyle get _size => SizeStyle(
+    duration: revealStyle.duration,
+    curve: revealStyle.curve,
+    axis: revealStyle.axis,
+    axisAlignment: (revealStyle.direction == AxisDirection.up || revealStyle.direction == AxisDirection.left)
+        ? 1.0
+        : -1.0,
+    isExpanded: revealStyle.fixedSize ? true : revealStyle.isVisible,
+    delay: revealStyle.delay,
+  );
 }

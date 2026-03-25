@@ -77,7 +77,6 @@ class GaplyFadeState extends State<GaplyFade> with SingleTickerProviderStateMixi
     }
   }
 
-  /// Executes the animation with custom parameters, respecting the [style.delay].
   void executeParams(FadeStyle style) {
     Future.delayed(style.delay, () {
       if (!mounted) return;

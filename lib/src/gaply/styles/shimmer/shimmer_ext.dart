@@ -7,9 +7,4 @@ extension ShimmerExtension on Widget {
     if (!enabled) return this;
     return style.buildWidget(context: context, child: this);
   }
-
-  Widget shimmerPreset(BuildContext context, String name, {bool enabled = true}) {
-    if (!enabled) return this;
-    return withShimmer(context, GaplyShimmer.preset(name), enabled: enabled);
-  }
 }

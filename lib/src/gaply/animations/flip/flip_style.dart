@@ -8,6 +8,7 @@ import 'package:gaply/src/gaply/core/gaply_trigger.dart';
 
 import 'gaply_flip.dart';
 import 'flip_presets.dart';
+import 'flip_style_modifier.dart';
 
 part 'flip_trigger.dart';
 
@@ -27,7 +28,8 @@ part 'flip_trigger.dart';
 /// );
 /// ```
 @immutable
-class FlipStyle extends GaplyAnimStyle with GaplyAnimMixin<FlipStyle> {
+class FlipStyle extends GaplyAnimStyle
+    with GaplyAnimMixin<FlipStyle>, _GaplyFlipMixin, FlipStyleModifier<FlipStyle> {
   final Axis axis;
   final double angleRange;
   final bool isFlipped;
@@ -147,16 +149,32 @@ class FlipStyle extends GaplyAnimStyle with GaplyAnimMixin<FlipStyle> {
 
   @override
   bool get hasEffect => duration.inMilliseconds > 0;
+}
 
-  @override
+mixin _GaplyFlipMixin {
+  FlipStyle get flipStyle => this as FlipStyle;
+
+  FlipStyle copyWithFlip(FlipStyle flip) {
+    return flipStyle.copyWith(
+      duration: flip.duration,
+      curve: flip.curve,
+      delay: flip.delay,
+      onComplete: flip.onComplete,
+      axis: flip.axis,
+      angleRange: flip.angleRange,
+      isFlipped: flip.isFlipped,
+      backWidget: flip.backWidget,
+    );
+  }
+
   Widget buildWidget({required Widget child, Object? trigger}) {
-    if (!hasEffect) return child;
+    if (!flipStyle.hasEffect) return child;
 
     return _GaplyFlipTrigger(
       front: child,
-      back: backWidget ?? child,
+      back: flipStyle.backWidget ?? child,
       trigger: trigger ?? DateTime.now(),
-      style: this,
+      style: flipStyle,
     );
   }
 }

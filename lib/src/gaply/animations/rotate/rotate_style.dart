@@ -6,11 +6,13 @@ import 'package:gaply/src/gaply/core/gaply_style.dart';
 
 import 'gaply_rotate.dart';
 import 'rotate_presets.dart';
+import 'rotate_style_modifier.dart';
 
 part 'rotate_trigger.dart';
 
 @immutable
-class RotateStyle extends GaplyAnimStyle with GaplyAnimMixin<RotateStyle> {
+class RotateStyle extends GaplyAnimStyle
+    with GaplyAnimMixin<RotateStyle>, _RotateStyleMixin, RotateStyleModifier<RotateStyle> {
   final double begin;
   final double end;
   final Alignment alignment;
@@ -173,11 +175,28 @@ class RotateStyle extends GaplyAnimStyle with GaplyAnimMixin<RotateStyle> {
 
   @override
   bool get hasEffect => duration.inMilliseconds > 0;
+}
 
-  @override
+mixin _RotateStyleMixin {
+  RotateStyle get rotateStyle => this as RotateStyle;
+
+  RotateStyle copyWithRotate(RotateStyle rotate) {
+    return rotateStyle.copyWith(
+      duration: rotate.duration,
+      curve: rotate.curve,
+      delay: rotate.delay,
+      onComplete: rotate.onComplete,
+      begin: rotate.begin,
+      end: rotate.end,
+      alignment: rotate.alignment,
+      isRotated: rotate.isRotated,
+      useRadians: rotate.useRadians,
+    );
+  }
+
   Widget buildWidget({required Widget child, Object? trigger}) {
-    if (!hasEffect) return child;
+    if (!rotateStyle.hasEffect) return child;
 
-    return _GaplyRotateTrigger(style: this, trigger: trigger ?? DateTime.now(), child: child);
+    return _GaplyRotateTrigger(style: rotateStyle, trigger: trigger ?? DateTime.now(), child: child);
   }
 }

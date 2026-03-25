@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:gaply/src/gaply/core/gaply_style.dart';
 
+import 'color_style_modifier.dart';
 import 'color_ext.dart';
 
 enum ColorRole {
@@ -72,7 +73,7 @@ enum ColorShade {
 }
 
 @immutable
-class GaplyColor extends GaplyStyle<GaplyColor> with _GColorMixin {
+class GaplyColor extends GaplyStyle<GaplyColor> with _GaplyColorMixin, ColorStyleModifier<GaplyColor> {
   final ColorRole role;
   final ColorOpacity opacity;
   final ColorShade shade;
@@ -188,19 +189,6 @@ class GaplyColor extends GaplyStyle<GaplyColor> with _GColorMixin {
     : this(role: role, shade: shade, opacity: ColorOpacity.solid);
 
   @override
-  bool get hasEffect => role != ColorRole.none || customColor != null;
-
-  bool get isVisible {
-    if (!hasEffect) return false;
-    if (opacity.value < 0.001) return false;
-    if (customColor != null && customColor!.a < 0.001) return false;
-    return true;
-  }
-
-  @override
-  List<Object?> get props => [role, opacity, customColor, shade, autoInvert];
-
-  @override
   GaplyColor copyWith({
     ColorRole? role,
     ColorOpacity? opacity,
@@ -235,15 +223,38 @@ class GaplyColor extends GaplyStyle<GaplyColor> with _GColorMixin {
       customColor: Color.lerp(customColor, other.customColor, t),
     );
   }
+
+  @override
+  bool get hasEffect => role != ColorRole.none || customColor != null;
+
+  bool get isVisible {
+    if (!hasEffect) return false;
+    if (opacity.value < 0.001) return false;
+    if (customColor != null && customColor!.a < 0.001) return false;
+    return true;
+  }
+
+  @override
+  List<Object?> get props => [role, opacity, customColor, shade, autoInvert];
 }
 
-mixin _GColorMixin {
-  GaplyColor get _params => this as GaplyColor;
+mixin _GaplyColorMixin {
+  GaplyColor get colorStyle => this as GaplyColor;
+
+  GaplyColor copyWithColor(GaplyColor color) {
+    return colorStyle.copyWith(
+      role: color.role,
+      opacity: color.opacity,
+      customColor: color.customColor,
+      shade: color.shade,
+      autoInvert: color.autoInvert,
+    );
+  }
 
   static final Expando<Map<int, Color>> _cacheStorage = Expando();
 
   Color? resolve(BuildContext context, {bool useCache = true}) {
-    if (!_params.hasEffect) return null;
+    if (!colorStyle.hasEffect) return null;
 
     final theme = Theme.of(context);
     final themeHash = theme.hashCode;
@@ -272,7 +283,7 @@ mixin _GColorMixin {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    Color? baseColor = _params.customColor ?? _resolveByRole(theme.colorScheme);
+    Color? baseColor = colorStyle.customColor ?? _resolveByRole(theme.colorScheme);
     if (baseColor == null) return null;
 
     if (baseColor is MaterialColor) {
@@ -281,12 +292,12 @@ mixin _GColorMixin {
       baseColor = _applySmartShade(baseColor, isDark);
     }
 
-    return baseColor.withValues(alpha: _params.opacity.value);
+    return baseColor.withValues(alpha: colorStyle.opacity.value);
   }
 
   Color _getMaterialColorShade(MaterialColor materialColor, bool isDark) {
-    var shade = _params.shade;
-    if (_params.autoInvert && isDark) shade = _invertShade(shade);
+    var shade = colorStyle.shade;
+    if (colorStyle.autoInvert && isDark) shade = _invertShade(shade);
 
     return switch (shade) {
       ColorShade.s50 => materialColor.shade50,
@@ -308,10 +319,10 @@ mixin _GColorMixin {
   }
 
   Color _applySmartShade(Color color, bool isDark) {
-    if (_params.shade == ColorShade.s500 && !_params.autoInvert) return color;
+    if (colorStyle.shade == ColorShade.s500 && !colorStyle.autoInvert) return color;
 
-    final double shadeValue = _params.shade.value; // 0.0(s50) ~ 1.0(s950)
-    final double effectiveValue = (_params.autoInvert && isDark) ? 1.0 - shadeValue : shadeValue;
+    final double shadeValue = colorStyle.shade.value; // 0.0(s50) ~ 1.0(s950)
+    final double effectiveValue = (colorStyle.autoInvert && isDark) ? 1.0 - shadeValue : shadeValue;
 
     final hsl = HSLColor.fromColor(color);
 
@@ -327,7 +338,7 @@ mixin _GColorMixin {
   }
 
   Color? _resolveByRole(ColorScheme scheme) {
-    return switch (_params.role) {
+    return switch (colorStyle.role) {
       ColorRole.primary => scheme.primary,
       ColorRole.onPrimary => scheme.onPrimary,
       ColorRole.primaryContainer => scheme.primaryContainer,

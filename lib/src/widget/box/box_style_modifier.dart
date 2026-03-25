@@ -1,23 +1,30 @@
 import 'package:flutter/material.dart';
 
 import 'package:gaply/src/gaply/core/gaply_style.dart';
-import 'package:gaply/src/gaply/styles/blur/blur_style.dart';
-import 'package:gaply/src/gaply/styles/color/gaply_color.dart';
-import 'package:gaply/src/gaply/styles/layout/gaply_layout.dart';
-import 'package:gaply/src/gaply/styles/shadow/gaply_shadow.dart';
-import 'package:gaply/src/gaply/styles/shimmer/gaply_shimmer.dart';
-
+import 'package:gaply/src/gaply/styles/styles.dart';
 import 'package:gaply/src/gaply/animations/animations.dart';
 
 import 'box_style.dart';
 
-mixin BoxStyleModifier<T> {
-  BoxStyle get style;
+mixin BoxStyleModifier<T> on BlurStyleModifier<T>, GradientStyleModifier<T> {
+  BoxStyle get boxStyle;
 
   T copyWithStyle(BoxStyle style);
 
+  @override
+  BlurStyle get blurStyle => boxStyle.blur;
+
+  @override
+  T copyWithBlur(BlurStyle blur) => copyWithStyle(boxStyle.copyWith(blur: blur));
+
+  @override
+  GaplyGradient get gradientStyle => boxStyle.gradient;
+
+  @override
+  T copyWithGradient(GaplyGradient gradient) => copyWithStyle(boxStyle.copyWith(gradient: gradient));
+
   // Color Roles
-  T boxColorStyle(GaplyColor color) => copyWithStyle(style.copyWith(color: color));
+  T boxColorStyle(GaplyColor color) => copyWithStyle(boxStyle.copyWith(color: color));
   T boxColorRole(
     ColorRole role, {
     ColorShade shade = ColorShade.s500,
@@ -32,7 +39,7 @@ mixin BoxStyleModifier<T> {
   }) => boxColorStyle(GaplyColor.fromColor(custom, shade: shade, opacity: opacity, autoInvert: autoInvert));
 
   // 테두리 시스템
-  T boxBorderColorStyle(GaplyColor color) => copyWithStyle(style.copyWith(borderColor: color));
+  T boxBorderColorStyle(GaplyColor color) => copyWithStyle(boxStyle.copyWith(borderColor: color));
   T boxBorderColorRole(
     ColorRole role, {
     ColorShade shade = ColorShade.s500,
@@ -48,7 +55,7 @@ mixin BoxStyleModifier<T> {
   }) => boxBorderColorStyle(
     GaplyColor.fromColor(custom, shade: shade, opacity: opacity, autoInvert: autoInvert),
   );
-  T boxBorderWidth(double value) => copyWithStyle(style.copyWith(borderWidth: value));
+  T boxBorderWidth(double value) => copyWithStyle(boxStyle.copyWith(borderWidth: value));
 
   T boxGlassRole(
     ColorRole value, {
@@ -56,65 +63,66 @@ mixin BoxStyleModifier<T> {
     ColorShade borderShade = ColorShade.s100,
   }) {
     return copyWithStyle(
-      style.copyWith(
-        color: style.color.copyWith(role: value, shade: bgShade),
-        borderColor: style.borderColor.copyWith(role: value, shade: borderShade),
+      boxStyle.copyWith(
+        color: boxStyle.color.copyWith(role: value, shade: bgShade),
+        borderColor: boxStyle.borderColor.copyWith(role: value, shade: borderShade),
       ),
     );
   }
 
   T boxGlass(Color? value, {ColorShade bgShade = ColorShade.s50, ColorShade borderShade = ColorShade.s100}) {
     return copyWithStyle(
-      style.copyWith(
-        color: style.color.copyWith(customColor: value, shade: bgShade),
-        borderColor: style.borderColor.copyWith(customColor: value, shade: borderShade),
+      boxStyle.copyWith(
+        color: boxStyle.color.copyWith(customColor: value, shade: bgShade),
+        borderColor: boxStyle.borderColor.copyWith(customColor: value, shade: borderShade),
       ),
     );
   }
 
   // 효과 시스템 (Shimmer & Blur)
-  T boxShimmerStyle(GaplyShimmer shimmer) => copyWithStyle(style.copyWith(shimmer: shimmer));
+  T boxShimmerStyle(GaplyShimmer shimmer) => copyWithStyle(boxStyle.copyWith(shimmer: shimmer));
   T boxShimmerPreset(String name, {int loop = 0}) => boxShimmerStyle(GaplyShimmer.preset(name, loop: loop));
 
-  T boxBlurStyle(BlurStyle blur) => copyWithStyle(style.copyWith(blur: blur));
-  T boxBlur(double sigma, {GaplyColor? color}) => boxBlurStyle(
-    BlurStyle(
-      sigma: sigma,
-      color: color ?? const GaplyColor.shadow(opacity: ColorOpacity.o10),
-    ),
-  );
-  T boxBlurPreset(String name) => boxBlurStyle(BlurStyle.preset(name));
+  // T boxBlurStyle(BlurStyle blur) => copyWithStyle(boxStyle.copyWith(blur: blur));
+  // T boxBlur(double sigma, {GaplyColor? color}) => boxBlurStyle(
+  //   BlurStyle(
+  //     sigma: sigma,
+  //     color: color ?? const GaplyColor.shadow(opacity: ColorOpacity.o10),
+  //   ),
+  // );
+  // T boxBlurPreset(String name) => boxBlurStyle(BlurStyle.preset(name));
 
   // 그림자 시스템 (ShadowParams 리스트 대응)
-  T boxShadows(List<GaplyShadow> values) => copyWithStyle(style.copyWith(shadows: values));
+  T boxShadows(List<GaplyShadow> values) => copyWithStyle(boxStyle.copyWith(shadows: values));
   T boxShadowPreset(String name, {GaplyColor? color}) => boxShadows([GaplyShadow.preset(name, color: color)]);
-  T boxAddShadow(GaplyShadow shadow) => boxShadows([...style.shadows, shadow]);
+  T boxAddShadow(GaplyShadow shadow) => boxShadows([...boxStyle.shadows, shadow]);
   T boxElevation(double value, {GaplyColor? color}) =>
       boxAddShadow(GaplyShadow.elevation(value, color: color));
 
   // 🖼️ 레이아웃
-  T boxLayoutStyle(GaplyLayout layout) => copyWithStyle(style.copyWith(layout: layout));
+  T boxLayoutStyle(GaplyLayout layout) => copyWithStyle(boxStyle.copyWith(layout: layout));
   T boxLayoutPreset(String name) => boxLayoutStyle(GaplyLayout.preset(name));
-  T boxWidth(double value) => boxLayoutStyle(style.layout.copyWith(width: value));
-  T boxHeight(double value) => boxLayoutStyle(style.layout.copyWith(height: value));
-  T boxSize(double? w, double? h) => boxLayoutStyle(style.layout.copyWith(width: w, height: h));
-  T boxPadding(EdgeInsetsGeometry value) => boxLayoutStyle(style.layout.copyWith(padding: value));
-  T boxMargin(EdgeInsetsGeometry value) => boxLayoutStyle(style.layout.copyWith(margin: value));
-  T boxAlignment(AlignmentGeometry value) => boxLayoutStyle(style.layout.copyWith(alignment: value));
-  T boxRadius(BorderRadiusGeometry value) => boxLayoutStyle(style.layout.copyWith(borderRadius: value));
-  T boxScale(double value) => boxLayoutStyle(style.layout.copyWith(scale: value));
-  T boxBorderRadius(BorderRadiusGeometry value) => boxLayoutStyle(style.layout.copyWith(borderRadius: value));
+  T boxWidth(double value) => boxLayoutStyle(boxStyle.layout.copyWith(width: value));
+  T boxHeight(double value) => boxLayoutStyle(boxStyle.layout.copyWith(height: value));
+  T boxSize(double? w, double? h) => boxLayoutStyle(boxStyle.layout.copyWith(width: w, height: h));
+  T boxPadding(EdgeInsetsGeometry value) => boxLayoutStyle(boxStyle.layout.copyWith(padding: value));
+  T boxMargin(EdgeInsetsGeometry value) => boxLayoutStyle(boxStyle.layout.copyWith(margin: value));
+  T boxAlignment(AlignmentGeometry value) => boxLayoutStyle(boxStyle.layout.copyWith(alignment: value));
+  T boxRadius(BorderRadiusGeometry value) => boxLayoutStyle(boxStyle.layout.copyWith(borderRadius: value));
+  T boxScale(double value) => boxLayoutStyle(boxStyle.layout.copyWith(scale: value));
+  T boxBorderRadius(BorderRadiusGeometry value) =>
+      boxLayoutStyle(boxStyle.layout.copyWith(borderRadius: value));
 
   // GaplyMotion
-  T boxMotionStyle(GaplyMotion motion) => copyWithStyle(style.copyWith(motion: motion));
+  T boxMotionStyle(GaplyMotion motion) => copyWithStyle(boxStyle.copyWith(motion: motion));
   T boxMotionPreset(String name) => boxMotionStyle(GaplyMotion.preset(name));
-  T boxAddAnimation(GaplyAnimStyle anim) => boxMotionStyle(style.motion.addAnimation(anim));
+  T boxAddAnimation(GaplyAnimStyle anim) => boxMotionStyle(boxStyle.motion.addAnimation(anim));
 
   //️ 인터랙션
-  T boxOnPressed(VoidCallback? action) => copyWithStyle(style.copyWith(onPressed: action));
+  T boxOnPressed(VoidCallback? action) => copyWithStyle(boxStyle.copyWith(onPressed: action));
 
-  T boxDuration(Duration value) => copyWithStyle(style.copyWith(duration: value));
-  T boxCurve(Curve value) => copyWithStyle(style.copyWith(curve: value));
+  T boxDuration(Duration value) => copyWithStyle(boxStyle.copyWith(duration: value));
+  T boxCurve(Curve value) => copyWithStyle(boxStyle.copyWith(curve: value));
 
   // 🖼️ Acrylic Effect
   // T acrylicParams(AcrylicParams effect) => copyWith(effect.copyWith(acrylicParams: effect));

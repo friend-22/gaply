@@ -2,14 +2,15 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:gaply/src/gaply/core/gaply_style.dart';
-import 'package:gaply/src/gaply/styles/color/color_ext.dart';
 import 'package:gaply/src/gaply/styles/color/gaply_color.dart';
 import 'package:gaply/src/gaply/styles/shadow/shadow_presets.dart';
 
+import 'shadow_style_modifier.dart';
+
 @immutable
-class GaplyShadow extends GaplyStyle<GaplyShadow> with _GShadowMixin {
-  static const double _elevationOffsetScale = 1.5;
-  static const double _elevationBlurScale = 0.5;
+class GaplyShadow extends GaplyStyle<GaplyShadow> with _GaplyShadowMixin, ShadowStyleModifier<GaplyShadow> {
+  // static const double _elevationOffsetScale = 1.5;
+  // static const double _elevationBlurScale = 0.5;
   static const double _maxAlpha = 0.5;
   static const double _minAlpha = 0.1;
 
@@ -40,7 +41,10 @@ class GaplyShadow extends GaplyStyle<GaplyShadow> with _GShadowMixin {
     final style = GaplyShadowPreset.of(name);
 
     if (style == null) {
-      throw ArgumentError('Unknown shadow preset: "$name"');
+      throw ArgumentError(
+        'Unknown shadow preset: "$name". '
+        'Available presets: ${GaplyShadowPreset.instance.allKeys.join(", ")}',
+      );
     }
 
     return color != null ? style.copyWith(color: color) : style;
@@ -55,12 +59,8 @@ class GaplyShadow extends GaplyStyle<GaplyShadow> with _GShadowMixin {
       offset: Offset(elevation, elevation),
       blurRadius: elevation * 0.5,
       spreadRadius: -elevation / 8,
-      color: color ?? const GaplyColor.shadow().opacityValue(alpha),
+      color: color ?? const GaplyColor.shadow().colorOpacityValue(alpha),
     );
-  }
-
-  GaplyShadow withIntensity(double intensity) {
-    return copyWith(blurRadius: blurRadius * intensity, spreadRadius: spreadRadius * intensity);
   }
 
   @override
@@ -100,19 +100,29 @@ class GaplyShadow extends GaplyStyle<GaplyShadow> with _GShadowMixin {
   bool get hasEffect => color.hasEffect;
 }
 
-mixin _GShadowMixin {
-  GaplyShadow get _params => this as GaplyShadow;
+mixin _GaplyShadowMixin {
+  GaplyShadow get shadowStyle => this as GaplyShadow;
+
+  GaplyShadow copyWithShadow(GaplyShadow shadow) {
+    return shadowStyle.copyWith(
+      spreadRadius: shadow.spreadRadius,
+      blurRadius: shadow.blurRadius,
+      offset: shadow.offset,
+      color: shadow.color,
+      blurStyle: shadow.blurStyle,
+    );
+  }
 
   BoxShadow? resolve(BuildContext context) {
-    final resolvedColor = _params.color.resolve(context);
+    final resolvedColor = shadowStyle.color.resolve(context);
     if (resolvedColor == null) return null;
 
     return BoxShadow(
       color: resolvedColor,
-      offset: _params.offset,
-      blurRadius: _params.blurRadius,
-      spreadRadius: _params.spreadRadius,
-      blurStyle: _params.blurStyle,
+      offset: shadowStyle.offset,
+      blurRadius: shadowStyle.blurRadius,
+      spreadRadius: shadowStyle.spreadRadius,
+      blurStyle: shadowStyle.blurStyle,
     );
   }
 }

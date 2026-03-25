@@ -4,12 +4,14 @@ import 'package:gaply/src/gaply/core/gaply_style.dart';
 import 'package:gaply/src/gaply/core/gaply_trigger.dart';
 
 import 'translate_presets.dart';
+import 'translate_style_modifier.dart';
 import 'gaply_translate.dart';
 
 part 'translate_trigger.dart';
 
 @immutable
-class TranslateStyle extends GaplyAnimStyle with GaplyAnimMixin<TranslateStyle> {
+class TranslateStyle extends GaplyAnimStyle
+    with GaplyAnimMixin<TranslateStyle>, _GaplyTranslateMixin, TranslateStyleModifier<TranslateStyle> {
   final Offset begin;
   final Offset end;
   final bool isMoved;
@@ -85,11 +87,26 @@ class TranslateStyle extends GaplyAnimStyle with GaplyAnimMixin<TranslateStyle> 
 
   @override
   bool get hasEffect => duration.inMilliseconds > 0 || isMoved;
+}
 
-  @override
+mixin _GaplyTranslateMixin {
+  TranslateStyle get translateStyle => this as TranslateStyle;
+
+  TranslateStyle copyWithTranslate(TranslateStyle translate) {
+    return translateStyle.copyWith(
+      duration: translate.duration,
+      curve: translate.curve,
+      delay: translate.delay,
+      onComplete: translate.onComplete,
+      begin: translate.begin,
+      end: translate.end,
+      isMoved: translate.isMoved,
+    );
+  }
+
   Widget buildWidget({required Widget child, Object? trigger}) {
-    if (!hasEffect) return child;
+    if (!translateStyle.hasEffect) return child;
 
-    return _GaplyTranslateTrigger(style: this, trigger: trigger ?? DateTime.now(), child: child);
+    return _GaplyTranslateTrigger(style: translateStyle, trigger: trigger ?? DateTime.now(), child: child);
   }
 }

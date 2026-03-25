@@ -6,6 +6,8 @@ import 'package:gaply/src/gaply/core/gaply_trigger.dart';
 import 'fade_presets.dart';
 import 'gaply_fade.dart';
 
+import 'fade_style_modifier.dart';
+
 part 'fade_trigger.dart';
 
 /// A configuration style for fade (opacity) animations.
@@ -24,7 +26,8 @@ part 'fade_trigger.dart';
 /// );
 /// ```
 @immutable
-class FadeStyle extends GaplyAnimStyle with GaplyAnimMixin<FadeStyle> {
+class FadeStyle extends GaplyAnimStyle
+    with GaplyAnimMixin<FadeStyle>, _FadeStyleMixin, FadeStyleModifier<FadeStyle> {
   /// Whether the widget should be visible (opaque) or hidden (transparent).
   ///
   /// - If `true`, the widget fades in to an opacity of 1.0.
@@ -111,11 +114,24 @@ class FadeStyle extends GaplyAnimStyle with GaplyAnimMixin<FadeStyle> {
 
   @override
   bool get hasEffect => duration.inMilliseconds > 0;
+}
 
-  @override
+mixin _FadeStyleMixin {
+  FadeStyle get fadeStyle => this as FadeStyle;
+
+  FadeStyle copyWithFade(FadeStyle fade) {
+    return fadeStyle.copyWith(
+      duration: fade.duration,
+      curve: fade.curve,
+      delay: fade.delay,
+      onComplete: fade.onComplete,
+      isVisible: fade.isVisible,
+    );
+  }
+
   Widget buildWidget({required Widget child, Object? trigger}) {
-    if (!hasEffect) return child;
+    if (!fadeStyle.hasEffect) return child;
 
-    return _GaplyFadeTrigger(style: this, trigger: trigger ?? DateTime.now(), child: child);
+    return _GaplyFadeTrigger(style: fadeStyle, trigger: trigger ?? DateTime.now(), child: child);
   }
 }

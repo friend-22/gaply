@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:gaply/src/utils/tap_gesture_detector.dart';
 
+import 'package:gaply/src/gaply/styles/styles.dart';
 import 'box_style.dart';
 import 'box_style_modifier.dart';
 
@@ -28,8 +29,11 @@ import 'box_style_modifier.dart';
 /// See also:
 /// - [BoxStyle] for styling configuration
 /// - [BoxStyleModifier] for fluent API
-class GaplyBox extends StatelessWidget with BoxStyleModifier<GaplyBox> {
+class GaplyBox extends StatelessWidget
+    with BlurStyleModifier<GaplyBox>, GradientStyleModifier<GaplyBox>, BoxStyleModifier<GaplyBox> {
   @override
+  BoxStyle get boxStyle => style;
+
   final BoxStyle style;
   final Widget child;
 
@@ -60,14 +64,14 @@ class _GaplyAnimatedBoxState extends AnimatedWidgetBaseState<_GaplyAnimatedBox> 
   BoxStyleTween? _styleTween;
 
   /// Cache for decoration to avoid rebuilding every frame
-  BoxDecoration? _cachedDecoration;
-  BoxStyle? _lastStyle;
+  // BoxDecoration? _cachedDecoration;
+  // BoxStyle? _lastStyle;
 
   @override
   void didUpdateWidget(_GaplyAnimatedBox oldWidget) {
     super.didUpdateWidget(oldWidget);
     // Invalidate cache when widget updates
-    _cachedDecoration = null;
+    //_cachedDecoration = null;
   }
 
   @override

@@ -3,11 +3,13 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import 'package:gaply/src/gaply/core/gaply_style.dart';
+import 'motion_style_modifier.dart';
 
 import 'motion_presets.dart';
 
 @immutable
-class GaplyMotion extends GaplyStyle<GaplyMotion> with GaplyMotionMixin {
+class GaplyMotion extends GaplyStyle<GaplyMotion>
+    with GaplyMotionMixin, _GaplyMotionMixin, MotionStyleModifier<GaplyMotion> {
   final List<GaplyAnimStyle> animations;
   final List<GaplyMotion> children;
   final VoidCallback? onComplete;
@@ -105,9 +107,21 @@ class GaplyMotion extends GaplyStyle<GaplyMotion> with GaplyMotionMixin {
 
     return Duration(milliseconds: maxMs);
   }
+}
+
+mixin _GaplyMotionMixin on GaplyMotionMixin {
+  GaplyMotion get motionStyle => this as GaplyMotion;
+
+  GaplyMotion copyWithMotion(GaplyMotion motion) {
+    return motionStyle.copyWith(
+      animations: motion.animations,
+      children: motion.children,
+      onComplete: motion.onComplete,
+    );
+  }
 
   Widget buildWidget({required Widget child, Object? trigger}) {
-    return applyMotion(this, child, trigger: trigger);
+    return applyMotion(motionStyle, child, trigger: trigger);
   }
 }
 

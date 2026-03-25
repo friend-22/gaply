@@ -52,7 +52,7 @@ mixin GaplyMotionTrigger<W extends StatefulWidget, MST extends GaplyAnimStyle, S
       onDelay(style.delay, () {
         if (!mounted) {
           // Widget was disposed during delay - safe to ignore
-          print("🚨 딜레이 도중 위젯이 사라짐: ${style.delay}");
+          debugPrint("🚨 딜레이 도중 위젯이 사라짐: ${style.delay}");
           return;
         }
 

@@ -7,11 +7,13 @@ import 'package:gaply/src/gaply/core/gaply_trigger.dart';
 
 import 'gaply_size.dart';
 import 'size_preset.dart';
+import 'size_style_modifier.dart';
 
 part 'size_trigger.dart';
 
 @immutable
-class SizeStyle extends GaplyAnimStyle with GaplyAnimMixin<SizeStyle> {
+class SizeStyle extends GaplyAnimStyle
+    with GaplyAnimMixin<SizeStyle>, _SizeStyleMixin, SizeStyleModifier<SizeStyle> {
   final Axis axis;
   final double axisAlignment;
   final bool isExpanded;
@@ -214,11 +216,27 @@ class SizeStyle extends GaplyAnimStyle with GaplyAnimMixin<SizeStyle> {
   bool get hasEffect => duration.inMilliseconds > 0 || target < 1.0;
 
   double get target => isExpanded ? 1.0 : minFactor;
+}
 
-  @override
+mixin _SizeStyleMixin {
+  SizeStyle get sizeStyle => this as SizeStyle;
+
+  SizeStyle copyWithSize(SizeStyle size) {
+    return sizeStyle.copyWith(
+      duration: size.duration,
+      curve: size.curve,
+      delay: size.delay,
+      onComplete: size.onComplete,
+      axis: size.axis,
+      axisAlignment: size.axisAlignment,
+      isExpanded: size.isExpanded,
+      minFactor: size.minFactor,
+    );
+  }
+
   Widget buildWidget({required Widget child, Object? trigger}) {
-    if (!hasEffect) return child;
+    if (!sizeStyle.hasEffect) return child;
 
-    return _GaplySizeTrigger(style: this, trigger: trigger ?? DateTime.now(), child: child);
+    return _GaplySizeTrigger(style: sizeStyle, trigger: trigger ?? DateTime.now(), child: child);
   }
 }

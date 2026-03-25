@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'flip_style.dart';
+import 'gaply_flip.dart';
 
 extension GaplyFlipX on FlipStyle {}
 

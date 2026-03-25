@@ -1,13 +1,19 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:shimmer/shimmer.dart';
+
 import 'package:gaply/src/gaply/core/gaply_style.dart';
 import 'package:gaply/src/gaply/styles/color/gaply_color.dart';
 import 'package:gaply/src/gaply/styles/shimmer/shimmer_presets.dart';
-import 'package:shimmer/shimmer.dart';
+
+import 'shimmer_style_modifier.dart';
+
+part 'shimmer_widget.dart';
 
 @immutable
-class GaplyShimmer extends GaplyStyle<GaplyShimmer> with _GShimmerMixin {
+class GaplyShimmer extends GaplyStyle<GaplyShimmer>
+    with _GaplyShimmerMixin, ShimmerStyleModifier<GaplyShimmer> {
   final Duration period;
   final ShimmerDirection direction;
   final int loop;
@@ -33,9 +39,14 @@ class GaplyShimmer extends GaplyStyle<GaplyShimmer> with _GShimmerMixin {
 
   factory GaplyShimmer.preset(String name, {int? loop}) {
     final style = GaplyShimmerPreset.of(name);
+
     if (style == null) {
-      throw ArgumentError('Unknown shimmer preset: "$name"');
+      throw ArgumentError(
+        'Unknown shimmer preset: "$name". '
+        'Available presets: ${GaplyShimmerPreset.instance.allKeys.join(", ")}',
+      );
     }
+
     return loop != null ? style.copyWith(loop: loop) : style;
   }
 
@@ -87,24 +98,22 @@ class GaplyShimmer extends GaplyStyle<GaplyShimmer> with _GShimmerMixin {
   bool get hasEffect => period.inMilliseconds > 0 && baseColor.hasEffect && highlightColor.hasEffect;
 }
 
-mixin _GShimmerMixin {
-  GaplyShimmer get _params => this as GaplyShimmer;
+mixin _GaplyShimmerMixin {
+  GaplyShimmer get shimmerStyle => this as GaplyShimmer;
+
+  GaplyShimmer copyWithShimmer(GaplyShimmer shimmer) {
+    return shimmerStyle.copyWith(
+      period: shimmer.period,
+      direction: shimmer.direction,
+      loop: shimmer.loop,
+      baseColor: shimmer.baseColor,
+      highlightColor: shimmer.highlightColor,
+    );
+  }
 
   Widget buildWidget({required BuildContext context, required Widget child}) {
-    if (!_params.hasEffect) return child;
+    if (!shimmerStyle.hasEffect) return child;
 
-    final baseColor = _params.baseColor.resolve(context);
-    final highlightColor = _params.highlightColor.resolve(context);
-
-    if (baseColor == null || highlightColor == null) return child;
-
-    return Shimmer.fromColors(
-      period: _params.period,
-      direction: _params.direction,
-      loop: _params.loop,
-      baseColor: baseColor,
-      highlightColor: highlightColor,
-      child: child,
-    );
+    return _ShimmerWidget(style: shimmerStyle, child: child);
   }
 }

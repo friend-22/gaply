@@ -6,11 +6,12 @@ import 'package:gaply/src/gaply/styles/color/gaply_color.dart';
 import 'package:flutter/material.dart';
 
 import 'blur_presets.dart';
+import 'blur_style_modifier.dart';
 
 part 'blur_widget.dart';
 
 @immutable
-class BlurStyle extends GaplyStyle<BlurStyle> {
+class BlurStyle extends GaplyStyle<BlurStyle> with _BlurStyleMixin, BlurStyleModifier<BlurStyle> {
   final double sigma;
   final GaplyColor color;
 
@@ -23,14 +24,15 @@ class BlurStyle extends GaplyStyle<BlurStyle> {
 
   factory BlurStyle.preset(String name, {GaplyColor? color}) {
     final style = GaplyBlurPreset.of(name);
-    if (style == null) {
-      throw ArgumentError('Unknown blur preset: "$name"');
-    }
-    return color != null ? style.copyWith(color: color) : style;
-  }
 
-  BlurStyle withIntensity(double intensity) {
-    return copyWith(sigma: sigma * intensity);
+    if (style == null) {
+      throw ArgumentError(
+        'Unknown blur preset: "$name". '
+        'Available presets: ${GaplyBlurPreset.instance.allKeys.join(", ")}',
+      );
+    }
+
+    return color != null ? style.copyWith(color: color) : style;
   }
 
   @override
@@ -50,11 +52,19 @@ class BlurStyle extends GaplyStyle<BlurStyle> {
 
   @override
   bool get hasEffect => sigma > 0 && color.hasEffect;
+}
+
+mixin _BlurStyleMixin {
+  BlurStyle get blurStyle => this as BlurStyle;
+
+  BlurStyle copyWithBlur(BlurStyle blur) {
+    return blurStyle.copyWith(sigma: blur.sigma, color: blur.color);
+  }
 
   ImageFilter? resolve() {
-    if (!hasEffect) return null;
+    if (!blurStyle.hasEffect) return null;
 
-    return ImageFilter.blur(sigmaX: sigma, sigmaY: sigma);
+    return ImageFilter.blur(sigmaX: blurStyle.sigma, sigmaY: blurStyle.sigma);
   }
 
   Widget buildWidget({
@@ -62,8 +72,8 @@ class BlurStyle extends GaplyStyle<BlurStyle> {
     required Widget child,
     BorderRadiusGeometry? borderRadius,
   }) {
-    if (!hasEffect) return child;
+    if (!blurStyle.hasEffect) return child;
 
-    return _GaplyBlurWidget(style: this, borderRadius: borderRadius, child: child);
+    return _BlurWidget(style: blurStyle, borderRadius: borderRadius, child: child);
   }
 }

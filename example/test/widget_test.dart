@@ -51,13 +51,13 @@ void main() {
 
     // 3. Shake 1번이 끝날 때까지 (200ms + 여유분)
     await tester.pump(const Duration(milliseconds: 300));
-    print('1번 종료 후 로그: $logs');
+    debugPrint('1번 종료 후 로그: $logs');
 
     // 4. Shake 2번 시작 및 종료 대기 (200ms + 여유분)
     await tester.pump(const Duration(milliseconds: 300));
     await tester.pumpAndSettle(); // 남은 잔여 프레임 정리
 
-    print('최종 로그: $logs');
+    debugPrint('최종 로그: $logs');
 
     expect(logs, contains('1완료'));
     expect(logs, contains('2완료'));

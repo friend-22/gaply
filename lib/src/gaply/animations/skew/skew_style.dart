@@ -6,10 +6,13 @@ import 'package:gaply/src/gaply/core/gaply_trigger.dart';
 import 'skew_presets.dart';
 import 'gaply_skew.dart';
 
+import 'skew_style_modifier.dart';
+
 part 'skew_trigger.dart';
 
 @immutable
-class SkewStyle extends GaplyAnimStyle with GaplyAnimMixin<SkewStyle> {
+class SkewStyle extends GaplyAnimStyle
+    with GaplyAnimMixin<SkewStyle>, _SkewStyleMixin, SkewStyleModifier<SkewStyle> {
   final Offset skew;
   final bool isSkewed;
 
@@ -113,11 +116,25 @@ class SkewStyle extends GaplyAnimStyle with GaplyAnimMixin<SkewStyle> {
 
   @override
   bool get hasEffect => duration.inMilliseconds > 0 || isSkewed;
+}
 
-  @override
+mixin _SkewStyleMixin {
+  SkewStyle get skewStyle => this as SkewStyle;
+
+  SkewStyle copyWithSkew(SkewStyle skew) {
+    return skewStyle.copyWith(
+      duration: skew.duration,
+      curve: skew.curve,
+      delay: skew.delay,
+      onComplete: skew.onComplete,
+      skew: skew.skew,
+      isSkewed: skew.isSkewed,
+    );
+  }
+
   Widget buildWidget({required Widget child, Object? trigger}) {
-    if (!hasEffect) return child;
+    if (!skewStyle.hasEffect) return child;
 
-    return _GaplySkewTrigger(style: this, trigger: trigger ?? DateTime.now(), child: child);
+    return _GaplySkewTrigger(style: skewStyle, trigger: trigger ?? DateTime.now(), child: child);
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 
 import 'size_style.dart';
+import 'gaply_size.dart';
 
 /// Extension to easily wrap any [Widget] with a size animation.
 ///
