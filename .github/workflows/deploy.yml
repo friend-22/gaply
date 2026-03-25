@@ -36,7 +36,7 @@ jobs:
           # 웹 설정이 없어도 자동으로 생성 (핵심!)
           flutter create . --platforms web
           # CanvasKit 렌더러를 사용하여 더 매끄러운 성능 제공
-          flutter build web --base-href /gaply/ --release --web-renderer canvaskit
+          flutter build web --base-href /gaply/ --release
         
       - name: Prevent Jekyll Processing
         run: touch demo/build/web/.nojekyll
