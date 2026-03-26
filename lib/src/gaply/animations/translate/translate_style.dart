@@ -10,8 +10,12 @@ import 'gaply_translate.dart';
 part 'translate_trigger.dart';
 
 @immutable
-class TranslateStyle extends GaplyAnimStyle
-    with GaplyAnimMixin<TranslateStyle>, _GaplyTranslateMixin, TranslateStyleModifier<TranslateStyle> {
+class TranslateStyle extends GaplyAnimStyle<TranslateStyle>
+    with
+        GaplyTweenMixin<TranslateStyle>,
+        GaplyAnimMixin<TranslateStyle>,
+        _GaplyTranslateMixin,
+        TranslateStyleModifier<TranslateStyle> {
   final Offset begin;
   final Offset end;
   final bool isMoved;
@@ -38,10 +42,7 @@ class TranslateStyle extends GaplyAnimStyle
   factory TranslateStyle.preset(String name, {bool? isMoved, VoidCallback? onComplete}) {
     final style = GaplyTranslatePreset.of(name);
     if (style == null) {
-      throw ArgumentError(
-        'Unknown translate preset: "$name". '
-        'Available presets: ${GaplyTranslatePreset.instance.allKeys.join(", ")}',
-      );
+      throw ArgumentError(GaplyTranslatePreset.instance.errorMessage("TranslateStyle", name));
     }
     return style.copyWith(isMoved: isMoved, onComplete: onComplete);
   }
@@ -50,8 +51,8 @@ class TranslateStyle extends GaplyAnimStyle
   TranslateStyle copyWith({
     Duration? duration,
     Curve? curve,
-    VoidCallback? onComplete,
     Duration? delay,
+    VoidCallback? onComplete,
     Offset? begin,
     Offset? end,
     bool? isMoved,
@@ -59,8 +60,8 @@ class TranslateStyle extends GaplyAnimStyle
     return TranslateStyle(
       duration: duration ?? this.duration,
       curve: curve ?? this.curve,
-      onComplete: onComplete ?? this.onComplete,
       delay: delay ?? this.delay,
+      onComplete: onComplete ?? this.onComplete,
       begin: begin ?? this.begin,
       end: end ?? this.end,
       isMoved: isMoved ?? this.isMoved,
@@ -74,8 +75,8 @@ class TranslateStyle extends GaplyAnimStyle
     return TranslateStyle(
       duration: t < 0.5 ? duration : other.duration,
       curve: t < 0.5 ? curve : other.curve,
-      onComplete: other.onComplete,
       delay: t < 0.5 ? delay : other.delay,
+      onComplete: other.onComplete,
       begin: Offset.lerp(begin, other.begin, t)!,
       end: Offset.lerp(end, other.end, t)!,
       isMoved: t < 0.5 ? isMoved : other.isMoved,

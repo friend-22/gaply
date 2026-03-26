@@ -10,8 +10,9 @@ import 'reveal_presets.dart';
 import 'reveal_style_modifier.dart';
 
 @immutable
-class RevealStyle extends GaplyAnimStyle
+class RevealStyle extends GaplyAnimStyle<RevealStyle>
     with
+        GaplyTweenMixin<RevealStyle>,
         GaplyAnimMixin<RevealStyle>,
         GaplyDirectionAnimMixin,
         _RevealStyleMixin,
@@ -49,14 +50,9 @@ class RevealStyle extends GaplyAnimStyle
     VoidCallback? onComplete,
   }) {
     final style = GaplyRevealPreset.of(name);
-
     if (style == null) {
-      throw ArgumentError(
-        'Unknown reveal preset: "$name". '
-        'Available presets: ${GaplyRevealPreset.instance.allKeys.join(", ")}',
-      );
+      throw ArgumentError(GaplyRevealPreset.instance.errorMessage("RevealStyle", name));
     }
-
     return style.copyWith(
       isVisible: isVisible,
       fixedSize: fixedSize,
@@ -171,8 +167,8 @@ class RevealStyle extends GaplyAnimStyle
     return RevealStyle(
       duration: t < 0.5 ? duration : other.duration,
       curve: t < 0.5 ? curve : other.curve,
-      onComplete: other.onComplete,
       delay: t < 0.5 ? delay : other.delay,
+      onComplete: other.onComplete,
       direction: t < 0.5 ? direction : other.direction,
       isVisible: t < 0.5 ? isVisible : other.isVisible,
       fixedSize: t < 0.5 ? fixedSize : other.fixedSize,

@@ -11,8 +11,12 @@ import 'skew_style_modifier.dart';
 part 'skew_trigger.dart';
 
 @immutable
-class SkewStyle extends GaplyAnimStyle
-    with GaplyAnimMixin<SkewStyle>, _SkewStyleMixin, SkewStyleModifier<SkewStyle> {
+class SkewStyle extends GaplyAnimStyle<SkewStyle>
+    with
+        GaplyTweenMixin<SkewStyle>,
+        GaplyAnimMixin<SkewStyle>,
+        _SkewStyleMixin,
+        SkewStyleModifier<SkewStyle> {
   final Offset skew;
   final bool isSkewed;
 
@@ -35,14 +39,9 @@ class SkewStyle extends GaplyAnimStyle
 
   factory SkewStyle.preset(String name, {bool? isSkewed, VoidCallback? onComplete}) {
     final style = GaplySkewPreset.of(name);
-
     if (style == null) {
-      throw ArgumentError(
-        'Unknown skew preset: "$name". '
-        'Available presets: ${GaplySkewPreset.instance.allKeys.join(", ")}',
-      );
+      throw ArgumentError(GaplySkewPreset.instance.errorMessage("SkewStyle", name));
     }
-
     return style.copyWith(isSkewed: isSkewed, onComplete: onComplete);
   }
 
@@ -82,16 +81,16 @@ class SkewStyle extends GaplyAnimStyle
   SkewStyle copyWith({
     Duration? duration,
     Curve? curve,
-    VoidCallback? onComplete,
     Duration? delay,
+    VoidCallback? onComplete,
     Offset? skew,
     bool? isSkewed,
   }) {
     return SkewStyle(
       duration: duration ?? this.duration,
       curve: curve ?? this.curve,
-      onComplete: onComplete ?? this.onComplete,
       delay: delay ?? this.delay,
+      onComplete: onComplete ?? this.onComplete,
       skew: skew ?? this.skew,
       isSkewed: isSkewed ?? this.isSkewed,
     );
@@ -104,8 +103,8 @@ class SkewStyle extends GaplyAnimStyle
     return SkewStyle(
       duration: t < 0.5 ? duration : other.duration,
       curve: t < 0.5 ? curve : other.curve,
-      onComplete: other.onComplete,
       delay: t < 0.5 ? delay : other.delay,
+      onComplete: other.onComplete,
       skew: Offset.lerp(skew, other.skew, t)!,
       isSkewed: t < 0.5 ? isSkewed : other.isSkewed,
     );

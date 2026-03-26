@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:gaply/src/utils/tap_gesture_detector.dart';
 
 import 'package:gaply/src/gaply/styles/styles.dart';
 import 'package:gaply/src/gaply/animations/animations.dart';
@@ -7,30 +6,6 @@ import 'package:gaply/src/gaply/animations/animations.dart';
 import 'box_style.dart';
 import 'box_style_modifier.dart';
 
-/// A customizable box widget with integrated styling and animation support.
-///
-/// [GaplyBox] combines layout, visual effects, and animations through [BoxStyle].
-/// It supports:
-/// - Colors and borders
-/// - Shadows and blur effects
-/// - Shimmer animations
-/// - Sequential animations
-/// - Interactive events
-///
-/// ### Example
-/// ```dart
-/// GaplyBox(
-///   style: BoxStyle()
-///       .boxColorRole(ColorRole.primary)
-///       .boxRadius(BorderRadius.circular(12))
-///       .boxPadding(EdgeInsets.all(16)),
-///   child: Text('Styled Box'),
-/// )
-/// ```
-///
-/// See also:
-/// - [BoxStyle] for styling configuration
-/// - [BoxStyleModifier] for fluent API
 class GaplyBox extends StatelessWidget
     with
         ColorStyleModifier<GaplyBox>,
@@ -44,166 +19,122 @@ class GaplyBox extends StatelessWidget
         ManyShadowStyleModifier<GaplyBox>,
         MotionStyleModifier<GaplyBox>,
         BoxStyleModifier<GaplyBox> {
-  @override
-  BoxStyle get boxStyle => style;
-
   final BoxStyle style;
   final Widget child;
 
   const GaplyBox({super.key, required this.style, required this.child});
 
   @override
-  GaplyBox copyWithStyle(BoxStyle style) => GaplyBox(key: key, style: style, child: child);
+  BoxStyle get boxStyle => style;
+
+  @override
+  GaplyBox copyWithBox(BoxStyle box) => GaplyBox(key: key, style: box, child: child);
 
   @override
   Widget build(BuildContext context) {
-    return _GaplyAnimatedBox(style: style, child: child);
+    return _GaplyBoxWidget(style: style, child: child);
   }
 }
 
-/// Animated container that interpolates between [BoxStyle] values
-class _GaplyAnimatedBox extends ImplicitlyAnimatedWidget {
+class _GaplyBoxWidget extends ImplicitlyAnimatedWidget {
   final BoxStyle style;
   final Widget child;
 
-  _GaplyAnimatedBox({required this.style, required this.child})
-    : super(duration: style.duration, curve: style.curve);
+  _GaplyBoxWidget({required this.style, required this.child})
+    : super(duration: style.duration, curve: style.curve, onEnd: style.onComplete);
 
   @override
-  ImplicitlyAnimatedWidgetState<_GaplyAnimatedBox> createState() => _GaplyAnimatedBoxState();
+  ImplicitlyAnimatedWidgetState<_GaplyBoxWidget> createState() => _GaplyBoxWidgetState();
 }
 
-class _GaplyAnimatedBoxState extends AnimatedWidgetBaseState<_GaplyAnimatedBox> {
-  BoxStyleTween? _styleTween;
-
-  /// Cache for decoration to avoid rebuilding every frame
-  // BoxDecoration? _cachedDecoration;
-  // BoxStyle? _lastStyle;
-
-  @override
-  void didUpdateWidget(_GaplyAnimatedBox oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    // Invalidate cache when widget updates
-    //_cachedDecoration = null;
-  }
+class _GaplyBoxWidgetState extends AnimatedWidgetBaseState<_GaplyBoxWidget> {
+  _BoxStyleTween? _styleTween;
 
   @override
   void forEachTween(TweenVisitor<dynamic> visitor) {
     _styleTween =
-        visitor(_styleTween, widget.style, (dynamic value) => BoxStyleTween(begin: value as BoxStyle))
-            as BoxStyleTween?;
+        visitor(_styleTween, widget.style, (dynamic value) => _BoxStyleTween(begin: value as BoxStyle))
+            as _BoxStyleTween?;
   }
 
   @override
   Widget build(BuildContext context) {
-    final BoxStyle currentStyle = _styleTween?.evaluate(animation) ?? widget.style;
+    final currentStyle = _styleTween?.evaluate(animation) ?? widget.style;
 
-    Widget result = widget.child;
+    final layout = currentStyle.layout;
 
-    // Determine if heavy effects need optimization
-    final needsOptimization =
-        currentStyle.shimmer.hasEffect || (currentStyle.blur.hasEffect && currentStyle.motion.hasEffect);
+    final bool staticEffect = currentStyle.noise.hasEffect || currentStyle.filter.hasEffect;
+    final bool dynamicEffect = currentStyle.shimmer.hasEffect;
 
-    // Build decoration with caching
-    final decoration = _buildDecoration(context, currentStyle);
-
-    result = Container(
-      width: currentStyle.layout.width,
-      height: currentStyle.layout.height,
-      padding: currentStyle.layout.padding,
-      margin: currentStyle.layout.margin,
-      alignment: currentStyle.layout.alignment,
-      decoration: decoration,
-      clipBehavior: currentStyle.layout.borderRadius != null ? Clip.antiAlias : Clip.none,
-      child: result,
+    Widget result = Container(
+      width: layout.width,
+      height: layout.height,
+      padding: layout.padding,
+      margin: layout.margin,
+      alignment: layout.alignment,
+      decoration: _buildDecoration(context, currentStyle),
+      clipBehavior: layout.borderRadius != null ? Clip.antiAlias : Clip.none,
+      child: widget.child,
     );
 
-    // Apply effects in order of performance impact (least expensive first)
-    if (currentStyle.shimmer.hasEffect) {
-      result = currentStyle.shimmer.buildWidget(context: context, child: result);
-    }
-
-    if (currentStyle.blur.hasEffect) {
-      result = currentStyle.blur.buildWidget(
-        context: context,
-        borderRadius: currentStyle.layout.borderRadius,
-        child: result,
-      );
+    if (currentStyle.noise.hasEffect) {
+      result = currentStyle.noise.buildWidget(context: context, child: result);
     }
 
     if (currentStyle.filter.hasEffect) {
       result = currentStyle.filter.buildWidget(context: context, child: result);
     }
 
-    if (currentStyle.noise.hasEffect) {
-      result = currentStyle.noise.buildWidget(context: context, child: result);
+    if (dynamicEffect) {
+      result = currentStyle.shimmer.buildWidget(context: context, child: result);
     }
 
-    if (currentStyle.layout.scale != 1.0) {
-      result = Transform.scale(scale: currentStyle.layout.scale, child: result);
-    }
-
-    if (needsOptimization) {
+    if (staticEffect || dynamicEffect) {
       result = RepaintBoundary(child: result);
     }
 
     if (currentStyle.onPressed != null) {
-      result = TapGestureDetector(
+      result = GestureDetector(
         onTap: currentStyle.onPressed,
         behavior: HitTestBehavior.opaque,
         child: MouseRegion(cursor: SystemMouseCursors.click, child: result),
       );
     }
 
-    result = currentStyle.motion.buildWidget(child: result);
+    if (layout.scale != 1.0) {
+      result = Transform.scale(scale: layout.scale, child: result);
+    }
+
+    if (currentStyle.motion.hasEffect) {
+      result = currentStyle.motion.buildWidget(child: result);
+    }
 
     return result;
   }
 
-  /// Builds a [BoxDecoration] from the current [BoxStyle].
-  ///
-  /// Returns null if no decoration is needed (all properties disabled).
   BoxDecoration? _buildDecoration(BuildContext context, BoxStyle style) {
-    final hasDecoration =
-        style.color.hasEffect ||
-        style.borderColor.hasEffect ||
-        style.layout.borderWidth > 0 ||
-        style.shadows.isNotEmpty ||
-        style.gradient.hasEffect;
+    if (!style.hasEffect) return null;
 
-    if (!hasDecoration) return null;
+    final resolvedColor = style.color.resolve(context) ?? Colors.transparent;
+    final resolvedBorderColor = style.borderColor.resolve(context) ?? Colors.transparent;
 
     return BoxDecoration(
-      color: style.color.isVisible ? style.color.resolve(context) : null,
+      color: resolvedColor,
       borderRadius: style.layout.borderRadius,
       border: style.layout.borderWidth > 0
-          ? Border.all(
-              color: style.borderColor.resolve(context) ?? Colors.transparent,
-              width: style.layout.borderWidth,
-            )
+          ? Border.all(color: resolvedBorderColor, width: style.layout.borderWidth)
           : null,
-      boxShadow: style.shadows.map((s) => s.resolve(context)).whereType<BoxShadow>().toList(),
-      gradient: style.gradient.resolve(context),
+      boxShadow: style.shadows.isEmpty
+          ? null
+          : style.shadows.map((s) => s.resolve(context)).whereType<BoxShadow>().toList(),
+      gradient: style.gradient.hasEffect ? style.gradient.resolve(context) : null,
     );
   }
 }
 
-/// Tween for smooth animation between two [BoxStyle] values.
-///
-/// This tween handles interpolation of all style properties including
-/// colors, shadows, blur effects, and layout parameters.
-class BoxStyleTween extends Tween<BoxStyle> {
-  BoxStyleTween({super.begin, super.end});
+class _BoxStyleTween extends Tween<BoxStyle> {
+  _BoxStyleTween({super.begin});
 
-  /// Lerps between begin and end [BoxStyle] at progress [t] (0.0 to 1.0)
   @override
-  BoxStyle lerp(double t) {
-    assert(begin != null && end != null, 'BoxStyleTween requires begin and end values');
-
-    final result = begin!.lerp(end, t);
-    if (t > 0 && t < 1) {
-      debugPrint('Animation Progress: ${t.toStringAsFixed(2)}, Scale: ${result.layout.scale}');
-    }
-    return result;
-  }
+  BoxStyle lerp(double t) => begin!.lerp(end, t);
 }

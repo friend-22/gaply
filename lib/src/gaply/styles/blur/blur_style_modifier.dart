@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
-import 'blur_style.dart';
+
 import 'package:gaply/src/gaply/styles/color/gaply_color.dart';
+import 'package:gaply/src/gaply/styles/color/color_defines.dart';
+
+import 'blur_style.dart';
 
 mixin BlurStyleModifier<T> {
   BlurStyle get blurStyle;
@@ -13,7 +16,7 @@ mixin BlurStyleModifier<T> {
 
   T blurColorStyle(GaplyColor color) => copyWithBlur(blurStyle.copyWith(color: color));
 
-  T blurColor(Color custom, {ColorOpacity opacity = ColorOpacity.full}) =>
+  T blurColor(Color custom, {GaplyColorOpacity opacity = GaplyColorOpacity.full}) =>
       blurColorStyle(GaplyColor.fromColor(custom, opacity: opacity));
 
   T blurPreset(String name) => copyWithBlur(BlurStyle.preset(name));

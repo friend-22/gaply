@@ -26,8 +26,12 @@ part 'fade_trigger.dart';
 /// );
 /// ```
 @immutable
-class FadeStyle extends GaplyAnimStyle
-    with GaplyAnimMixin<FadeStyle>, _FadeStyleMixin, FadeStyleModifier<FadeStyle> {
+class FadeStyle extends GaplyAnimStyle<FadeStyle>
+    with
+        GaplyTweenMixin<FadeStyle>,
+        GaplyAnimMixin<FadeStyle>,
+        _FadeStyleMixin,
+        FadeStyleModifier<FadeStyle> {
   /// Whether the widget should be visible (opaque) or hidden (transparent).
   ///
   /// - If `true`, the widget fades in to an opacity of 1.0.
@@ -56,14 +60,9 @@ class FadeStyle extends GaplyAnimStyle
 
   factory FadeStyle.preset(String name, {VoidCallback? onComplete}) {
     final style = GaplyFadePreset.of(name);
-
     if (style == null) {
-      throw ArgumentError(
-        'Unknown fade preset: "$name". '
-        'Available presets: ${GaplyFadePreset.instance.allKeys.join(", ")}',
-      );
+      throw ArgumentError(GaplyFadePreset.instance.errorMessage("FadeStyle", name));
     }
-
     return (onComplete != null) ? style.copyWith(onComplete: onComplete) : style;
   }
 
@@ -90,8 +89,8 @@ class FadeStyle extends GaplyAnimStyle
     return FadeStyle(
       duration: duration ?? this.duration,
       curve: curve ?? this.curve,
-      onComplete: onComplete ?? this.onComplete,
       delay: delay ?? this.delay,
+      onComplete: onComplete ?? this.onComplete,
       isVisible: isVisible ?? this.isVisible,
     );
   }
@@ -103,8 +102,8 @@ class FadeStyle extends GaplyAnimStyle
     return FadeStyle(
       duration: t < 0.5 ? duration : other.duration,
       curve: t < 0.5 ? curve : other.curve,
-      onComplete: other.onComplete,
       delay: t < 0.5 ? delay : other.delay,
+      onComplete: other.onComplete,
       isVisible: t < 0.5 ? isVisible : other.isVisible,
     );
   }

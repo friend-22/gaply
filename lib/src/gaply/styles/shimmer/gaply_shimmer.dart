@@ -39,14 +39,9 @@ class GaplyShimmer extends GaplyStyle<GaplyShimmer>
 
   factory GaplyShimmer.preset(String name, {int? loop}) {
     final style = GaplyShimmerPreset.of(name);
-
     if (style == null) {
-      throw ArgumentError(
-        'Unknown shimmer preset: "$name". '
-        'Available presets: ${GaplyShimmerPreset.instance.allKeys.join(", ")}',
-      );
+      throw ArgumentError(GaplyShimmerPreset.instance.errorMessage("GaplyShimmer", name));
     }
-
     return loop != null ? style.copyWith(loop: loop) : style;
   }
 

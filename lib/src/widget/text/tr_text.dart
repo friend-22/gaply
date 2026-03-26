@@ -1,5 +1,5 @@
 // import 'package:features/features.dart';
-// import 'package:features/style/text/spec.dart';
+// import 'package:features/style/text/text_style.dart';
 //
 // import '../common/tr_mixin.dart';
 // import 'base.dart';

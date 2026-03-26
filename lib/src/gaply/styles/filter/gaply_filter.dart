@@ -31,14 +31,9 @@ class GaplyFilter extends GaplyStyle<GaplyFilter> with _GaplyFilterMixin, Filter
 
   factory GaplyFilter.preset(String name) {
     final style = GaplyFilterPreset.of(name);
-
     if (style == null) {
-      throw ArgumentError(
-        'Unknown color filter preset: "$name". '
-        'Available presets: ${GaplyFilterPreset.instance.allKeys.join(", ")}',
-      );
+      throw ArgumentError(GaplyFilterPreset.instance.errorMessage("GaplyFilter", name));
     }
-
     return style;
   }
 

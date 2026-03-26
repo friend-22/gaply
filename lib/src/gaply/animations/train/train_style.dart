@@ -11,8 +11,9 @@ import 'train_style_modifier.dart';
 part 'train_trigger.dart';
 
 @immutable
-class TrainStyle extends GaplyAnimStyle
+class TrainStyle extends GaplyAnimStyle<TrainStyle>
     with
+        GaplyTweenMixin<TrainStyle>,
         GaplyAnimMixin<TrainStyle>,
         GaplyDirectionAnimMixin,
         _TrainStyleMixin,
@@ -40,14 +41,9 @@ class TrainStyle extends GaplyAnimStyle
 
   factory TrainStyle.preset(String name, {bool? useOpacity, VoidCallback? onComplete}) {
     final style = GaplyTrainPreset.of(name);
-
     if (style == null) {
-      throw ArgumentError(
-        'Unknown train preset: "$name". '
-        'Available presets: ${GaplyTrainPreset.instance.allKeys.join(", ")}',
-      );
+      throw ArgumentError(GaplyTrainPreset.instance.errorMessage("TrainStyle", name));
     }
-
     return style.copyWith(useOpacity: useOpacity, onComplete: onComplete);
   }
 
@@ -117,19 +113,19 @@ class TrainStyle extends GaplyAnimStyle
 
   @override
   TrainStyle copyWith({
-    AxisDirection? direction,
     Duration? duration,
     Curve? curve,
-    VoidCallback? onComplete,
     Duration? delay,
+    VoidCallback? onComplete,
+    AxisDirection? direction,
     bool? useOpacity,
   }) {
     return TrainStyle(
-      direction: direction ?? this.direction,
       duration: duration ?? this.duration,
       curve: curve ?? this.curve,
       onComplete: onComplete ?? this.onComplete,
       delay: delay ?? this.delay,
+      direction: direction ?? this.direction,
       useOpacity: useOpacity ?? this.useOpacity,
     );
   }
@@ -141,8 +137,8 @@ class TrainStyle extends GaplyAnimStyle
     return TrainStyle(
       duration: t < 0.5 ? duration : other.duration,
       curve: t < 0.5 ? curve : other.curve,
-      onComplete: other.onComplete,
       delay: t < 0.5 ? delay : other.delay,
+      onComplete: other.onComplete,
       direction: t < 0.5 ? direction : other.direction,
       useOpacity: t < 0.5 ? useOpacity : other.useOpacity,
     );

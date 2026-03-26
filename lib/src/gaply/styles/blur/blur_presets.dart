@@ -8,10 +8,10 @@ class GaplyBlurPreset with GaplyPreset<BlurStyle> {
   void _ensureInitialized() {
     if (hasPreset) return;
 
-    const blurLowColor = GaplyColor.shadow(opacity: ColorOpacity.o10);
-    const blurMediumColor = GaplyColor.shadow(opacity: ColorOpacity.o20);
-    const blurHighColor = GaplyColor.shadow(opacity: ColorOpacity.o30);
-    const blurExtraColor = GaplyColor.shadow(opacity: ColorOpacity.o40);
+    const blurLowColor = GaplyColor.fromToken(GaplyColorToken.shadow, opacity: GaplyColorOpacity.o10);
+    const blurMediumColor = GaplyColor.fromToken(GaplyColorToken.shadow, opacity: GaplyColorOpacity.o20);
+    const blurHighColor = GaplyColor.fromToken(GaplyColorToken.shadow, opacity: GaplyColorOpacity.o30);
+    const blurExtraColor = GaplyColor.fromToken(GaplyColorToken.shadow, opacity: GaplyColorOpacity.o40);
 
     add('low', const BlurStyle(sigma: 4.0, color: blurLowColor));
     add('medium', const BlurStyle(sigma: 10.0, color: blurMediumColor));

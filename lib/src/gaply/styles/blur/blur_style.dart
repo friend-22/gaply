@@ -24,14 +24,9 @@ class BlurStyle extends GaplyStyle<BlurStyle> with _BlurStyleMixin, BlurStyleMod
 
   factory BlurStyle.preset(String name, {GaplyColor? color}) {
     final style = GaplyBlurPreset.of(name);
-
     if (style == null) {
-      throw ArgumentError(
-        'Unknown blur preset: "$name". '
-        'Available presets: ${GaplyBlurPreset.instance.allKeys.join(", ")}',
-      );
+      throw ArgumentError(GaplyBlurPreset.instance.errorMessage("BlurStyle", name));
     }
-
     return color != null ? style.copyWith(color: color) : style;
   }
 

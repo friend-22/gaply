@@ -2,115 +2,57 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:gaply/src/gaply/core/gaply_style.dart';
+import 'package:gaply/src/gaply/core/gaply_theme.dart';
 
+import 'color_defines.dart';
 import 'color_style_modifier.dart';
-import 'color_ext.dart';
-
-enum ColorRole {
-  none,
-
-  // 1. 핵심 브랜드 컬러 (Brand)
-  primary,
-  onPrimary,
-  primaryContainer,
-  onPrimaryContainer,
-
-  secondary,
-  onSecondary,
-
-  tertiary,
-  onTertiary,
-
-  // 2. 상태 및 피드백 (Feedback)
-  error,
-  onError,
-
-  success,
-  warning,
-
-  surface,
-  onSurface,
-  surfaceVariant,
-  onSurfaceVariant,
-  outline,
-  outlineVariant,
-  shadow,
-  scrim,
-
-  inverseSurface,
-  onInverseSurface,
-}
-
-enum ColorOpacity {
-  transparent, // 0%
-  o10, // 10%
-  o20, // 20%
-  o30, // 30%
-  o40, // 40%
-  o50, // 50%
-  o60, // 60%
-  o70, // 70%
-  o80, // 80%
-  o90, // 90%
-  full, // 100%
-  subtle, // 12% (for UI emphasis)
-  half, // 50%
-  solid, // 100% (alias)
-}
-
-enum ColorShade {
-  s50, // Lightest
-  s100,
-  s200,
-  s300,
-  s400,
-  s500, // Default
-  s600,
-  s700,
-  s800,
-  s900,
-  s950, // Darkest
-}
+import 'color_theme.dart';
 
 @immutable
 class GaplyColor extends GaplyStyle<GaplyColor> with _GaplyColorMixin, ColorStyleModifier<GaplyColor> {
-  final ColorRole role;
-  final ColorOpacity opacity;
-  final ColorShade shade;
+  final GaplyColorToken token;
+  final GaplyColorOpacity opacity;
+  final GaplyColorShade shade;
   final Color? customColor;
   final bool autoInvert;
 
   const GaplyColor({
-    required this.role,
-    this.shade = ColorShade.s500,
-    this.opacity = ColorOpacity.full,
+    required this.token,
+    this.shade = GaplyColorShade.s500,
+    this.opacity = GaplyColorOpacity.full,
     this.customColor,
     this.autoInvert = true,
   });
 
-  const GaplyColor.none() : this(role: ColorRole.none);
+  const GaplyColor.none() : this(token: GaplyColorToken.none);
 
-  const GaplyColor.fromRole(
-    ColorRole role, {
-    ColorShade shade = ColorShade.s500,
-    ColorOpacity opacity = ColorOpacity.full,
+  const GaplyColor.fromToken(
+    GaplyColorToken token, {
+    GaplyColorShade shade = GaplyColorShade.s500,
+    GaplyColorOpacity opacity = GaplyColorOpacity.full,
     bool autoInvert = true,
-  }) : this(role: role, shade: shade, opacity: opacity, autoInvert: autoInvert);
+  }) : this(token: token, shade: shade, opacity: opacity, autoInvert: autoInvert);
 
   const GaplyColor.fromColor(
     Color color, {
-    ColorShade shade = ColorShade.s500,
-    ColorOpacity opacity = ColorOpacity.full,
+    GaplyColorShade shade = GaplyColorShade.s500,
+    GaplyColorOpacity opacity = GaplyColorOpacity.full,
     bool autoInvert = true,
-  }) : this(role: ColorRole.none, customColor: color, shade: shade, opacity: opacity, autoInvert: autoInvert);
+  }) : this(
+         token: GaplyColorToken.none,
+         customColor: color,
+         shade: shade,
+         opacity: opacity,
+         autoInvert: autoInvert,
+       );
 
   GaplyColor.fromInt(
     int value, {
-    ColorShade shade = ColorShade.s500,
-    ColorOpacity opacity = ColorOpacity.full,
+    GaplyColorShade shade = GaplyColorShade.s500,
+    GaplyColorOpacity opacity = GaplyColorOpacity.full,
     bool autoInvert = true,
   }) : this(
-         role: ColorRole.none,
+         token: GaplyColorToken.none,
          customColor: Color(value),
          shade: shade,
          opacity: opacity,
@@ -118,99 +60,31 @@ class GaplyColor extends GaplyStyle<GaplyColor> with _GaplyColorMixin, ColorStyl
        );
 
   const GaplyColor.transparent()
-    : this(role: ColorRole.none, customColor: Colors.transparent, opacity: ColorOpacity.transparent);
+    : this(
+        token: GaplyColorToken.none,
+        customColor: Colors.transparent,
+        opacity: GaplyColorOpacity.transparent,
+      );
 
-  const GaplyColor.primary({ColorShade shade = ColorShade.s500, ColorOpacity opacity = ColorOpacity.full})
-    : this(role: ColorRole.primary, shade: shade, opacity: opacity);
+  const GaplyColor.subtle(GaplyColorToken token, {GaplyColorShade shade = GaplyColorShade.s500})
+    : this(token: token, shade: shade, opacity: GaplyColorOpacity.subtle);
 
-  const GaplyColor.onPrimary({ColorShade shade = ColorShade.s500, ColorOpacity opacity = ColorOpacity.full})
-    : this(role: ColorRole.onPrimary, shade: shade, opacity: opacity);
+  const GaplyColor.half(GaplyColorToken token, {GaplyColorShade shade = GaplyColorShade.s500})
+    : this(token: token, shade: shade, opacity: GaplyColorOpacity.half);
 
-  const GaplyColor.primaryContainer({
-    ColorShade shade = ColorShade.s500,
-    ColorOpacity opacity = ColorOpacity.full,
-  }) : this(role: ColorRole.primaryContainer, shade: shade, opacity: opacity);
-
-  const GaplyColor.onPrimaryContainer({
-    ColorShade shade = ColorShade.s500,
-    ColorOpacity opacity = ColorOpacity.full,
-  }) : this(role: ColorRole.onPrimaryContainer, shade: shade, opacity: opacity);
-
-  const GaplyColor.secondary({ColorShade shade = ColorShade.s500, ColorOpacity opacity = ColorOpacity.full})
-    : this(role: ColorRole.secondary, shade: shade, opacity: opacity);
-
-  const GaplyColor.onSecondary({ColorShade shade = ColorShade.s500, ColorOpacity opacity = ColorOpacity.full})
-    : this(role: ColorRole.onSecondary, shade: shade, opacity: opacity);
-
-  const GaplyColor.tertiary({ColorShade shade = ColorShade.s500, ColorOpacity opacity = ColorOpacity.full})
-    : this(role: ColorRole.tertiary, shade: shade, opacity: opacity);
-
-  const GaplyColor.onTertiary({ColorShade shade = ColorShade.s500, ColorOpacity opacity = ColorOpacity.full})
-    : this(role: ColorRole.onTertiary, shade: shade, opacity: opacity);
-
-  const GaplyColor.error({ColorShade shade = ColorShade.s500, ColorOpacity opacity = ColorOpacity.full})
-    : this(role: ColorRole.error, shade: shade, opacity: opacity);
-
-  const GaplyColor.onError({ColorShade shade = ColorShade.s500, ColorOpacity opacity = ColorOpacity.full})
-    : this(role: ColorRole.onError, shade: shade, opacity: opacity);
-
-  const GaplyColor.success({ColorShade shade = ColorShade.s500, ColorOpacity opacity = ColorOpacity.full})
-    : this(role: ColorRole.success, shade: shade, opacity: opacity);
-
-  const GaplyColor.warning({ColorShade shade = ColorShade.s500, ColorOpacity opacity = ColorOpacity.full})
-    : this(role: ColorRole.warning, shade: shade, opacity: opacity);
-
-  const GaplyColor.surface({ColorShade shade = ColorShade.s500, ColorOpacity opacity = ColorOpacity.full})
-    : this(role: ColorRole.surface, shade: shade, opacity: opacity);
-
-  const GaplyColor.surfaceVariant({
-    ColorShade shade = ColorShade.s500,
-    ColorOpacity opacity = ColorOpacity.full,
-  }) : this(role: ColorRole.surfaceVariant, shade: shade, opacity: opacity);
-
-  const GaplyColor.outline({ColorShade shade = ColorShade.s500, ColorOpacity opacity = ColorOpacity.full})
-    : this(role: ColorRole.outline, shade: shade, opacity: opacity);
-
-  const GaplyColor.outlineVariant({
-    ColorShade shade = ColorShade.s500,
-    ColorOpacity opacity = ColorOpacity.full,
-  }) : this(role: ColorRole.outlineVariant, shade: shade, opacity: opacity);
-
-  const GaplyColor.shadow({ColorShade shade = ColorShade.s500, ColorOpacity opacity = ColorOpacity.full})
-    : this(role: ColorRole.shadow, shade: shade, opacity: opacity);
-
-  const GaplyColor.scrim({ColorShade shade = ColorShade.s500, ColorOpacity opacity = ColorOpacity.full})
-    : this(role: ColorRole.scrim, shade: shade, opacity: opacity);
-
-  const GaplyColor.inverseSurface({
-    ColorShade shade = ColorShade.s500,
-    ColorOpacity opacity = ColorOpacity.full,
-  }) : this(role: ColorRole.inverseSurface, shade: shade, opacity: opacity);
-
-  const GaplyColor.onInverseSurface({
-    ColorShade shade = ColorShade.s500,
-    ColorOpacity opacity = ColorOpacity.full,
-  }) : this(role: ColorRole.onInverseSurface, shade: shade, opacity: opacity);
-
-  const GaplyColor.subtle(ColorRole role, {ColorShade shade = ColorShade.s500})
-    : this(role: role, shade: shade, opacity: ColorOpacity.subtle);
-
-  const GaplyColor.half(ColorRole role, {ColorShade shade = ColorShade.s500})
-    : this(role: role, shade: shade, opacity: ColorOpacity.half);
-
-  const GaplyColor.solid(ColorRole role, {ColorShade shade = ColorShade.s500})
-    : this(role: role, shade: shade, opacity: ColorOpacity.solid);
+  const GaplyColor.solid(GaplyColorToken token, {GaplyColorShade shade = GaplyColorShade.s500})
+    : this(token: token, shade: shade, opacity: GaplyColorOpacity.solid);
 
   @override
   GaplyColor copyWith({
-    ColorRole? role,
-    ColorOpacity? opacity,
+    GaplyColorToken? token,
+    GaplyColorOpacity? opacity,
     Color? customColor,
-    ColorShade? shade,
+    GaplyColorShade? shade,
     bool? autoInvert,
   }) {
     return GaplyColor(
-      role: role ?? this.role,
+      token: token ?? this.token,
       opacity: opacity ?? this.opacity,
       customColor: customColor ?? this.customColor,
       shade: shade ?? this.shade,
@@ -222,23 +96,20 @@ class GaplyColor extends GaplyStyle<GaplyColor> with _GaplyColorMixin, ColorStyl
   GaplyColor lerp(GaplyColor? other, double t) {
     if (other == null) return this;
 
-    final double lerpOpacityValue = lerpDouble(opacity.value, other.opacity.value, t) ?? opacity.value;
-
-    final double lerpShadeIndex =
-        lerpDouble(shade.index.toDouble(), other.shade.index.toDouble(), t) ?? shade.index.toDouble();
-    final finalShade = ColorShade.values[lerpShadeIndex.round().clamp(0, ColorShade.values.length - 1)];
+    final double lerpOpacity = lerpDouble(opacity.value, other.opacity.value, t) ?? opacity.value;
+    final double lerpShade = lerpDouble(shade.value, other.shade.value, t) ?? shade.value;
 
     return GaplyColor(
-      role: t < 0.5 ? role : other.role,
-      opacity: GColorOpacityExt.fromValue(lerpOpacityValue),
-      shade: finalShade,
+      token: t < 0.5 ? token : other.token,
+      opacity: GaplyColorOpacity(lerpOpacity),
+      shade: GaplyColorShade(lerpShade),
       autoInvert: t < 0.5 ? autoInvert : other.autoInvert,
       customColor: Color.lerp(customColor, other.customColor, t),
     );
   }
 
   @override
-  bool get hasEffect => role != ColorRole.none || customColor != null;
+  bool get hasEffect => token != GaplyColorToken.none || customColor != null;
 
   bool get isVisible {
     if (!hasEffect) return false;
@@ -248,7 +119,7 @@ class GaplyColor extends GaplyStyle<GaplyColor> with _GaplyColorMixin, ColorStyl
   }
 
   @override
-  List<Object?> get props => [role, opacity, customColor, shade, autoInvert];
+  List<Object?> get props => [token, opacity, customColor, shade, autoInvert];
 }
 
 mixin _GaplyColorMixin {
@@ -256,7 +127,7 @@ mixin _GaplyColorMixin {
 
   GaplyColor copyWithColor(GaplyColor color) {
     return colorStyle.copyWith(
-      role: color.role,
+      token: color.token,
       opacity: color.opacity,
       customColor: color.customColor,
       shade: color.shade,
@@ -274,67 +145,40 @@ mixin _GaplyColorMixin {
 
     if (!useCache) return _resolveImpl(context);
 
-    var objectCache = _cacheStorage[this];
-    if (objectCache == null) {
-      objectCache = {};
-      _cacheStorage[this] = objectCache;
-    }
-
-    if (objectCache.containsKey(themeHash)) {
-      return objectCache[themeHash];
-    }
-
-    final resolvedColor = _resolveImpl(context);
-    if (resolvedColor != null) {
-      objectCache[themeHash] = resolvedColor;
-    }
-
-    return resolvedColor;
+    var objectCache = _cacheStorage[this] ??= {};
+    return objectCache[themeHash] ??= (_resolveImpl(context) ?? Colors.transparent);
   }
 
   Color? _resolveImpl(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    Color? baseColor = colorStyle.customColor ?? _resolveByRole(theme.colorScheme);
+    Color? baseColor = colorStyle.customColor ?? _resolveByRole(context);
     if (baseColor == null) return null;
 
+    Color shadedColor;
+
     if (baseColor is MaterialColor) {
-      baseColor = _getMaterialColorShade(baseColor, isDark);
+      shadedColor = _getMaterialColorShade(baseColor, isDark);
     } else {
-      baseColor = _applySmartShade(baseColor, isDark);
+      shadedColor = _applySmartShade(baseColor, isDark);
     }
 
-    return baseColor.withValues(alpha: colorStyle.opacity.value);
+    return shadedColor.withValues(alpha: colorStyle.opacity.value);
   }
 
   Color _getMaterialColorShade(MaterialColor materialColor, bool isDark) {
-    var shade = colorStyle.shade;
-    if (colorStyle.autoInvert && isDark) shade = _invertShade(shade);
-
-    return switch (shade) {
-      ColorShade.s50 => materialColor.shade50,
-      ColorShade.s100 => materialColor[100]!,
-      ColorShade.s200 => materialColor[200]!,
-      ColorShade.s300 => materialColor[300]!,
-      ColorShade.s400 => materialColor[400]!,
-      ColorShade.s500 => materialColor[500]!,
-      ColorShade.s600 => materialColor[600]!,
-      ColorShade.s700 => materialColor[700]!,
-      ColorShade.s800 => materialColor[800]!,
-      ColorShade.s900 => materialColor[900]!,
-      ColorShade.s950 => materialColor[950] ?? materialColor[900]!,
-    };
-  }
-
-  ColorShade _invertShade(ColorShade shade) {
-    return ColorShade.values[ColorShade.values.length - 1 - shade.index];
+    final double shadeValue = colorStyle.shade.value;
+    final double effectiveValue = (colorStyle.autoInvert && isDark) ? 1.0 - shadeValue : shadeValue;
+    final int index = _valueToMaterialIndex(effectiveValue);
+    if (index == 50) return materialColor.shade50;
+    return materialColor[index] ?? materialColor[500]!;
   }
 
   Color _applySmartShade(Color color, bool isDark) {
-    if (colorStyle.shade == ColorShade.s500 && !colorStyle.autoInvert) return color;
+    final double shadeValue = colorStyle.shade.value;
+    if (shadeValue == 0.5 && !colorStyle.autoInvert) return color;
 
-    final double shadeValue = colorStyle.shade.value; // 0.0(s50) ~ 1.0(s950)
     final double effectiveValue = (colorStyle.autoInvert && isDark) ? 1.0 - shadeValue : shadeValue;
 
     final hsl = HSLColor.fromColor(color);
@@ -350,38 +194,25 @@ mixin _GaplyColorMixin {
     return color;
   }
 
-  Color? _resolveByRole(ColorScheme scheme) {
-    return switch (colorStyle.role) {
-      ColorRole.primary => scheme.primary,
-      ColorRole.onPrimary => scheme.onPrimary,
-      ColorRole.primaryContainer => scheme.primaryContainer,
-      ColorRole.onPrimaryContainer => scheme.onPrimaryContainer,
-      ColorRole.secondary => scheme.secondary,
-      ColorRole.onSecondary => scheme.onSecondary,
-      ColorRole.tertiary => scheme.tertiary,
-      ColorRole.onTertiary => scheme.onTertiary,
-      ColorRole.error => scheme.error,
-      ColorRole.onError => scheme.onError,
+  Color? _resolveByRole(BuildContext context) {
+    try {
+      final themeData = GaplyTheme.of<GaplyColorTheme>(context);
+      final token = colorStyle.token;
 
-      ColorRole.success => Colors.green,
-      ColorRole.warning => Colors.orange,
+      if (token != GaplyColorToken.none && !themeData.hasRole(token)) {
+        debugPrint('⚠️ [Gaply Warning] Color token "${token.value}" is not defined in the current theme.');
+      }
 
-      ColorRole.surface => scheme.surface,
-      ColorRole.onSurface => scheme.onSurface,
+      final GaplyColor themeColor = themeData.getColor(token);
+      return themeColor.customColor;
+    } catch (_) {
+      return null;
+    }
+  }
 
-      ColorRole.surfaceVariant => scheme.surfaceContainerHighest,
-      ColorRole.onSurfaceVariant => scheme.onSurfaceVariant,
-
-      ColorRole.outline => scheme.outline,
-      ColorRole.outlineVariant => scheme.outlineVariant,
-
-      ColorRole.shadow => scheme.shadow,
-      ColorRole.scrim => scheme.scrim,
-
-      ColorRole.inverseSurface => scheme.inverseSurface,
-      ColorRole.onInverseSurface => scheme.onInverseSurface,
-
-      ColorRole.none => null,
-    };
+  int _valueToMaterialIndex(double value) {
+    if (value <= 0.05) return 50;
+    if (value >= 0.95) return 950;
+    return (value * 10).round() * 100;
   }
 }

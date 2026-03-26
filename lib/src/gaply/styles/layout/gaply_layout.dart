@@ -42,14 +42,9 @@ class GaplyLayout extends GaplyStyle<GaplyLayout> with _GaplyLayoutMixin, Layout
 
   factory GaplyLayout.preset(String name) {
     final style = GaplyLayoutPreset.of(name);
-
     if (style == null) {
-      throw ArgumentError(
-        'Unknown layout preset: "$name". '
-        'Available presets: ${GaplyLayoutPreset.instance.allKeys.join(", ")}',
-      );
+      throw ArgumentError(GaplyLayoutPreset.instance.errorMessage("GaplyLayout", name));
     }
-
     return style;
   }
 

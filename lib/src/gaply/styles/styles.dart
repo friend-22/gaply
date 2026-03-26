@@ -3,9 +3,12 @@ export 'blur/blur_presets.dart';
 export 'blur/blur_style.dart';
 export 'blur/blur_style_modifier.dart';
 
-export 'color/color_ext.dart';
-export 'color/gaply_color.dart';
+export 'color/color_defines.dart';
 export 'color/color_style_modifier.dart';
+export 'color/color_theme.dart';
+export 'color/color_theme_modifier.dart';
+export 'color/color_theme_presets.dart';
+export 'color/gaply_color.dart';
 
 export 'filter/filter_presets.dart';
 export 'filter/filter_style_modifier.dart';

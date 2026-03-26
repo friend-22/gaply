@@ -13,7 +13,7 @@ void main() {
         .layoutBorderWidth(1.5)
         .borderColorCustom(Colors.white.withValues(alpha: 0.2))
         .blurPreset('apple')
-        .colorRole(ColorRole.surface, opacity: ColorOpacity.transparent)
+        .colorToken(GaplyColorToken.surface, opacity: GaplyColorOpacity.transparent.value)
         .shadowElevation(12),
   );
 
@@ -24,7 +24,7 @@ void main() {
         .layoutRadius(32)
         .layoutPadding(const EdgeInsets.all(24))
         .layoutBorderWidth(1)
-        .colorRole(ColorRole.surface, opacity: ColorOpacity.transparent)
+        .colorToken(GaplyColorToken.surface, opacity: GaplyColorOpacity.transparent.value)
         .blurPreset('apple')
         .borderColorCustom(Colors.white.withValues(alpha: 0.1))
         .boxDuration(const Duration(milliseconds: 400))

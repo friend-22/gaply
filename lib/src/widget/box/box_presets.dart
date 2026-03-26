@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
+
 import 'package:gaply/src/gaply/core/gaply_preset.dart';
-import 'package:gaply/src/gaply/styles/color/gaply_color.dart';
-import 'package:gaply/src/gaply/styles/gradient/gaply_gradient.dart';
-import 'package:gaply/src/gaply/styles/layout/gaply_layout.dart';
+import 'package:gaply/src/gaply/styles/styles.dart';
 
 import 'box_style.dart';
 
@@ -19,7 +18,7 @@ class GaplyBoxPreset with GaplyPreset<BoxStyle> {
       'card',
       const BoxStyle(
         layout: GaplyLayout(padding: EdgeInsets.all(16), borderRadius: BorderRadius.all(Radius.circular(12))),
-        color: GaplyColor(role: ColorRole.surface),
+        color: GaplyColor(token: GaplyColorToken.surface),
         shadows: [
           // GaplyShadow.preset('small')
         ],
@@ -33,7 +32,7 @@ class GaplyBoxPreset with GaplyPreset<BoxStyle> {
           padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           borderRadius: BorderRadius.all(Radius.circular(8)),
         ),
-        color: GaplyColor(role: ColorRole.primary),
+        color: GaplyColor(token: GaplyColorToken.primary),
         duration: Duration(milliseconds: 200),
       ),
     );

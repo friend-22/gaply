@@ -28,8 +28,12 @@ part 'flip_trigger.dart';
 /// );
 /// ```
 @immutable
-class FlipStyle extends GaplyAnimStyle
-    with GaplyAnimMixin<FlipStyle>, _GaplyFlipMixin, FlipStyleModifier<FlipStyle> {
+class FlipStyle extends GaplyAnimStyle<FlipStyle>
+    with
+        GaplyTweenMixin<FlipStyle>,
+        GaplyAnimMixin<FlipStyle>,
+        _GaplyFlipMixin,
+        FlipStyleModifier<FlipStyle> {
   final Axis axis;
   final double angleRange;
   final bool isFlipped;
@@ -61,12 +65,8 @@ class FlipStyle extends GaplyAnimStyle
 
   factory FlipStyle.preset(String name, {Widget? backWidget, bool? isFlipped, VoidCallback? onComplete}) {
     final style = GaplyFlipPreset.of(name);
-
     if (style == null) {
-      throw ArgumentError(
-        'Unknown flip preset: "$name". '
-        'Available presets: ${GaplyFlipPreset.instance.allKeys.join(", ")}',
-      );
+      throw ArgumentError(GaplyFlipPreset.instance.errorMessage("FlipStyle", name));
     }
     return style.copyWith(isFlipped: isFlipped, backWidget: backWidget, onComplete: onComplete);
   }
@@ -109,8 +109,8 @@ class FlipStyle extends GaplyAnimStyle
   FlipStyle copyWith({
     Duration? duration,
     Curve? curve,
-    VoidCallback? onComplete,
     Duration? delay,
+    VoidCallback? onComplete,
     Axis? axis,
     double? angleRange,
     bool? isFlipped,
@@ -119,8 +119,8 @@ class FlipStyle extends GaplyAnimStyle
     return FlipStyle(
       duration: duration ?? this.duration,
       curve: curve ?? this.curve,
-      onComplete: onComplete ?? this.onComplete,
       delay: delay ?? this.delay,
+      onComplete: onComplete ?? this.onComplete,
       axis: axis ?? this.axis,
       angleRange: angleRange ?? this.angleRange,
       isFlipped: isFlipped ?? this.isFlipped,
@@ -135,8 +135,8 @@ class FlipStyle extends GaplyAnimStyle
     return FlipStyle(
       duration: t < 0.5 ? duration : other.duration,
       curve: t < 0.5 ? curve : other.curve,
-      onComplete: other.onComplete,
       delay: t < 0.5 ? delay : other.delay,
+      onComplete: other.onComplete,
       axis: t < 0.5 ? axis : other.axis,
       angleRange: lerpDouble(angleRange, other.angleRange, t) ?? angleRange,
       isFlipped: t < 0.5 ? isFlipped : other.isFlipped,

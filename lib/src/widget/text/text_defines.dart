@@ -1,9 +1,4 @@
-// import 'dart:ui';
-//
-// import 'package:equatable/equatable.dart';
-// import 'package:gaply/src/core/effect/gaply_color.dart';
-//
-// enum StyleRole {
+// enum TextRole {
 //   none,
 //   sans,
 //   mono,
@@ -43,7 +38,7 @@
 //   textMuted,
 //   underline,
 // }
-//
+
 // enum FontFeature {
 //   none,
 //   alternative,
@@ -71,89 +66,4 @@
 //   swash, //글자의 꼬리를 길게 빼는 등 화려한 장식용 글자를 적용합니다.
 //   tabularFigures, //숫자의 너비를 모두 동일하게 맞춥니다. 수치가 실시간으로 변할 때 텍스트가 좌우로 흔들리지 않게 해주므로 대시보드 구현 시 필수입니다.
 //   slashedZero, //숫자 0에 대각선을 그어 알파벳 O와 명확히 구분되게 합니다. 시리얼 번호나 코드 표시 시 유용합니다.
-// }
-//
-// /// marquee 와 ellipsis 동시 사용 못 함
-// enum TextEffect { none, fitted, marquee, glow, shimmer, ellipsis, shadow, glass, blur }
-//
-// class TextStyleSpec extends Equatable {
-//   final double? fontSize;
-//   final bool forceStrutHeight;
-//
-//   //base
-//   final StyleRole styleRole;
-//   final TextAlign alignRole;
-//
-//   //styles
-//   final Set<TextEffect> styles;
-//   final GaplyColor colorParams;
-//   final AniParam aniParam;
-//
-//   final Set<FontFeature> features;
-//
-//   const TextStyleSpec({
-//     this.fontSize,
-//     this.forceStrutHeight = false,
-//     this.styleRole = StyleRole.none,
-//     this.alignRole = TextAlign.start,
-//     this.styles = const {},
-//     this.features = const {},
-//     this.colorParams = const GaplyColor(),
-//     this.aniParam = const AniParam(),
-//   });
-//
-//   const TextStyleSpec.center({
-//     this.fontSize,
-//     this.forceStrutHeight = false,
-//     this.styleRole = StyleRole.none,
-//     this.alignRole = TextAlign.center,
-//     this.styles = const {},
-//     this.features = const {},
-//     this.colorParams = const GaplyColor(),
-//     this.aniParam = const AniParam(),
-//   });
-//
-//   const TextStyleSpec.numeric({
-//     this.fontSize,
-//     this.forceStrutHeight = true,
-//     this.styleRole = StyleRole.mono,
-//     this.alignRole = TextAlign.center,
-//     this.styles = const {},
-//     this.features = const {FontFeature.tabularFigures, FontFeature.liningFigures},
-//     this.colorParams = const GaplyColor(),
-//     this.aniParam = const AniParam(),
-//   });
-//
-//   @override
-//   List<Object?> get props => [
-//     fontSize,
-//     forceStrutHeight,
-//     styleRole,
-//     alignRole,
-//     styles,
-//     features,
-//     aniParam,
-//     colorParams,
-//   ];
-//
-//   TextStyleSpec copyWith({
-//     double? fontSize,
-//     bool? forceStrutHeight,
-//     StyleRole? styleRole,
-//     TextAlign? alignRole,
-//     Set<TextEffect>? styles,
-//     Set<FontFeature>? features,
-//     AniParam? aniParam,
-//     GaplyColor? colorParams,
-//   }) {
-//     return TextStyleSpec(
-//       fontSize: fontSize ?? this.fontSize,
-//       styleRole: styleRole ?? this.styleRole,
-//       alignRole: alignRole ?? this.alignRole,
-//       styles: styles ?? this.styles,
-//       features: features ?? this.features,
-//       aniParam: aniParam ?? this.aniParam,
-//       colorParams: colorParams ?? this.colorParams,
-//     );
-//   }
 // }

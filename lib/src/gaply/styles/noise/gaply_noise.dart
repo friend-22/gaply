@@ -30,14 +30,9 @@ class GaplyNoise extends GaplyStyle<GaplyNoise> with _GaplyNoiseMixin, NoiseStyl
 
   factory GaplyNoise.preset(String name) {
     final style = GaplyNoisePreset.of(name);
-
     if (style == null) {
-      throw ArgumentError(
-        'Unknown noise filter preset: "$name". '
-        'Available presets: ${GaplyNoisePreset.instance.allKeys.join(", ")}',
-      );
+      throw ArgumentError(GaplyNoisePreset.instance.errorMessage("GaplyNoise", name));
     }
-
     return style;
   }
 

@@ -1,18 +1,20 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+
 import 'package:gaply/src/gaply/core/gaply_style.dart';
 import 'package:gaply/src/gaply/styles/color/gaply_color.dart';
-import 'package:gaply/src/gaply/styles/shadow/shadow_presets.dart';
+import 'package:gaply/src/gaply/styles/color/color_defines.dart';
 
+import 'shadow_presets.dart';
 import 'shadow_style_modifier.dart';
 
 @immutable
 class GaplyShadow extends GaplyStyle<GaplyShadow> with _GaplyShadowMixin, ShadowStyleModifier<GaplyShadow> {
   // static const double _elevationOffsetScale = 1.5;
   // static const double _elevationBlurScale = 0.5;
-  static const double _maxAlpha = 0.5;
-  static const double _minAlpha = 0.1;
+  static const double _minOpacity = 0.1;
+  static const double _maxOpacity = 0.5;
 
   final double spreadRadius;
   final double blurRadius;
@@ -39,27 +41,23 @@ class GaplyShadow extends GaplyStyle<GaplyShadow> with _GaplyShadowMixin, Shadow
 
   factory GaplyShadow.preset(String name, {GaplyColor? color}) {
     final style = GaplyShadowPreset.of(name);
-
     if (style == null) {
-      throw ArgumentError(
-        'Unknown shadow preset: "$name". '
-        'Available presets: ${GaplyShadowPreset.instance.allKeys.join(", ")}',
-      );
+      throw ArgumentError(GaplyShadowPreset.instance.errorMessage("GaplyShadow", name));
     }
-
     return color != null ? style.copyWith(color: color) : style;
   }
 
   factory GaplyShadow.elevation(double elevation, {GaplyColor? color}) {
     if (elevation <= 0) return const GaplyShadow.none();
 
-    final alpha = (_maxAlpha - (elevation / 100)).clamp(_minAlpha, _maxAlpha);
+    final opacity = (_maxOpacity - (elevation / 100)).clamp(_minOpacity, _maxOpacity);
+    final resolveOpacity = GaplyColorOpacity(opacity);
 
     return GaplyShadow(
       offset: Offset(elevation, elevation),
       blurRadius: elevation * 0.5,
       spreadRadius: -elevation / 8,
-      color: color ?? const GaplyColor.shadow().colorOpacityValue(alpha),
+      color: color ?? GaplyColor.fromToken(GaplyColorToken.shadow, opacity: resolveOpacity),
     );
   }
 

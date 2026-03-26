@@ -42,8 +42,12 @@ part 'shake_trigger.dart';
 /// )
 /// ```
 @immutable
-class ShakeStyle extends GaplyAnimStyle
-    with GaplyAnimMixin<ShakeStyle>, _ShakeStyleMixin, ShakeStyleModifier<ShakeStyle> {
+class ShakeStyle extends GaplyAnimStyle<ShakeStyle>
+    with
+        GaplyTweenMixin<ShakeStyle>,
+        GaplyAnimMixin<ShakeStyle>,
+        _ShakeStyleMixin,
+        ShakeStyleModifier<ShakeStyle> {
   /// Maximum translation distance in logical pixels
   final double distance;
 
@@ -94,14 +98,9 @@ class ShakeStyle extends GaplyAnimStyle
     VoidCallback? onComplete,
   }) {
     final style = GaplyShakePreset.of(name);
-
     if (style == null) {
-      throw ArgumentError(
-        'Unknown shake preset: "$name". '
-        'Available presets: ${GaplyShakePreset.instance.allKeys.join(", ")}',
-      );
+      throw ArgumentError(GaplyShakePreset.instance.errorMessage("ShakeStyle", name));
     }
-
     return style.copyWith(distance: distance, count: count, isVertical: isVertical, onComplete: onComplete);
   }
 
@@ -117,8 +116,8 @@ class ShakeStyle extends GaplyAnimStyle
   ShakeStyle copyWith({
     Duration? duration,
     Curve? curve,
-    VoidCallback? onComplete,
     Duration? delay,
+    VoidCallback? onComplete,
     double? distance,
     double? count,
     bool? useHaptic,
@@ -126,12 +125,12 @@ class ShakeStyle extends GaplyAnimStyle
     bool? isVertical,
   }) {
     return ShakeStyle(
-      distance: distance ?? this.distance,
-      count: count ?? this.count,
       duration: duration ?? this.duration,
-      onComplete: onComplete ?? this.onComplete,
       delay: delay ?? this.delay,
       curve: curve ?? this.curve,
+      onComplete: onComplete ?? this.onComplete,
+      distance: distance ?? this.distance,
+      count: count ?? this.count,
       useHaptic: useHaptic ?? this.useHaptic,
       useRepaintBoundary: useRepaintBoundary ?? this.useRepaintBoundary,
       isVertical: isVertical ?? this.isVertical,
@@ -145,8 +144,8 @@ class ShakeStyle extends GaplyAnimStyle
     return ShakeStyle(
       duration: t < 0.5 ? duration : other.duration,
       curve: t < 0.5 ? curve : other.curve,
-      onComplete: other.onComplete,
       delay: t < 0.5 ? delay : other.delay,
+      onComplete: other.onComplete,
       distance: lerpDouble(distance, other.distance, t) ?? distance,
       count: lerpDouble(count, other.count, t) ?? count,
       useHaptic: t < 0.5 ? useHaptic : other.useHaptic,

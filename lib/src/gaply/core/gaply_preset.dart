@@ -10,4 +10,13 @@ mixin GaplyPreset<T extends GaplyStyle> {
   bool get hasPreset => _presets.isNotEmpty;
 
   List<String> get allKeys => _presets.keys.toList();
+
+  @override
+  String toString() => allKeys.join(", ");
+
+  String errorMessage(String category, String name) {
+    final available = _presets.keys;
+    return "Unknown $category preset: '$name'. "
+        "Available presets: ${available.isEmpty ? "None" : available.join(", ")}";
+  }
 }

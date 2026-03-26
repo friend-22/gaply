@@ -1,7 +1,7 @@
 import 'dart:ui';
 
+import 'color_defines.dart';
 import 'gaply_color.dart';
-import 'color_ext.dart';
 
 mixin ColorStyleModifier<T> {
   GaplyColor get colorStyle;
@@ -10,25 +10,36 @@ mixin ColorStyleModifier<T> {
 
   T colorStyleSet(GaplyColor color) => copyWithColor(color);
 
-  T colorRole(
-    ColorRole role, {
-    ColorShade shade = ColorShade.s500,
-    ColorOpacity opacity = ColorOpacity.full,
-    bool autoInvert = true,
-  }) => copyWithColor(GaplyColor.fromRole(role, shade: shade, opacity: opacity, autoInvert: autoInvert));
+  T colorToken(GaplyColorToken token, {double? shade, double? opacity, bool autoInvert = true}) {
+    return copyWithColor(
+      GaplyColor(
+        token: token,
+        shade: GaplyColorShade.resolve(shade),
+        opacity: GaplyColorOpacity.resolve(opacity),
+        autoInvert: autoInvert,
+      ),
+    );
+  }
 
-  T colorCustom(Color custom, {ColorOpacity opacity = ColorOpacity.full}) =>
-      copyWithColor(GaplyColor.fromColor(custom, opacity: opacity));
+  T colorCustom(Color custom, {double? shade, double? opacity, bool autoInvert = true}) {
+    return copyWithColor(
+      GaplyColor(
+        token: GaplyColorToken.none,
+        customColor: custom,
+        shade: GaplyColorShade.resolve(shade),
+        opacity: GaplyColorOpacity.resolve(opacity),
+        autoInvert: autoInvert,
+      ),
+    );
+  }
 
-  T colorShade(ColorShade shade) => copyWithColor(colorStyle.copyWith(shade: shade));
+  T colorShadeToken(GaplyColorShade shade) => copyWithColor(colorStyle.copyWith(shade: shade));
 
-  T colorShadeValue(double value) =>
-      copyWithColor(colorStyle.copyWith(shade: GColorShadeExt.fromValue(value)));
+  T colorShade(double value) => colorShadeToken(GaplyColorShade(value));
 
-  T colorOpacity(ColorOpacity opacity) => copyWithColor(colorStyle.copyWith(opacity: opacity));
+  T colorOpacityToken(GaplyColorOpacity opacity) => copyWithColor(colorStyle.copyWith(opacity: opacity));
 
-  T colorOpacityValue(double value) =>
-      copyWithColor(colorStyle.copyWith(opacity: GColorOpacityExt.fromValue(value)));
+  T colorOpacity(double value) => colorOpacityToken(GaplyColorOpacity(value));
 
   T colorAutoInvert(bool value) => copyWithColor(colorStyle.copyWith(autoInvert: value));
 }
@@ -40,27 +51,38 @@ mixin BorderColorStyleModifier<T> {
 
   T borderColorStyleSet(GaplyColor color) => copyWithBorderColor(color);
 
-  T borderColorRole(
-    ColorRole role, {
-    ColorShade shade = ColorShade.s500,
-    ColorOpacity opacity = ColorOpacity.full,
-    bool autoInvert = true,
-  }) =>
-      copyWithBorderColor(GaplyColor.fromRole(role, shade: shade, opacity: opacity, autoInvert: autoInvert));
+  T borderColorToken(GaplyColorToken token, {double? shade, double? opacity, bool autoInvert = true}) {
+    return copyWithBorderColor(
+      GaplyColor(
+        token: token,
+        shade: GaplyColorShade.resolve(shade),
+        opacity: GaplyColorOpacity.resolve(opacity),
+        autoInvert: autoInvert,
+      ),
+    );
+  }
 
-  T borderColorCustom(Color custom, {ColorOpacity opacity = ColorOpacity.full}) =>
-      copyWithBorderColor(GaplyColor.fromColor(custom, opacity: opacity));
+  T borderColorCustom(Color custom, {double? shade, double? opacity, bool autoInvert = true}) {
+    return copyWithBorderColor(
+      GaplyColor(
+        token: GaplyColorToken.none,
+        customColor: custom,
+        shade: GaplyColorShade.resolve(shade),
+        opacity: GaplyColorOpacity.resolve(opacity),
+        autoInvert: autoInvert,
+      ),
+    );
+  }
 
-  T borderColorShade(ColorShade shade) => copyWithBorderColor(borderColorStyle.copyWith(shade: shade));
+  T borderColorShadeToken(GaplyColorShade shade) =>
+      copyWithBorderColor(borderColorStyle.copyWith(shade: shade));
 
-  T borderColorShadeValue(double value) =>
-      copyWithBorderColor(borderColorStyle.copyWith(shade: GColorShadeExt.fromValue(value)));
+  T borderColorShade(double value) => borderColorShadeToken(GaplyColorShade(value));
 
-  T borderColorOpacity(ColorOpacity opacity) =>
+  T borderColorOpacityToken(GaplyColorOpacity opacity) =>
       copyWithBorderColor(borderColorStyle.copyWith(opacity: opacity));
 
-  T borderColorOpacityValue(double value) =>
-      copyWithBorderColor(borderColorStyle.copyWith(opacity: GColorOpacityExt.fromValue(value)));
+  T borderColorOpacity(double value) => borderColorOpacityToken(GaplyColorOpacity(value));
 
   T borderColorAutoInvert(bool value) => copyWithBorderColor(borderColorStyle.copyWith(autoInvert: value));
 }

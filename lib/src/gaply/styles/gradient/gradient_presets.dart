@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:gaply/src/gaply/core/gaply_preset.dart';
+import 'package:gaply/src/gaply/styles/color/color_defines.dart';
 import 'package:gaply/src/gaply/styles/color/gaply_color.dart';
-
 import 'gaply_gradient.dart';
 
 class GaplyGradientPreset with GaplyPreset<GaplyGradient> {
@@ -16,8 +16,8 @@ class GaplyGradientPreset with GaplyPreset<GaplyGradient> {
       const GaplyGradient(
         type: GradientType.linear,
         colors: [
-          GaplyColor(role: ColorRole.error),
-          GaplyColor(role: ColorRole.warning),
+          GaplyColor(token: GaplyColorToken.error),
+          GaplyColor(token: GaplyColorToken.warning),
         ],
         stops: [0.0, 1.0],
         begin: Alignment.topLeft,
@@ -29,8 +29,8 @@ class GaplyGradientPreset with GaplyPreset<GaplyGradient> {
       const GaplyGradient(
         type: GradientType.linear,
         colors: [
-          GaplyColor(role: ColorRole.primary),
-          GaplyColor(role: ColorRole.secondary),
+          GaplyColor(token: GaplyColorToken.primary),
+          GaplyColor(token: GaplyColorToken.secondary),
         ],
         stops: [0.0, 1.0],
       ),
@@ -40,8 +40,8 @@ class GaplyGradientPreset with GaplyPreset<GaplyGradient> {
       const GaplyGradient(
         type: GradientType.linear,
         colors: [
-          GaplyColor(role: ColorRole.secondary, shade: ColorShade.s300),
-          GaplyColor(role: ColorRole.secondary, shade: ColorShade.s700),
+          GaplyColor(token: GaplyColorToken.secondary, shade: GaplyColorShade.s300),
+          GaplyColor(token: GaplyColorToken.secondary, shade: GaplyColorShade.s700),
         ],
         stops: [0.0, 1.0],
       ),
@@ -51,8 +51,8 @@ class GaplyGradientPreset with GaplyPreset<GaplyGradient> {
       const GaplyGradient(
         type: GradientType.linear,
         colors: [
-          GaplyColor(role: ColorRole.primary, shade: ColorShade.s800),
-          GaplyColor(role: ColorRole.primary, shade: ColorShade.s400),
+          GaplyColor(token: GaplyColorToken.primary, shade: GaplyColorShade.s800),
+          GaplyColor(token: GaplyColorToken.primary, shade: GaplyColorShade.s400),
         ],
         stops: [0.0, 1.0],
       ),
@@ -78,8 +78,8 @@ class GaplyGradientPreset with GaplyPreset<GaplyGradient> {
       const GaplyGradient(
         type: GradientType.radial,
         colors: [
-          GaplyColor(role: ColorRole.warning, shade: ColorShade.s300),
-          GaplyColor(role: ColorRole.warning, shade: ColorShade.s600),
+          GaplyColor(token: GaplyColorToken.warning, shade: GaplyColorShade.s300),
+          GaplyColor(token: GaplyColorToken.warning, shade: GaplyColorShade.s600),
         ],
         stops: [0.0, 1.0],
       ),
@@ -89,8 +89,8 @@ class GaplyGradientPreset with GaplyPreset<GaplyGradient> {
       const GaplyGradient(
         type: GradientType.linear,
         colors: [
-          GaplyColor(role: ColorRole.primary),
-          GaplyColor(role: ColorRole.primary, shade: ColorShade.s700),
+          GaplyColor(token: GaplyColorToken.primary),
+          GaplyColor(token: GaplyColorToken.primary, shade: GaplyColorShade.s700),
         ],
         stops: [0.0, 1.0],
       ),

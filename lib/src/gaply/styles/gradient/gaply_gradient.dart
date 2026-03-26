@@ -37,14 +37,9 @@ class GaplyGradient extends GaplyStyle<GaplyGradient>
 
   factory GaplyGradient.preset(String name, {GradientType? type}) {
     final style = GaplyGradientPreset.of(name);
-
     if (style == null) {
-      throw ArgumentError(
-        'Unknown gradient preset: "$name". '
-        'Available presets: ${GaplyGradientPreset.instance.allKeys.join(", ")}',
-      );
+      throw ArgumentError(GaplyGradientPreset.instance.errorMessage("GaplyGradient", name));
     }
-
     return type != null ? style.copyWith(type: type) : style;
   }
 

@@ -11,7 +11,8 @@ import 'gaply_style.dart';
 ///
 /// Animation delays are automatically applied and safe disposal is guaranteed.
 
-mixin GaplyMotionTrigger<W extends StatefulWidget, MST extends GaplyAnimStyle, S extends State> on State<W> {
+mixin GaplyMotionTrigger<W extends StatefulWidget, MST extends GaplyAnimStyle<MST>, S extends State>
+    on State<W> {
   /// Global key to access the animation state
   final GlobalKey<S> triggerKey = GlobalKey<S>();
 

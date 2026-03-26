@@ -12,8 +12,12 @@ import 'size_style_modifier.dart';
 part 'size_trigger.dart';
 
 @immutable
-class SizeStyle extends GaplyAnimStyle
-    with GaplyAnimMixin<SizeStyle>, _SizeStyleMixin, SizeStyleModifier<SizeStyle> {
+class SizeStyle extends GaplyAnimStyle<SizeStyle>
+    with
+        GaplyTweenMixin<SizeStyle>,
+        GaplyAnimMixin<SizeStyle>,
+        _SizeStyleMixin,
+        SizeStyleModifier<SizeStyle> {
   final Axis axis;
   final double axisAlignment;
   final bool isExpanded;
@@ -46,12 +50,8 @@ class SizeStyle extends GaplyAnimStyle
     VoidCallback? onComplete,
   }) {
     final style = GaplySizePreset.of(name);
-
     if (style == null) {
-      throw ArgumentError(
-        'Unknown size preset: "$name". '
-        'Available presets: ${GaplySizePreset.instance.allKeys.join(", ")}',
-      );
+      throw ArgumentError(GaplySizePreset.instance.errorMessage("SizeStyle", name));
     }
 
     return style.copyWith(
@@ -174,8 +174,8 @@ class SizeStyle extends GaplyAnimStyle
   SizeStyle copyWith({
     Duration? duration,
     Curve? curve,
-    VoidCallback? onComplete,
     Duration? delay,
+    VoidCallback? onComplete,
     Axis? axis,
     double? axisAlignment,
     bool? isExpanded,
@@ -184,8 +184,8 @@ class SizeStyle extends GaplyAnimStyle
     return SizeStyle(
       duration: duration ?? this.duration,
       curve: curve ?? this.curve,
-      onComplete: onComplete ?? this.onComplete,
       delay: delay ?? this.delay,
+      onComplete: onComplete ?? this.onComplete,
       axis: axis ?? this.axis,
       axisAlignment: axisAlignment ?? this.axisAlignment,
       isExpanded: isExpanded ?? this.isExpanded,
@@ -200,8 +200,8 @@ class SizeStyle extends GaplyAnimStyle
     return SizeStyle(
       duration: t < 0.5 ? duration : other.duration,
       curve: t < 0.5 ? curve : other.curve,
-      onComplete: other.onComplete,
       delay: t < 0.5 ? delay : other.delay,
+      onComplete: other.onComplete,
       axis: t < 0.5 ? axis : other.axis,
       axisAlignment: lerpDouble(axisAlignment, other.axisAlignment, t) ?? axisAlignment,
       isExpanded: t < 0.5 ? isExpanded : other.isExpanded,

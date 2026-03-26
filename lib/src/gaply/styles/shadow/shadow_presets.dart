@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:gaply/src/gaply/core/gaply_preset.dart';
 import 'package:gaply/src/gaply/styles/color/gaply_color.dart';
+import 'package:gaply/src/gaply/styles/color/color_defines.dart';
 
 import 'gaply_shadow.dart';
 
@@ -12,7 +13,7 @@ class GaplyShadowPreset with GaplyPreset<GaplyShadow> {
   void _ensureInitialized() {
     if (hasPreset) return;
 
-    const blurColor = GaplyColor.shadow();
+    const blurColor = GaplyColor.fromToken(GaplyColorToken.shadow);
 
     add(
       'small',

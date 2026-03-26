@@ -11,8 +11,12 @@ import 'rotate_style_modifier.dart';
 part 'rotate_trigger.dart';
 
 @immutable
-class RotateStyle extends GaplyAnimStyle
-    with GaplyAnimMixin<RotateStyle>, _RotateStyleMixin, RotateStyleModifier<RotateStyle> {
+class RotateStyle extends GaplyAnimStyle<RotateStyle>
+    with
+        GaplyTweenMixin<RotateStyle>,
+        GaplyAnimMixin<RotateStyle>,
+        _RotateStyleMixin,
+        RotateStyleModifier<RotateStyle> {
   final double begin;
   final double end;
   final Alignment alignment;
@@ -41,14 +45,9 @@ class RotateStyle extends GaplyAnimStyle
 
   factory RotateStyle.preset(String name, {Alignment? alignment, bool? isRotated, VoidCallback? onComplete}) {
     final style = GaplyRotatePreset.of(name);
-
     if (style == null) {
-      throw ArgumentError(
-        'Unknown rotate preset: "$name". '
-        'Available presets: ${GaplyRotatePreset.instance.allKeys.join(", ")}',
-      );
+      throw ArgumentError(GaplyRotatePreset.instance.errorMessage("RotateStyle", name));
     }
-
     return style.copyWith(alignment: alignment, isRotated: isRotated, onComplete: onComplete);
   }
 
@@ -132,8 +131,8 @@ class RotateStyle extends GaplyAnimStyle
   RotateStyle copyWith({
     Duration? duration,
     Curve? curve,
-    VoidCallback? onComplete,
     Duration? delay,
+    VoidCallback? onComplete,
     double? begin,
     double? end,
     Alignment? alignment,
@@ -143,8 +142,8 @@ class RotateStyle extends GaplyAnimStyle
     return RotateStyle(
       duration: duration ?? this.duration,
       curve: curve ?? this.curve,
-      onComplete: onComplete ?? this.onComplete,
       delay: delay ?? this.delay,
+      onComplete: onComplete ?? this.onComplete,
       begin: begin ?? this.begin,
       end: end ?? this.end,
       alignment: alignment ?? this.alignment,
@@ -160,8 +159,8 @@ class RotateStyle extends GaplyAnimStyle
     return RotateStyle(
       duration: t < 0.5 ? duration : other.duration,
       curve: t < 0.5 ? curve : other.curve,
-      onComplete: other.onComplete,
       delay: t < 0.5 ? delay : other.delay,
+      onComplete: other.onComplete,
       begin: lerpDouble(begin, other.begin, t) ?? begin,
       end: lerpDouble(end, other.end, t) ?? end,
       alignment: Alignment.lerp(alignment, other.alignment, t) ?? alignment,

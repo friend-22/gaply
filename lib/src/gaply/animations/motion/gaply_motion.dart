@@ -7,6 +7,11 @@ import 'motion_style_modifier.dart';
 
 import 'motion_presets.dart';
 
+abstract class GaplyAnim {
+  GaplyAnim lerp(GaplyAnim? other, double t);
+  Widget buildWidget({required Widget child, Object? trigger});
+}
+
 @immutable
 class GaplyMotion extends GaplyStyle<GaplyMotion>
     with GaplyMotionMixin, _GaplyMotionMixin, MotionStyleModifier<GaplyMotion> {
@@ -20,12 +25,12 @@ class GaplyMotion extends GaplyStyle<GaplyMotion>
 
   static void register(String name, GaplyMotion style) => GaplyMotionPreset.register(name, style);
 
-  factory GaplyMotion.preset(String name) {
+  factory GaplyMotion.preset(String name, {VoidCallback? onComplete}) {
     final style = GaplyMotionPreset.of(name);
     if (style == null) {
-      throw ArgumentError('Unknown animations sequence preset: "$name"');
+      throw ArgumentError(GaplyMotionPreset.instance.errorMessage("GaplyMotion", name));
     }
-    return style;
+    return style.copyWith(onComplete: onComplete);
   }
 
   GaplyMotion addAnimation(GaplyAnimStyle style) {
@@ -45,7 +50,9 @@ class GaplyMotion extends GaplyStyle<GaplyMotion>
 
     for (int i = 0; i < maxLength; i++) {
       if (i < animations.length && i < other.animations.length) {
-        lerpAnimations.add(animations[i].lerp(other.animations[i], t));
+        final anim = animations[i];
+        final otherAnim = other.animations[i];
+        lerpAnimations.add((anim as dynamic).lerp(otherAnim, t) as GaplyAnimStyle);
       } else if (i < other.animations.length) {
         if (t >= 0.5) lerpAnimations.add(other.animations[i]);
       } else {
@@ -177,19 +184,17 @@ mixin GaplyMotionMixin {
     Widget result = child;
 
     for (int i = 0; i < animations.length; i++) {
-      var anim = animations[i];
+      GaplyAnimStyle<dynamic> anim = animations[i];
 
       if (i == animations.length - 1 && finalCallback != null) {
         final VoidCallback? existingOnComplete = anim.onComplete;
 
-        if (anim is GaplyAnimMixin) {
-          anim = (anim as GaplyAnimMixin).copyWith(
-            onComplete: () {
-              existingOnComplete?.call();
-              finalCallback.call();
-            },
-          );
-        }
+        anim = anim.copyWith(
+          onComplete: () {
+            existingOnComplete?.call();
+            finalCallback.call();
+          },
+        );
       }
 
       result = anim.buildWidget(child: result, trigger: trigger);

@@ -9,8 +9,9 @@ import 'gaply_box.dart';
 import 'box_style_modifier.dart';
 
 @immutable
-class BoxStyle extends GaplyStyle<BoxStyle>
+class BoxStyle extends GaplyTweenStyle<BoxStyle>
     with
+        GaplyTweenMixin<BoxStyle>,
         _BoxStyleMixin,
         ColorStyleModifier<BoxStyle>,
         BorderColorStyleModifier<BoxStyle>,
@@ -41,10 +42,11 @@ class BoxStyle extends GaplyStyle<BoxStyle>
 
   // 4. button Style
   final VoidCallback? onPressed;
-  final Curve curve;
-  final Duration duration;
 
   const BoxStyle({
+    Duration? duration,
+    Curve? curve,
+    super.onComplete,
     this.layout = const GaplyLayout.none(),
     this.color = const GaplyColor.none(),
     this.borderColor = const GaplyColor.none(),
@@ -56,45 +58,25 @@ class BoxStyle extends GaplyStyle<BoxStyle>
     this.noise = const GaplyNoise.none(),
     this.motion = const GaplyMotion.none(),
     this.onPressed,
-    this.curve = Curves.linear,
-    this.duration = const Duration(milliseconds: 300),
-  });
+  }) : super(duration: duration ?? const Duration(milliseconds: 300), curve: curve ?? Curves.linear);
+
+  const BoxStyle.none() : this();
 
   static void register(String name, BoxStyle style) => GaplyBoxPreset.register(name, style);
 
   factory BoxStyle.preset(String name) {
     final style = GaplyBoxPreset.of(name);
-
     if (style == null) {
-      throw ArgumentError(
-        'Unknown box preset: "$name". '
-        'Available presets: ${GaplyBoxPreset.instance.allKeys.join(", ")}',
-      );
+      throw ArgumentError(GaplyBoxPreset.instance.errorMessage("BoxStyle", name));
     }
     return style;
   }
 
   @override
-  BoxStyle copyWithStyle(BoxStyle style) {
-    return copyWith(
-      layout: style.layout,
-      color: style.color,
-      borderColor: style.borderColor,
-      shadows: style.shadows,
-      blur: style.blur,
-      gradient: style.gradient,
-      shimmer: style.shimmer,
-      filter: style.filter,
-      noise: style.noise,
-      motion: style.motion,
-      onPressed: style.onPressed,
-      duration: style.duration,
-      curve: style.curve,
-    );
-  }
-
-  @override
   BoxStyle copyWith({
+    Duration? duration,
+    Curve? curve,
+    VoidCallback? onComplete,
     GaplyLayout? layout,
     GaplyColor? color,
     GaplyColor? borderColor,
@@ -107,10 +89,11 @@ class BoxStyle extends GaplyStyle<BoxStyle>
     GaplyNoise? noise,
     GaplyMotion? motion,
     VoidCallback? onPressed,
-    Duration? duration,
-    Curve? curve,
   }) {
     return BoxStyle(
+      duration: duration ?? this.duration,
+      curve: curve ?? this.curve,
+      onComplete: onComplete ?? this.onComplete,
       layout: layout ?? this.layout,
       color: color ?? this.color,
       borderColor: borderColor ?? this.borderColor,
@@ -121,13 +104,7 @@ class BoxStyle extends GaplyStyle<BoxStyle>
       filter: filter ?? this.filter,
       noise: noise ?? this.noise,
       motion: motion ?? this.motion,
-
-      // useFocusOutline: useFocusOutline ?? this.useFocusOutline,
-      // focused: focused ?? this.focused,
-      // center: center ?? this.center,
       onPressed: onPressed ?? this.onPressed,
-      duration: duration ?? this.duration,
-      curve: curve ?? this.curve,
     );
   }
 
@@ -135,7 +112,10 @@ class BoxStyle extends GaplyStyle<BoxStyle>
   BoxStyle lerp(BoxStyle? other, double t) {
     if (other == null) return this;
 
-    return copyWith(
+    return BoxStyle(
+      duration: t < 0.5 ? duration : other.duration,
+      curve: t < 0.5 ? curve : other.curve,
+      onComplete: other.onComplete,
       layout: layout.lerp(other.layout, t),
       color: color.lerp(other.color, t),
       borderColor: borderColor.lerp(other.borderColor, t),
@@ -147,8 +127,6 @@ class BoxStyle extends GaplyStyle<BoxStyle>
       noise: noise.lerp(other.noise, t),
       motion: motion.lerp(other.motion, t),
       onPressed: t < 0.5 ? onPressed : other.onPressed,
-      duration: t < 0.5 ? duration : other.duration,
-      curve: t < 0.5 ? curve : other.curve,
     );
   }
 
@@ -159,6 +137,7 @@ class BoxStyle extends GaplyStyle<BoxStyle>
 
   @override
   List<Object?> get props => [
+    ...super.props,
     layout,
     color,
     borderColor,
@@ -170,8 +149,6 @@ class BoxStyle extends GaplyStyle<BoxStyle>
     noise,
     motion,
     onPressed,
-    duration,
-    curve,
   ];
 
   @override
@@ -182,6 +159,25 @@ class BoxStyle extends GaplyStyle<BoxStyle>
 
 mixin _BoxStyleMixin {
   BoxStyle get boxStyle => this as BoxStyle;
+
+  BoxStyle copyWithBox(BoxStyle box) {
+    return boxStyle.copyWith(
+      duration: box.duration,
+      curve: box.curve,
+      onComplete: box.onComplete,
+      layout: box.layout,
+      color: box.color,
+      borderColor: box.borderColor,
+      shadows: box.shadows,
+      blur: box.blur,
+      gradient: box.gradient,
+      shimmer: box.shimmer,
+      filter: box.filter,
+      noise: box.noise,
+      motion: box.motion,
+      onPressed: box.onPressed,
+    );
+  }
 
   Widget buildWidget({required Widget child}) {
     return GaplyBox(style: boxStyle, child: child);
