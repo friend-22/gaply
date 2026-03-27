@@ -102,8 +102,6 @@ mixin GaplyAnimMixin<T extends GaplyAnimStyle<T>> on GaplyTweenMixin<T> {
 @immutable
 abstract class GaplyThemeData<T extends GaplyThemeData<T>> extends GaplyTweenStyle<T> {
   final Brightness brightness;
-  final T? begin;
-  final T? end;
 
   const GaplyThemeData({
     required this.brightness,
@@ -111,8 +109,6 @@ abstract class GaplyThemeData<T extends GaplyThemeData<T>> extends GaplyTweenSty
     required super.curve,
     super.onComplete,
     super.progress,
-    this.begin,
-    this.end,
   });
 
   @override
@@ -125,5 +121,5 @@ abstract class GaplyThemeData<T extends GaplyThemeData<T>> extends GaplyTweenSty
   });
 
   @override
-  List<Object?> get props => [...super.props, brightness, begin, end];
+  List<Object?> get props => [...super.props, brightness];
 }

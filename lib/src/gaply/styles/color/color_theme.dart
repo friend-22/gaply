@@ -17,8 +17,6 @@ class GaplyColorTheme extends GaplyThemeData<GaplyColorTheme>
     Curve? curve,
     super.onComplete,
     super.progress,
-    super.begin,
-    super.end,
     required super.brightness,
     required this.colors,
   }) : super(duration: duration ?? const Duration(milliseconds: 300), curve: curve ?? Curves.easeInOut);
@@ -40,8 +38,6 @@ class GaplyColorTheme extends GaplyThemeData<GaplyColorTheme>
     VoidCallback? onComplete,
     double? progress,
     Brightness? brightness,
-    GaplyColorTheme? begin,
-    GaplyColorTheme? end,
     Map<GaplyColorToken, GaplyColor>? colors,
   }) {
     return GaplyColorTheme(
@@ -51,8 +47,6 @@ class GaplyColorTheme extends GaplyThemeData<GaplyColorTheme>
       progress: progress ?? this.progress,
       brightness: brightness ?? this.brightness,
       colors: colors ?? this.colors,
-      begin: begin ?? this.begin,
-      end: end ?? this.end,
     );
   }
 
@@ -61,19 +55,19 @@ class GaplyColorTheme extends GaplyThemeData<GaplyColorTheme>
     if (other == null) return this;
 
     return GaplyProfiler.trace240('Theme.lerp(t=${t.toStringAsFixed(2)})', () {
-      // final lerpColors = <GaplyColorToken, GaplyColor>{};
-      // final allKeys = {...colors.keys, ...other.colors.keys};
-      //
-      // for (final key in allKeys) {
-      //   final beginColor = colors[key];
-      //   final endColor = other.colors[key];
-      //
-      //   if (beginColor != null && endColor != null) {
-      //     lerpColors[key] = beginColor.lerp(endColor, t);
-      //   } else {
-      //     lerpColors[key] = (t < 0.5 ? beginColor : endColor) ?? const GaplyColor.none();
-      //   }
-      // }
+      final lerpColors = <GaplyColorToken, GaplyColor>{};
+      final allKeys = {...colors.keys, ...other.colors.keys};
+
+      for (final key in allKeys) {
+        final beginColor = colors[key];
+        final endColor = other.colors[key];
+
+        if (beginColor != null && endColor != null) {
+          lerpColors[key] = beginColor.lerp(endColor, t);
+        } else {
+          lerpColors[key] = (t < 0.5 ? beginColor : endColor) ?? const GaplyColor.none();
+        }
+      }
 
       return GaplyColorTheme(
         duration: t < 0.5 ? duration : other.duration,
@@ -81,9 +75,7 @@ class GaplyColorTheme extends GaplyThemeData<GaplyColorTheme>
         onComplete: other.onComplete,
         progress: t,
         brightness: t < 0.5 ? brightness : other.brightness,
-        colors: other.colors,
-        begin: this,
-        end: other,
+        colors: lerpColors,
       );
     });
   }
@@ -106,8 +98,6 @@ mixin _GaplyColorThemeMixin {
       progress: theme.progress,
       brightness: theme.brightness,
       colors: theme.colors,
-      begin: theme.begin,
-      end: theme.end,
     );
   }
 

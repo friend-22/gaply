@@ -52,7 +52,7 @@ void main() async {
 void _setupGaplyThemes() {
   // 라이트 테마 등록
   final lightTheme = GaplyColorTheme(
-    duration: Duration(milliseconds: 200),
+    duration: Duration(milliseconds: 500),
     brightness: Brightness.light,
     colors: {
       GaplyColorToken.primary: const GaplyColor(token: GaplyColorToken.primary, customColor: Colors.blue),
@@ -67,7 +67,7 @@ void _setupGaplyThemes() {
   // 다크 테마 등록
   final darkTheme = GaplyColorTheme(
     brightness: Brightness.dark,
-    duration: Duration(milliseconds: 200),
+    duration: Duration(milliseconds: 500),
     colors: {
       GaplyColorToken.primary: const GaplyColor(token: GaplyColorToken.primary, customColor: Colors.cyan),
       GaplyColorToken.background: const GaplyColor(
