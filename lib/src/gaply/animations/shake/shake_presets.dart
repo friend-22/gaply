@@ -5,11 +5,12 @@ import 'shake_style.dart';
 
 class GaplyShakePreset with GaplyPreset<ShakeStyle> {
   static final GaplyShakePreset instance = GaplyShakePreset._internal();
-  GaplyShakePreset._internal();
 
-  void _ensureInitialized() {
-    if (hasPreset) return;
+  GaplyShakePreset._internal() {
+    _initDefaultPresets();
+  }
 
+  void _initDefaultPresets() {
     add(
       'mild',
       const ShakeStyle(
@@ -73,13 +74,7 @@ class GaplyShakePreset with GaplyPreset<ShakeStyle> {
     );
   }
 
-  static void register(String name, ShakeStyle style) {
-    instance._ensureInitialized();
-    instance.add(name, style);
-  }
+  static void register(String name, ShakeStyle style) => instance.add(name, style);
 
-  static ShakeStyle? of(String name) {
-    instance._ensureInitialized();
-    return instance.get(name);
-  }
+  static ShakeStyle? of(String name) => instance.get(name);
 }

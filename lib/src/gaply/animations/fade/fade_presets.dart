@@ -5,19 +5,13 @@ import 'fade_style.dart';
 class GaplyFadePreset with GaplyPreset<FadeStyle> {
   static final GaplyFadePreset instance = GaplyFadePreset._internal();
 
-  GaplyFadePreset._internal();
-
-  void _ensureInitialized() {
-    if (hasPreset) return;
+  GaplyFadePreset._internal() {
+    _initDefaultPresets();
   }
 
-  static void register(String name, FadeStyle style) {
-    instance._ensureInitialized();
-    instance.add(name, style);
-  }
+  void _initDefaultPresets() {}
 
-  static FadeStyle? of(String name) {
-    instance._ensureInitialized();
-    return instance.get(name);
-  }
+  static void register(String name, FadeStyle style) => instance.add(name, style);
+
+  static FadeStyle? of(String name) => instance.get(name);
 }

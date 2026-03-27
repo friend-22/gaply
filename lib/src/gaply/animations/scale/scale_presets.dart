@@ -5,11 +5,12 @@ import 'scale_style.dart';
 
 class GaplyScalePreset with GaplyPreset<ScaleStyle> {
   static final GaplyScalePreset instance = GaplyScalePreset._internal();
-  GaplyScalePreset._internal();
 
-  void _ensureInitialized() {
-    if (hasPreset) return;
+  GaplyScalePreset._internal() {
+    _initDefaultPresets();
+  }
 
+  void _initDefaultPresets() {
     add(
       'pressed',
       const ScaleStyle(
@@ -55,13 +56,7 @@ class GaplyScalePreset with GaplyPreset<ScaleStyle> {
     );
   }
 
-  static void register(String name, ScaleStyle style) {
-    instance._ensureInitialized();
-    instance.add(name, style);
-  }
+  static void register(String name, ScaleStyle style) => instance.add(name, style);
 
-  static ScaleStyle? of(String name) {
-    instance._ensureInitialized();
-    return instance.get(name);
-  }
+  static ScaleStyle? of(String name) => instance.get(name);
 }

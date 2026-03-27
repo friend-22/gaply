@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:gaply/gaply.dart';
 
-import 'demo_animation.dart';
+import 'demo_theme.dart';
 
 void main() {
   BoxStyle.register(
@@ -31,5 +31,44 @@ void main() {
         .boxCurve(Curves.easeOutBack),
   );
 
-  runApp(const MaterialApp(home: GaplyAnimDemo()));
+  _setupGaplyThemes();
+
+  runApp(const MaterialApp(home: GaplyThemeDemo()));
+}
+
+void _setupGaplyThemes() {
+  // 라이트 테마 등록
+  GaplyColorTheme.register(
+    'light',
+    GaplyColorTheme(
+      brightness: Brightness.light,
+      colors: {
+        GaplyColorToken.primary: const GaplyColor(token: GaplyColorToken.primary, customColor: Colors.blue),
+        GaplyColorToken.background: const GaplyColor(
+          token: GaplyColorToken.background,
+          customColor: Colors.white,
+        ),
+      },
+      duration: Duration(milliseconds: 3000),
+    ),
+  );
+
+  // 다크 테마 등록
+  GaplyColorTheme.register(
+    'dark',
+    GaplyColorTheme(
+      brightness: Brightness.dark,
+      duration: Duration(milliseconds: 3000),
+      colors: {
+        GaplyColorToken.primary: const GaplyColor(
+          token: GaplyColorToken.primary,
+          customColor: Colors.cyanAccent,
+        ),
+        GaplyColorToken.background: const GaplyColor(
+          token: GaplyColorToken.background,
+          customColor: Color(0xFF121212),
+        ),
+      },
+    ),
+  );
 }

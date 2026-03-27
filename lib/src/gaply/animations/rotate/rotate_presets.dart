@@ -5,11 +5,12 @@ import 'rotate_style.dart';
 
 class GaplyRotatePreset with GaplyPreset<RotateStyle> {
   static final GaplyRotatePreset instance = GaplyRotatePreset._internal();
-  GaplyRotatePreset._internal();
 
-  void _ensureInitialized() {
-    if (hasPreset) return;
+  GaplyRotatePreset._internal() {
+    _initDefaultPresets();
+  }
 
+  void _initDefaultPresets() {
     add(
       'tiltRight',
       const RotateStyle(
@@ -37,13 +38,7 @@ class GaplyRotatePreset with GaplyPreset<RotateStyle> {
     add('slight', const RotateStyle(begin: -2, end: 2, isRotated: true));
   }
 
-  static void register(String name, RotateStyle style) {
-    instance._ensureInitialized();
-    instance.add(name, style);
-  }
+  static void register(String name, RotateStyle style) => instance.add(name, style);
 
-  static RotateStyle? of(String name) {
-    instance._ensureInitialized();
-    return instance.get(name);
-  }
+  static RotateStyle? of(String name) => instance.get(name);
 }

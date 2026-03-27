@@ -6,11 +6,12 @@ import 'gaply_noise.dart';
 
 class GaplyNoisePreset with GaplyPreset<GaplyNoise> {
   static final GaplyNoisePreset instance = GaplyNoisePreset._internal();
-  GaplyNoisePreset._internal();
 
-  void _ensureInitialized() {
-    if (hasPreset) return;
+  GaplyNoisePreset._internal() {
+    _initDefaultPresets();
+  }
 
+  void _initDefaultPresets() {
     add('paper', const GaplyNoise(intensity: 0.05, density: 0.5));
 
     add('canvas', const GaplyNoise(intensity: 0.1, density: 1.5));
@@ -20,13 +21,7 @@ class GaplyNoisePreset with GaplyPreset<GaplyNoise> {
     add('film', const GaplyNoise(intensity: 0.12, isColored: true, blendMode: BlendMode.softLight));
   }
 
-  static void register(String name, GaplyNoise style) {
-    instance._ensureInitialized();
-    instance.add(name, style);
-  }
+  static void register(String name, GaplyNoise style) => instance.add(name, style);
 
-  static GaplyNoise? of(String name) {
-    instance._ensureInitialized();
-    return instance.get(name);
-  }
+  static GaplyNoise? of(String name) => instance.get(name);
 }

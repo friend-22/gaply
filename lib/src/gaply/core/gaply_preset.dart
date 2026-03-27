@@ -7,8 +7,6 @@ mixin GaplyPreset<T extends GaplyStyle> {
 
   T? get(String name) => _presets[name];
 
-  bool get hasPreset => _presets.isNotEmpty;
-
   List<String> get allKeys => _presets.keys.toList();
 
   @override

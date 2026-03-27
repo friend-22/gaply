@@ -6,11 +6,12 @@ import 'gaply_gradient.dart';
 
 class GaplyGradientPreset with GaplyPreset<GaplyGradient> {
   static final GaplyGradientPreset instance = GaplyGradientPreset._internal();
-  GaplyGradientPreset._internal();
 
-  void _ensureInitialized() {
-    if (hasPreset) return;
+  GaplyGradientPreset._internal() {
+    _initDefaultPresets();
+  }
 
+  void _initDefaultPresets() {
     add(
       'sunset',
       const GaplyGradient(
@@ -97,13 +98,7 @@ class GaplyGradientPreset with GaplyPreset<GaplyGradient> {
     );
   }
 
-  static void register(String name, GaplyGradient style) {
-    instance._ensureInitialized();
-    instance.add(name, style);
-  }
+  static void register(String name, GaplyGradient style) => instance.add(name, style);
 
-  static GaplyGradient? of(String name) {
-    instance._ensureInitialized();
-    return instance.get(name);
-  }
+  static GaplyGradient? of(String name) => instance.get(name);
 }

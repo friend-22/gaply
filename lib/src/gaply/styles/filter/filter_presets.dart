@@ -7,11 +7,12 @@ import 'gaply_filter.dart';
 
 class GaplyFilterPreset with GaplyPreset<GaplyFilter> {
   static final GaplyFilterPreset instance = GaplyFilterPreset._internal();
-  GaplyFilterPreset._internal();
 
-  void _ensureInitialized() {
-    if (hasPreset) return;
+  GaplyFilterPreset._internal() {
+    _initDefaultPresets();
+  }
 
+  void _initDefaultPresets() {
     add('grayscale', const GaplyFilter(grayscale: 1.0));
 
     add('vivid', const GaplyFilter(contrast: 1.4, brightness: 0.1));
@@ -29,13 +30,7 @@ class GaplyFilterPreset with GaplyPreset<GaplyFilter> {
     );
   }
 
-  static void register(String name, GaplyFilter style) {
-    instance._ensureInitialized();
-    instance.add(name, style);
-  }
+  static void register(String name, GaplyFilter style) => instance.add(name, style);
 
-  static GaplyFilter? of(String name) {
-    instance._ensureInitialized();
-    return instance.get(name);
-  }
+  static GaplyFilter? of(String name) => instance.get(name);
 }

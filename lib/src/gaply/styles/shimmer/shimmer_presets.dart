@@ -6,11 +6,12 @@ import 'gaply_shimmer.dart';
 
 class GaplyShimmerPreset with GaplyPreset<GaplyShimmer> {
   static final GaplyShimmerPreset instance = GaplyShimmerPreset._internal();
-  GaplyShimmerPreset._internal();
 
-  void _ensureInitialized() {
-    if (hasPreset) return;
+  GaplyShimmerPreset._internal() {
+    _initDefaultPresets();
+  }
 
+  void _initDefaultPresets() {
     add(
       'light',
       const GaplyShimmer(
@@ -85,13 +86,7 @@ class GaplyShimmerPreset with GaplyPreset<GaplyShimmer> {
     );
   }
 
-  static void register(String name, GaplyShimmer style) {
-    instance._ensureInitialized();
-    instance.add(name, style);
-  }
+  static void register(String name, GaplyShimmer style) => instance.add(name, style);
 
-  static GaplyShimmer? of(String name) {
-    instance._ensureInitialized();
-    return instance.get(name);
-  }
+  static GaplyShimmer? of(String name) => instance.get(name);
 }

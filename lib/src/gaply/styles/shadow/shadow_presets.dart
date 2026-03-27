@@ -8,11 +8,12 @@ import 'gaply_shadow.dart';
 
 class GaplyShadowPreset with GaplyPreset<GaplyShadow> {
   static final GaplyShadowPreset instance = GaplyShadowPreset._internal();
-  GaplyShadowPreset._internal();
 
-  void _ensureInitialized() {
-    if (hasPreset) return;
+  GaplyShadowPreset._internal() {
+    _initDefaultPresets();
+  }
 
+  void _initDefaultPresets() {
     const blurColor = GaplyColor.fromToken(GaplyColorToken.shadow);
 
     add(
@@ -33,13 +34,7 @@ class GaplyShadowPreset with GaplyPreset<GaplyShadow> {
     );
   }
 
-  static void register(String name, GaplyShadow style) {
-    instance._ensureInitialized();
-    instance.add(name, style);
-  }
+  static void register(String name, GaplyShadow style) => instance.add(name, style);
 
-  static GaplyShadow? of(String name) {
-    instance._ensureInitialized();
-    return instance.get(name);
-  }
+  static GaplyShadow? of(String name) => instance.get(name);
 }

@@ -5,11 +5,12 @@ import 'train_style.dart';
 
 class GaplyTrainPreset with GaplyPreset<TrainStyle> {
   static final GaplyTrainPreset instance = GaplyTrainPreset._internal();
-  GaplyTrainPreset._internal();
 
-  void _ensureInitialized() {
-    if (hasPreset) return;
+  GaplyTrainPreset._internal() {
+    _initDefaultPresets();
+  }
 
+  void _initDefaultPresets() {
     add(
       'express',
       const TrainStyle(
@@ -38,13 +39,7 @@ class GaplyTrainPreset with GaplyPreset<TrainStyle> {
     );
   }
 
-  static void register(String name, TrainStyle style) {
-    instance._ensureInitialized();
-    instance.add(name, style);
-  }
+  static void register(String name, TrainStyle style) => instance.add(name, style);
 
-  static TrainStyle? of(String name) {
-    instance._ensureInitialized();
-    return instance.get(name);
-  }
+  static TrainStyle? of(String name) => instance.get(name);
 }

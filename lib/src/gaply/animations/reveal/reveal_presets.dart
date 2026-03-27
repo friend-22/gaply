@@ -5,11 +5,12 @@ import 'reveal_style.dart';
 
 class GaplyRevealPreset with GaplyPreset<RevealStyle> {
   static final GaplyRevealPreset instance = GaplyRevealPreset._internal();
-  GaplyRevealPreset._internal();
 
-  void _ensureInitialized() {
-    if (hasPreset) return;
+  GaplyRevealPreset._internal() {
+    _initDefaultPresets();
+  }
 
+  void _initDefaultPresets() {
     add(
       'drop',
       const RevealStyle(direction: AxisDirection.down, isVisible: true, useFade: true, fixedSize: false),
@@ -49,13 +50,7 @@ class GaplyRevealPreset with GaplyPreset<RevealStyle> {
     );
   }
 
-  static void register(String name, RevealStyle style) {
-    instance._ensureInitialized();
-    instance.add(name, style);
-  }
+  static void register(String name, RevealStyle style) => instance.add(name, style);
 
-  static RevealStyle? of(String name) {
-    instance._ensureInitialized();
-    return instance.get(name);
-  }
+  static RevealStyle? of(String name) => instance.get(name);
 }

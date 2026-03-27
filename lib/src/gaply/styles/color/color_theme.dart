@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:gaply/src/gaply/core/gaply_style.dart';
+import 'package:gaply/src/utils/gaply_perf.dart';
 
 import 'color_defines.dart';
 import 'color_theme_modifier.dart';
@@ -12,12 +13,12 @@ class GaplyColorTheme extends GaplyThemeData<GaplyColorTheme>
   final Map<GaplyColorToken, GaplyColor> colors;
 
   const GaplyColorTheme({
-    required super.duration,
-    required super.curve,
+    Duration? duration,
+    Curve? curve,
     super.onComplete,
     required super.brightness,
     required this.colors,
-  });
+  }) : super(duration: duration ?? const Duration(milliseconds: 300), curve: curve ?? Curves.easeInOut);
 
   static void register(String name, GaplyColorTheme style) => GaplyColorThemePreset.register(name, style);
 
@@ -50,31 +51,36 @@ class GaplyColorTheme extends GaplyThemeData<GaplyColorTheme>
   GaplyColorTheme lerp(GaplyColorTheme? other, double t) {
     if (other == null) return this;
 
-    final lerpColors = <GaplyColorToken, GaplyColor>{};
-    final allKeys = {...colors.keys, ...other.colors.keys};
+    return GaplyProfiler.trace120('Theme.lerp(t=${t.toStringAsFixed(2)})', () {
+      final lerpColors = <GaplyColorToken, GaplyColor>{};
+      final allKeys = {...colors.keys, ...other.colors.keys};
 
-    for (final key in allKeys) {
-      final beginColor = colors[key];
-      final endColor = other.colors[key];
+      for (final key in allKeys) {
+        final beginColor = colors[key];
+        final endColor = other.colors[key];
 
-      if (beginColor != null && endColor != null) {
-        lerpColors[key] = beginColor.lerp(endColor, t);
-      } else {
-        lerpColors[key] = (t < 0.5 ? beginColor : endColor) ?? const GaplyColor.none();
+        if (beginColor != null && endColor != null) {
+          lerpColors[key] = beginColor.lerp(endColor, t);
+        } else {
+          lerpColors[key] = (t < 0.5 ? beginColor : endColor) ?? const GaplyColor.none();
+        }
       }
-    }
 
-    return GaplyColorTheme(
-      duration: t < 0.5 ? duration : other.duration,
-      curve: t < 0.5 ? curve : other.curve,
-      onComplete: other.onComplete,
-      brightness: t < 0.5 ? brightness : other.brightness,
-      colors: lerpColors,
-    );
+      return GaplyColorTheme(
+        duration: t < 0.5 ? duration : other.duration,
+        curve: t < 0.5 ? curve : other.curve,
+        onComplete: other.onComplete,
+        brightness: t < 0.5 ? brightness : other.brightness,
+        colors: lerpColors,
+      );
+    });
   }
 
   @override
   bool get hasEffect => colors.isNotEmpty;
+
+  @override
+  List<Object?> get props => [...super.props, ...colors.entries];
 }
 
 mixin _GaplyColorThemeMixin {

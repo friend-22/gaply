@@ -7,11 +7,12 @@ import 'box_style.dart';
 
 class GaplyBoxPreset with GaplyPreset<BoxStyle> {
   static final GaplyBoxPreset instance = GaplyBoxPreset._internal();
-  GaplyBoxPreset._internal();
 
-  void _ensureInitialized() {
-    if (hasPreset) return;
+  GaplyBoxPreset._internal() {
+    _initDefaultPresets();
+  }
 
+  void _initDefaultPresets() {
     add('rainbow', BoxStyle(gradient: GaplyGradient.preset('rainbow')));
 
     add(
@@ -38,13 +39,7 @@ class GaplyBoxPreset with GaplyPreset<BoxStyle> {
     );
   }
 
-  static void register(String name, BoxStyle style) {
-    instance._ensureInitialized();
-    instance.add(name, style);
-  }
+  static void register(String name, BoxStyle style) => instance.add(name, style);
 
-  static BoxStyle? of(String name) {
-    instance._ensureInitialized();
-    return instance.get(name);
-  }
+  static BoxStyle? of(String name) => instance.get(name);
 }

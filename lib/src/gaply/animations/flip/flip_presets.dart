@@ -4,19 +4,12 @@ import 'flip_style.dart';
 
 class GaplyFlipPreset with GaplyPreset<FlipStyle> {
   static final GaplyFlipPreset instance = GaplyFlipPreset._internal();
-  GaplyFlipPreset._internal();
-
-  void _ensureInitialized() {
-    if (hasPreset) return;
+  GaplyFlipPreset._internal() {
+    _initDefaultPresets();
   }
+  void _initDefaultPresets() {}
 
-  static void register(String name, FlipStyle style) {
-    instance._ensureInitialized();
-    instance.add(name, style);
-  }
+  static void register(String name, FlipStyle style) => instance.add(name, style);
 
-  static FlipStyle? of(String name) {
-    instance._ensureInitialized();
-    return instance.get(name);
-  }
+  static FlipStyle? of(String name) => instance.get(name);
 }

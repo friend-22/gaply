@@ -5,11 +5,12 @@ import 'package:gaply/src/gaply/animations/animations.dart';
 
 class GaplyMotionPreset with GaplyPreset<GaplyMotion> {
   static final GaplyMotionPreset instance = GaplyMotionPreset._internal();
-  GaplyMotionPreset._internal();
 
-  void _ensureInitialized() {
-    if (hasPreset) return;
+  GaplyMotionPreset._internal() {
+    _initDefaultPresets();
+  }
 
+  void _initDefaultPresets() {
     add(
       'entrance',
       const GaplyMotion(
@@ -86,13 +87,7 @@ class GaplyMotionPreset with GaplyPreset<GaplyMotion> {
     );
   }
 
-  static void register(String name, GaplyMotion style) {
-    instance._ensureInitialized();
-    instance.add(name, style);
-  }
+  static void register(String name, GaplyMotion style) => instance.add(name, style);
 
-  static GaplyMotion? of(String name) {
-    instance._ensureInitialized();
-    return instance.get(name);
-  }
+  static GaplyMotion? of(String name) => instance.get(name);
 }

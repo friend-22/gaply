@@ -5,7 +5,9 @@ import 'size_style.dart';
 
 class GaplySizePreset with GaplyPreset<SizeStyle> {
   static final GaplySizePreset instance = GaplySizePreset._internal();
-  GaplySizePreset._internal();
+  GaplySizePreset._internal() {
+    _initDefaultPresets();
+  }
 
   void _addByDirection(String name, AxisDirection dir, {Duration? duration, Curve? curve}) {
     final bool isVertical = dir == AxisDirection.up || dir == AxisDirection.down;
@@ -25,9 +27,7 @@ class GaplySizePreset with GaplyPreset<SizeStyle> {
     );
   }
 
-  void _ensureInitialized() {
-    if (hasPreset) return;
-
+  void _initDefaultPresets() {
     _addByDirection(
       'popIn',
       AxisDirection.up,
@@ -54,13 +54,7 @@ class GaplySizePreset with GaplyPreset<SizeStyle> {
     );
   }
 
-  static void register(String name, SizeStyle style) {
-    instance._ensureInitialized();
-    instance.add(name, style);
-  }
+  static void register(String name, SizeStyle style) => instance.add(name, style);
 
-  static SizeStyle? of(String name) {
-    instance._ensureInitialized();
-    return instance.get(name);
-  }
+  static SizeStyle? of(String name) => instance.get(name);
 }

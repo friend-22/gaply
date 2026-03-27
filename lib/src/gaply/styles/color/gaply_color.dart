@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:gaply/src/gaply/core/gaply_style.dart';
 import 'package:gaply/src/gaply/core/gaply_theme.dart';
+import 'package:gaply/src/utils/gaply_perf.dart';
 
 import 'color_defines.dart';
 import 'color_style_modifier.dart';
@@ -76,18 +77,12 @@ class GaplyColor extends GaplyStyle<GaplyColor> with _GaplyColorMixin, ColorStyl
     : this(token: token, shade: shade, opacity: GaplyColorOpacity.solid);
 
   @override
-  GaplyColor copyWith({
-    GaplyColorToken? token,
-    GaplyColorOpacity? opacity,
-    Color? customColor,
-    GaplyColorShade? shade,
-    bool? autoInvert,
-  }) {
+  GaplyColor copyWith({dynamic token, dynamic opacity, dynamic shade, Color? customColor, bool? autoInvert}) {
     return GaplyColor(
-      token: token ?? this.token,
-      opacity: opacity ?? this.opacity,
+      token: token != null ? GaplyColorToken.resolve(token) : this.token,
+      opacity: opacity != null ? GaplyColorOpacity.resolve(opacity) : this.opacity,
+      shade: shade != null ? GaplyColorShade.resolve(shade) : this.shade,
       customColor: customColor ?? this.customColor,
-      shade: shade ?? this.shade,
       autoInvert: autoInvert ?? this.autoInvert,
     );
   }
@@ -98,13 +93,20 @@ class GaplyColor extends GaplyStyle<GaplyColor> with _GaplyColorMixin, ColorStyl
 
     final double lerpOpacity = lerpDouble(opacity.value, other.opacity.value, t) ?? opacity.value;
     final double lerpShade = lerpDouble(shade.value, other.shade.value, t) ?? shade.value;
+    final Color? lerpColor = Color.lerp(customColor, other.customColor, t);
+
+    // debugPrint(
+    //   '🎨 [GaplyColor.lerp] t: ${t.toStringAsFixed(3)} | '
+    //   'Color: ${customColor?.value.toRadixString(16)} -> ${other.customColor?.value.toRadixString(16)} '
+    //   '==> Result: ${lerpColor?.value.toRadixString(16)}',
+    // );
 
     return GaplyColor(
       token: t < 0.5 ? token : other.token,
       opacity: GaplyColorOpacity(lerpOpacity),
       shade: GaplyColorShade(lerpShade),
       autoInvert: t < 0.5 ? autoInvert : other.autoInvert,
-      customColor: Color.lerp(customColor, other.customColor, t),
+      customColor: lerpColor,
     );
   }
 
@@ -140,30 +142,49 @@ mixin _GaplyColorMixin {
   Color? resolve(BuildContext context, {bool useCache = true}) {
     if (!colorStyle.hasEffect) return null;
 
-    final theme = Theme.of(context);
-    final themeHash = theme.hashCode;
+    return GaplyProfiler.trace240('Color.resolve(${colorStyle.token.value})', () {
+      if (!useCache) return _resolveImpl(context);
 
-    if (!useCache) return _resolveImpl(context);
+      final themeData = GaplyTheme.maybeOf<GaplyColorTheme>(context);
+      final int themeHash = themeData?.hashCode ?? 0;
 
-    var objectCache = _cacheStorage[this] ??= {};
-    return objectCache[themeHash] ??= (_resolveImpl(context) ?? Colors.transparent);
+      var contextCache = _cacheStorage[context] ??= {};
+      final cacheKey = Object.hash(
+        colorStyle.token,
+        colorStyle.shade.value,
+        colorStyle.opacity.value,
+        themeHash,
+      );
+
+      if (contextCache.containsKey(cacheKey)) {
+        return contextCache[cacheKey];
+      }
+
+      final resolvedColor = _resolveImpl(context, themeData);
+      if (resolvedColor != null) {
+        contextCache[cacheKey] = resolvedColor;
+      }
+
+      return resolvedColor;
+    });
   }
 
-  Color? _resolveImpl(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+  Color? _resolveImpl(BuildContext context, [GaplyColorTheme? themeData]) {
+    final theme = themeData ?? GaplyTheme.maybeOf<GaplyColorTheme>(context);
+    final isDark = (theme?.brightness ?? Theme.of(context).brightness) == Brightness.dark;
 
-    Color? baseColor = colorStyle.customColor ?? _resolveByRole(context);
-    if (baseColor == null) return null;
-
-    Color shadedColor;
-
-    if (baseColor is MaterialColor) {
-      shadedColor = _getMaterialColorShade(baseColor, isDark);
-    } else {
-      shadedColor = _applySmartShade(baseColor, isDark);
+    Color? baseColor = colorStyle.customColor;
+    if (baseColor == null && theme != null) {
+      baseColor = theme.getColor(colorStyle.token).customColor;
     }
 
+    if (baseColor == null) return null;
+
+    Color shadedColor = (baseColor is MaterialColor)
+        ? _getMaterialColorShade(baseColor, isDark)
+        : _applySmartShade(baseColor, isDark);
+
+    if (colorStyle.opacity.value == 1.0) return shadedColor;
     return shadedColor.withValues(alpha: colorStyle.opacity.value);
   }
 

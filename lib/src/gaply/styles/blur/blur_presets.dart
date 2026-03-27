@@ -3,11 +3,11 @@ import 'package:gaply/gaply.dart';
 class GaplyBlurPreset with GaplyPreset<BlurStyle> {
   static final GaplyBlurPreset instance = GaplyBlurPreset._internal();
 
-  GaplyBlurPreset._internal();
+  GaplyBlurPreset._internal() {
+    _initDefaultPresets();
+  }
 
-  void _ensureInitialized() {
-    if (hasPreset) return;
-
+  void _initDefaultPresets() {
     const blurLowColor = GaplyColor.fromToken(GaplyColorToken.shadow, opacity: GaplyColorOpacity.o10);
     const blurMediumColor = GaplyColor.fromToken(GaplyColorToken.shadow, opacity: GaplyColorOpacity.o20);
     const blurHighColor = GaplyColor.fromToken(GaplyColorToken.shadow, opacity: GaplyColorOpacity.o30);
@@ -23,13 +23,7 @@ class GaplyBlurPreset with GaplyPreset<BlurStyle> {
     add('google', const BlurStyle(sigma: 25.0, color: blurLowColor));
   }
 
-  static void register(String name, BlurStyle style) {
-    instance._ensureInitialized();
-    instance.add(name, style);
-  }
+  static void register(String name, BlurStyle style) => instance.add(name, style);
 
-  static BlurStyle? of(String name) {
-    instance._ensureInitialized();
-    return instance.get(name);
-  }
+  static BlurStyle? of(String name) => instance.get(name);
 }

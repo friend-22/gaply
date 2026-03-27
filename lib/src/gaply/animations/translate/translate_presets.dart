@@ -5,11 +5,12 @@ import 'translate_style.dart';
 
 class GaplyTranslatePreset with GaplyPreset<TranslateStyle> {
   static final GaplyTranslatePreset instance = GaplyTranslatePreset._internal();
-  GaplyTranslatePreset._internal();
 
-  void _ensureInitialized() {
-    if (hasPreset) return;
+  GaplyTranslatePreset._internal() {
+    _initDefaultPresets();
+  }
 
+  void _initDefaultPresets() {
     add(
       'push',
       const TranslateStyle(
@@ -55,13 +56,7 @@ class GaplyTranslatePreset with GaplyPreset<TranslateStyle> {
     );
   }
 
-  static void register(String name, TranslateStyle style) {
-    instance._ensureInitialized();
-    instance.add(name, style);
-  }
+  static void register(String name, TranslateStyle style) => instance.add(name, style);
 
-  static TranslateStyle? of(String name) {
-    instance._ensureInitialized();
-    return instance.get(name);
-  }
+  static TranslateStyle? of(String name) => instance.get(name);
 }
