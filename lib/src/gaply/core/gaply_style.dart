@@ -44,16 +44,17 @@ abstract class GaplyTweenStyle<T extends GaplyTweenStyle<T>> extends GaplyStyle<
   final Duration duration;
   final Curve curve;
   final VoidCallback? onComplete;
+  final double progress;
 
-  const GaplyTweenStyle({required this.duration, required this.curve, this.onComplete});
+  const GaplyTweenStyle({required this.duration, required this.curve, this.onComplete, this.progress = 1.0});
 
   @override
-  T copyWith({Duration? duration, Curve? curve, VoidCallback? onComplete});
+  T copyWith({Duration? duration, Curve? curve, VoidCallback? onComplete, double? progress});
 
   GaplyTweenStyle withDurationScale(double scale);
 
   @override
-  List<Object?> get props => [duration, curve, onComplete];
+  List<Object?> get props => [duration, curve, onComplete, progress];
 }
 
 mixin GaplyTweenMixin<T extends GaplyTweenStyle<T>> {
@@ -77,11 +78,12 @@ abstract class GaplyAnimStyle<T extends GaplyAnimStyle<T>> extends GaplyTweenSty
     required super.duration,
     required super.curve,
     super.onComplete,
+    super.progress,
     this.delay = Duration.zero,
   });
 
   @override
-  T copyWith({Duration? duration, Curve? curve, Duration? delay, VoidCallback? onComplete});
+  T copyWith({Duration? duration, Curve? curve, Duration? delay, VoidCallback? onComplete, double? progress});
 
   GaplyAnimStyle withDelay(Duration delay);
 
@@ -100,17 +102,28 @@ mixin GaplyAnimMixin<T extends GaplyAnimStyle<T>> on GaplyTweenMixin<T> {
 @immutable
 abstract class GaplyThemeData<T extends GaplyThemeData<T>> extends GaplyTweenStyle<T> {
   final Brightness brightness;
+  final T? begin;
+  final T? end;
 
   const GaplyThemeData({
     required this.brightness,
     required super.duration,
     required super.curve,
     super.onComplete,
+    super.progress,
+    this.begin,
+    this.end,
   });
 
   @override
-  T copyWith({Brightness? brightness, Duration? duration, Curve? curve, VoidCallback? onComplete});
+  T copyWith({
+    Brightness? brightness,
+    Duration? duration,
+    Curve? curve,
+    VoidCallback? onComplete,
+    double? progress,
+  });
 
   @override
-  List<Object?> get props => [...super.props, brightness];
+  List<Object?> get props => [...super.props, brightness, begin, end];
 }

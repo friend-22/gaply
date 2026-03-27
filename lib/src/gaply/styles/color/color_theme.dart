@@ -16,6 +16,9 @@ class GaplyColorTheme extends GaplyThemeData<GaplyColorTheme>
     Duration? duration,
     Curve? curve,
     super.onComplete,
+    super.progress,
+    super.begin,
+    super.end,
     required super.brightness,
     required this.colors,
   }) : super(duration: duration ?? const Duration(milliseconds: 300), curve: curve ?? Curves.easeInOut);
@@ -35,15 +38,21 @@ class GaplyColorTheme extends GaplyThemeData<GaplyColorTheme>
     Duration? duration,
     Curve? curve,
     VoidCallback? onComplete,
+    double? progress,
     Brightness? brightness,
+    GaplyColorTheme? begin,
+    GaplyColorTheme? end,
     Map<GaplyColorToken, GaplyColor>? colors,
   }) {
     return GaplyColorTheme(
-      brightness: brightness ?? this.brightness,
       duration: duration ?? this.duration,
       curve: curve ?? this.curve,
       onComplete: onComplete ?? this.onComplete,
+      progress: progress ?? this.progress,
+      brightness: brightness ?? this.brightness,
       colors: colors ?? this.colors,
+      begin: begin ?? this.begin,
+      end: end ?? this.end,
     );
   }
 
@@ -51,29 +60,30 @@ class GaplyColorTheme extends GaplyThemeData<GaplyColorTheme>
   GaplyColorTheme lerp(GaplyColorTheme? other, double t) {
     if (other == null) return this;
 
-    return GaplyProfiler.traceNano('Theme.lerp(t=${t.toStringAsFixed(2)})', () {
-      final lerpColors = <GaplyColorToken, GaplyColor>{};
-      final allKeys = {...colors.keys, ...other.colors.keys};
-
-      for (final key in allKeys) {
-        final beginColor = colors[key];
-        final endColor = other.colors[key];
-
-        if (beginColor != null && endColor != null) {
-          GaplyLogger.i('🎨 [GaplyColor.lerp1]', isForce: true);
-          lerpColors[key] = beginColor.lerp(endColor, t);
-        } else {
-          GaplyLogger.i('🎨 [GaplyColor.lerp2]', isForce: true);
-          lerpColors[key] = (t < 0.5 ? beginColor : endColor) ?? const GaplyColor.none();
-        }
-      }
+    return GaplyProfiler.trace240('Theme.lerp(t=${t.toStringAsFixed(2)})', () {
+      // final lerpColors = <GaplyColorToken, GaplyColor>{};
+      // final allKeys = {...colors.keys, ...other.colors.keys};
+      //
+      // for (final key in allKeys) {
+      //   final beginColor = colors[key];
+      //   final endColor = other.colors[key];
+      //
+      //   if (beginColor != null && endColor != null) {
+      //     lerpColors[key] = beginColor.lerp(endColor, t);
+      //   } else {
+      //     lerpColors[key] = (t < 0.5 ? beginColor : endColor) ?? const GaplyColor.none();
+      //   }
+      // }
 
       return GaplyColorTheme(
         duration: t < 0.5 ? duration : other.duration,
         curve: t < 0.5 ? curve : other.curve,
         onComplete: other.onComplete,
+        progress: t,
         brightness: t < 0.5 ? brightness : other.brightness,
-        colors: lerpColors,
+        colors: other.colors,
+        begin: this,
+        end: other,
       );
     });
   }
@@ -93,21 +103,24 @@ mixin _GaplyColorThemeMixin {
       duration: theme.duration,
       curve: theme.curve,
       onComplete: theme.onComplete,
+      progress: theme.progress,
       brightness: theme.brightness,
       colors: theme.colors,
+      begin: theme.begin,
+      end: theme.end,
     );
   }
 
-  bool hasRole(dynamic role) {
-    final resolvedRole = GaplyColorToken.resolve(role);
-    return colorTheme.colors.containsKey(resolvedRole);
+  bool hasToken(dynamic token) {
+    final resolvedToken = GaplyColorToken.resolve(token);
+    return colorTheme.colors.containsKey(resolvedToken);
   }
 
-  GaplyColor getColor(dynamic role) {
-    return colorTheme.colors[GaplyColorToken.resolve(role)] ?? const GaplyColor.none();
+  GaplyColor getColor(dynamic token) {
+    return colorTheme.colors[GaplyColorToken.resolve(token)] ?? const GaplyColor.none();
   }
 
-  Color? toColor(BuildContext context, dynamic role) {
-    return getColor(role).resolve(context);
+  Color? toColor(BuildContext context, dynamic token) {
+    return getColor(token).resolve(context);
   }
 }

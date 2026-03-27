@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 
 import 'package:gaply/src/gaply/core/gaply_direction.dart';
@@ -27,6 +29,7 @@ class TrainStyle extends GaplyAnimStyle<TrainStyle>
     Curve? curve,
     Duration? delay,
     super.onComplete,
+    super.progress,
     required this.direction,
     this.useOpacity = true,
   }) : super(
@@ -117,14 +120,16 @@ class TrainStyle extends GaplyAnimStyle<TrainStyle>
     Curve? curve,
     Duration? delay,
     VoidCallback? onComplete,
+    double? progress,
     AxisDirection? direction,
     bool? useOpacity,
   }) {
     return TrainStyle(
       duration: duration ?? this.duration,
       curve: curve ?? this.curve,
-      onComplete: onComplete ?? this.onComplete,
       delay: delay ?? this.delay,
+      onComplete: onComplete ?? this.onComplete,
+      progress: progress ?? this.progress,
       direction: direction ?? this.direction,
       useOpacity: useOpacity ?? this.useOpacity,
     );
@@ -139,6 +144,7 @@ class TrainStyle extends GaplyAnimStyle<TrainStyle>
       curve: t < 0.5 ? curve : other.curve,
       delay: t < 0.5 ? delay : other.delay,
       onComplete: other.onComplete,
+      progress: lerpDouble(progress, other.progress, t) ?? other.progress,
       direction: t < 0.5 ? direction : other.direction,
       useOpacity: t < 0.5 ? useOpacity : other.useOpacity,
     );
@@ -160,6 +166,7 @@ mixin _TrainStyleMixin {
       curve: train.curve,
       delay: train.delay,
       onComplete: train.onComplete,
+      progress: train.progress,
       direction: train.direction,
       useOpacity: train.useOpacity,
     );

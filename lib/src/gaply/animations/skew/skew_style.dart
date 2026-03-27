@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 
 import 'package:gaply/src/gaply/core/gaply_style.dart';
@@ -25,6 +27,7 @@ class SkewStyle extends GaplyAnimStyle<SkewStyle>
     Curve? curve,
     Duration? delay,
     super.onComplete,
+    super.progress,
     required this.skew,
     required this.isSkewed,
   }) : super(
@@ -83,6 +86,7 @@ class SkewStyle extends GaplyAnimStyle<SkewStyle>
     Curve? curve,
     Duration? delay,
     VoidCallback? onComplete,
+    double? progress,
     Offset? skew,
     bool? isSkewed,
   }) {
@@ -91,6 +95,7 @@ class SkewStyle extends GaplyAnimStyle<SkewStyle>
       curve: curve ?? this.curve,
       delay: delay ?? this.delay,
       onComplete: onComplete ?? this.onComplete,
+      progress: progress ?? this.progress,
       skew: skew ?? this.skew,
       isSkewed: isSkewed ?? this.isSkewed,
     );
@@ -105,6 +110,7 @@ class SkewStyle extends GaplyAnimStyle<SkewStyle>
       curve: t < 0.5 ? curve : other.curve,
       delay: t < 0.5 ? delay : other.delay,
       onComplete: other.onComplete,
+      progress: lerpDouble(progress, other.progress, t) ?? other.progress,
       skew: Offset.lerp(skew, other.skew, t)!,
       isSkewed: t < 0.5 ? isSkewed : other.isSkewed,
     );
@@ -126,6 +132,7 @@ mixin _SkewStyleMixin {
       curve: skew.curve,
       delay: skew.delay,
       onComplete: skew.onComplete,
+      progress: skew.progress,
       skew: skew.skew,
       isSkewed: skew.isSkewed,
     );

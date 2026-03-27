@@ -55,17 +55,9 @@ class _GaplyNoOpLogger implements GaplyLogger {
 class GaplyConsoleLogger implements GaplyLogger {
   late final Throttler _throttler;
 
-  GaplyConsoleLogger({Duration? interval}) {
+  GaplyConsoleLogger({Duration interval = Duration.zero}) {
     _throttler = Throttler(
-      interval: interval ?? const Duration(milliseconds: 100),
-      onUpdate: (value) => debugPrint(value),
-      shouldUpdate: (oldVal, newVal) => oldVal != newVal,
-    );
-  }
-
-  GaplyConsoleLogger.noThrottler() {
-    _throttler = Throttler(
-      interval: Duration.zero,
+      interval: interval,
       onUpdate: (value) => debugPrint(value),
       shouldUpdate: (oldVal, newVal) => oldVal != newVal,
     );
@@ -106,27 +98,17 @@ class GaplyFileLogger implements GaplyLogger {
 
   GaplyFileLogger(
     String path, {
-    Duration? interval,
+    Duration interval = Duration.zero,
     FileMode mode = FileMode.append,
     this.maxBytes = 5 * 1024 * 1024,
   }) : file = File(path),
        _mode = mode {
     _throttler = Throttler(
-      interval: interval ?? const Duration(milliseconds: 100),
+      interval: interval,
       onUpdate: (value) => _write(value),
       shouldUpdate: (oldVal, newVal) => oldVal != newVal,
     );
     _initSink();
-  }
-
-  GaplyFileLogger.noThrottler(String path, {FileMode mode = FileMode.append, this.maxBytes = 5 * 1024 * 1024})
-    : file = File(path),
-      _mode = mode {
-    _throttler = Throttler(
-      interval: Duration.zero,
-      onUpdate: (value) => debugPrint(value),
-      shouldUpdate: (oldVal, newVal) => oldVal != newVal,
-    );
   }
 
   void _initSink() {

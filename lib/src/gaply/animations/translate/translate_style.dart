@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 
 import 'package:gaply/src/gaply/core/gaply_style.dart';
@@ -25,6 +27,7 @@ class TranslateStyle extends GaplyAnimStyle<TranslateStyle>
     Curve? curve,
     Duration? delay,
     super.onComplete,
+    super.progress,
     required this.end,
     required this.isMoved,
     this.begin = Offset.zero,
@@ -53,6 +56,7 @@ class TranslateStyle extends GaplyAnimStyle<TranslateStyle>
     Curve? curve,
     Duration? delay,
     VoidCallback? onComplete,
+    double? progress,
     Offset? begin,
     Offset? end,
     bool? isMoved,
@@ -62,6 +66,7 @@ class TranslateStyle extends GaplyAnimStyle<TranslateStyle>
       curve: curve ?? this.curve,
       delay: delay ?? this.delay,
       onComplete: onComplete ?? this.onComplete,
+      progress: progress ?? this.progress,
       begin: begin ?? this.begin,
       end: end ?? this.end,
       isMoved: isMoved ?? this.isMoved,
@@ -77,6 +82,7 @@ class TranslateStyle extends GaplyAnimStyle<TranslateStyle>
       curve: t < 0.5 ? curve : other.curve,
       delay: t < 0.5 ? delay : other.delay,
       onComplete: other.onComplete,
+      progress: lerpDouble(progress, other.progress, t) ?? other.progress,
       begin: Offset.lerp(begin, other.begin, t)!,
       end: Offset.lerp(end, other.end, t)!,
       isMoved: t < 0.5 ? isMoved : other.isMoved,
@@ -99,6 +105,7 @@ mixin _GaplyTranslateMixin {
       curve: translate.curve,
       delay: translate.delay,
       onComplete: translate.onComplete,
+      progress: translate.progress,
       begin: translate.begin,
       end: translate.end,
       isMoved: translate.isMoved,

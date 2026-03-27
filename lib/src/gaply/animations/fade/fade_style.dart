@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 
 import 'package:gaply/src/gaply/core/gaply_style.dart';
@@ -43,6 +45,7 @@ class FadeStyle extends GaplyAnimStyle<FadeStyle>
     Curve? curve,
     Duration? delay,
     super.onComplete,
+    super.progress,
     required this.isVisible,
   }) : super(
          duration: duration ?? const Duration(milliseconds: 500),
@@ -84,6 +87,7 @@ class FadeStyle extends GaplyAnimStyle<FadeStyle>
     Curve? curve,
     Duration? delay,
     VoidCallback? onComplete,
+    double? progress,
     bool? isVisible,
   }) {
     return FadeStyle(
@@ -91,6 +95,7 @@ class FadeStyle extends GaplyAnimStyle<FadeStyle>
       curve: curve ?? this.curve,
       delay: delay ?? this.delay,
       onComplete: onComplete ?? this.onComplete,
+      progress: progress ?? this.progress,
       isVisible: isVisible ?? this.isVisible,
     );
   }
@@ -104,6 +109,7 @@ class FadeStyle extends GaplyAnimStyle<FadeStyle>
       curve: t < 0.5 ? curve : other.curve,
       delay: t < 0.5 ? delay : other.delay,
       onComplete: other.onComplete,
+      progress: lerpDouble(progress, other.progress, t) ?? other.progress,
       isVisible: t < 0.5 ? isVisible : other.isVisible,
     );
   }
@@ -124,6 +130,7 @@ mixin _FadeStyleMixin {
       curve: fade.curve,
       delay: fade.delay,
       onComplete: fade.onComplete,
+      progress: fade.progress,
       isVisible: fade.isVisible,
     );
   }

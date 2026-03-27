@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 
 import 'package:gaply/src/gaply/core/core.dart';
@@ -47,6 +49,7 @@ class BoxStyle extends GaplyTweenStyle<BoxStyle>
     Duration? duration,
     Curve? curve,
     super.onComplete,
+    super.progress,
     this.layout = const GaplyLayout.none(),
     this.color = const GaplyColor.none(),
     this.borderColor = const GaplyColor.none(),
@@ -77,6 +80,7 @@ class BoxStyle extends GaplyTweenStyle<BoxStyle>
     Duration? duration,
     Curve? curve,
     VoidCallback? onComplete,
+    double? progress,
     GaplyLayout? layout,
     GaplyColor? color,
     GaplyColor? borderColor,
@@ -94,6 +98,7 @@ class BoxStyle extends GaplyTweenStyle<BoxStyle>
       duration: duration ?? this.duration,
       curve: curve ?? this.curve,
       onComplete: onComplete ?? this.onComplete,
+      progress: progress ?? this.progress,
       layout: layout ?? this.layout,
       color: color ?? this.color,
       borderColor: borderColor ?? this.borderColor,
@@ -116,6 +121,7 @@ class BoxStyle extends GaplyTweenStyle<BoxStyle>
       duration: t < 0.5 ? duration : other.duration,
       curve: t < 0.5 ? curve : other.curve,
       onComplete: other.onComplete,
+      progress: lerpDouble(progress, other.progress, t) ?? other.progress,
       layout: layout.lerp(other.layout, t),
       color: color.lerp(other.color, t),
       borderColor: borderColor.lerp(other.borderColor, t),
@@ -165,6 +171,7 @@ mixin _BoxStyleMixin {
       duration: box.duration,
       curve: box.curve,
       onComplete: box.onComplete,
+      progress: box.progress,
       layout: box.layout,
       color: box.color,
       borderColor: box.borderColor,

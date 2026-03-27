@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/widgets.dart';
 
 import 'package:gaply/src/gaply/core/gaply_style.dart';
@@ -28,6 +30,7 @@ class RevealStyle extends GaplyAnimStyle<RevealStyle>
     Curve? curve,
     Duration? delay,
     super.onComplete,
+    super.progress,
     required this.direction,
     required this.isVisible,
     this.fixedSize = false,
@@ -141,8 +144,9 @@ class RevealStyle extends GaplyAnimStyle<RevealStyle>
   RevealStyle copyWith({
     Duration? duration,
     Curve? curve,
-    VoidCallback? onComplete,
     Duration? delay,
+    VoidCallback? onComplete,
+    double? progress,
     AxisDirection? direction,
     bool? isVisible,
     bool? fixedSize,
@@ -151,8 +155,9 @@ class RevealStyle extends GaplyAnimStyle<RevealStyle>
     return RevealStyle(
       duration: duration ?? this.duration,
       curve: curve ?? this.curve,
-      onComplete: onComplete ?? this.onComplete,
       delay: delay ?? this.delay,
+      onComplete: onComplete ?? this.onComplete,
+      progress: progress ?? this.progress,
       direction: direction ?? this.direction,
       isVisible: isVisible ?? this.isVisible,
       fixedSize: fixedSize ?? this.fixedSize,
@@ -169,6 +174,7 @@ class RevealStyle extends GaplyAnimStyle<RevealStyle>
       curve: t < 0.5 ? curve : other.curve,
       delay: t < 0.5 ? delay : other.delay,
       onComplete: other.onComplete,
+      progress: lerpDouble(progress, other.progress, t) ?? other.progress,
       direction: t < 0.5 ? direction : other.direction,
       isVisible: t < 0.5 ? isVisible : other.isVisible,
       fixedSize: t < 0.5 ? fixedSize : other.fixedSize,
@@ -192,6 +198,7 @@ mixin _RevealStyleMixin {
       curve: reveal.curve,
       delay: reveal.delay,
       onComplete: reveal.onComplete,
+      progress: reveal.progress,
       direction: reveal.direction,
       isVisible: reveal.isVisible,
       fixedSize: reveal.fixedSize,

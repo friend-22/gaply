@@ -90,16 +90,18 @@ class GaplyColorShade extends GaplyToken<double> {
   static const GaplyColorShade s900 = GaplyColorShade(0.9);
   static const GaplyColorShade s950 = GaplyColorShade(0.95);
 
+  static const GaplyColorShade defaultShade = GaplyColorShade(0.5);
+
   static GaplyColorShade resolve(dynamic value) {
     if (value is GaplyColorShade) return value;
     if (value is num) return GaplyColorShade(value.toDouble());
     if (value != null) {
       GaplyLogger.i(
         "⚠️ [Gaply Warning] Unsupported shade type: ${value.runtimeType}. "
-        "Expected num or GaplyColorShade. Falling back to s500.",
+        "Expected num or GaplyColorShade. Falling back to defaultShade.",
       );
     }
-    return GaplyColorShade.s500;
+    return GaplyColorShade.defaultShade;
   }
 
   GaplyColorShade operator +(double other) => GaplyColorShade((value + other).clamp(0.0, 1.0));

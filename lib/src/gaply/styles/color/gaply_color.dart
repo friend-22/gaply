@@ -95,12 +95,12 @@ class GaplyColor extends GaplyStyle<GaplyColor> with _GaplyColorMixin, ColorStyl
     final double lerpShade = lerpDouble(shade.value, other.shade.value, t) ?? shade.value;
     final Color? lerpColor = Color.lerp(customColor, other.customColor, t);
 
-    GaplyLogger.i(
-      '🎨 [GaplyColor.lerp] t: ${t.toStringAsFixed(3)} | '
-      'Color: ${customColor?.toARGB32().toRadixString(16)} -> ${other.customColor?.toARGB32().toRadixString(16)} '
-      '==> Result: ${lerpColor?.toARGB32().toRadixString(16)}',
-      isForce: true,
-    );
+    // GaplyLogger.i(
+    //   '🎨 [GaplyColor.lerp] t: ${t.toStringAsFixed(3)} | '
+    //   'Color: ${customColor?.toARGB32().toRadixString(16)} -> ${other.customColor?.toARGB32().toRadixString(16)} '
+    //   '==> Result: ${lerpColor?.toARGB32().toRadixString(16)}',
+    //   isForce: true,
+    // );
 
     return GaplyColor(
       token: t < 0.5 ? token : other.token,
@@ -142,118 +142,166 @@ mixin _GaplyColorMixin {
   static final Map<int, Color> _cacheStorage = {};
   static Brightness? _lastCachedBrightness;
 
-  Color? resolve(BuildContext context, {bool useCache = true}) {
+  Color? resolve(BuildContext context, {bool useCache = false}) {
     if (!colorStyle.hasEffect) return null;
-
-    if (colorStyle.customColor != null) {
-      GaplyLogger.i('🌈 [ANIM_VALUE] Using lerped color: ${colorStyle.customColor}');
-      return colorStyle.customColor;
-    }
 
     final themeData = GaplyTheme.maybeOf<GaplyColorTheme>(context);
     final currentBrightness = themeData?.brightness ?? Theme.of(context).brightness;
 
-    if (_lastCachedBrightness != null && _lastCachedBrightness != currentBrightness) {
-      _cacheStorage.clear();
-      GaplyLogger.i('🧹 [CACHE_CLEARED] Brightness changed: $_lastCachedBrightness -> $currentBrightness');
-    }
-    _lastCachedBrightness = currentBrightness;
-
-    final bool isAnimating = colorStyle.customColor != null;
+    final double currentProgress = themeData?.progress ?? 1.0;
+    final bool isThemeAnimating = currentProgress > 0.0 && currentProgress < 1.0;
+    final bool isAnimating = colorStyle.customColor != null || isThemeAnimating;
 
     final cacheKey = Object.hash(
       colorStyle.token,
-      (colorStyle.shade.value * 1000).toInt(), // 정밀도 상향
+      colorStyle.customColor,
+      (colorStyle.shade.value * 1000).toInt(),
       (colorStyle.opacity.value * 1000).toInt(),
       currentBrightness,
-      // 애니메이션 중일 때는 매 프레임 변하는 색상 값 자체를 키로 사용
-      isAnimating ? colorStyle.customColor!.toARGB32() : null,
     );
 
+    // if (_lastCachedBrightness != null && _lastCachedBrightness != currentBrightness) {
+    //   _cacheStorage.clear();
+    // }
+    // _lastCachedBrightness = currentBrightness;
+
     if (useCache && !isAnimating && _cacheStorage.containsKey(cacheKey)) {
-      GaplyLogger.i('💾 [CACHE_HIT] key: $cacheKey, color: ${_cacheStorage[cacheKey]}');
+      // GaplyLogger.i(
+      //   'Cached Resolve color: ${_cacheStorage[cacheKey]?.toARGB32().toRadixString(16)}',
+      //   isForce: true,
+      // );
+
       return _cacheStorage[cacheKey];
     }
 
-    return GaplyProfiler.traceNano('Color.resolve(${colorStyle.token.value})', () {
-      final resolvedColor = _resolveImpl(context, themeData);
-      GaplyLogger.i('✨ [RESOLVED] color: $resolvedColor');
+    final result = _resolveImpl(context, themeData);
 
-      if (resolvedColor != null && useCache && !isAnimating) {
-        _cacheStorage[cacheKey] = resolvedColor;
-        if (isAnimating) {
-          GaplyLogger.i('✨ [ANIM_RESOLVED] ${colorStyle.token.value}: $resolvedColor');
-        }
-      }
+    if (result != null && useCache && !isAnimating) {
+      _cacheStorage[cacheKey] = result;
+    }
 
-      return resolvedColor;
-    });
+    // GaplyLogger.i('Resolve color: ${result?.toARGB32().toRadixString(16)}', isForce: true);
+
+    return result;
   }
 
   Color? _resolveImpl(BuildContext context, [GaplyColorTheme? themeData]) {
     final theme = themeData ?? GaplyTheme.maybeOf<GaplyColorTheme>(context);
-    final isDark = (theme?.brightness ?? Theme.of(context).brightness) == Brightness.dark;
+    if (theme == null) return null;
 
     Color? baseColor = colorStyle.customColor;
-    if (baseColor == null && theme != null) {
-      baseColor = theme.getColor(colorStyle.token).customColor;
-
-      GaplyLogger.i(
-        '🔍 [BASE_COLOR_DEBUG] Token: ${colorStyle.token.value} | '
-        'BaseColor: ${baseColor?.toString()}',
-      );
+    if (baseColor == null) {
+      final themeStyle = theme.getColor(colorStyle.token);
+      baseColor = themeStyle.customColor;
     }
-
     if (baseColor == null) return null;
 
-    Color shadedColor = (baseColor is MaterialColor)
-        ? _getMaterialColorShade(baseColor, isDark)
-        : _applySmartShade(baseColor, isDark);
+    final beginTheme = theme.begin ?? theme;
+    final endTheme = theme.end ?? theme;
 
-    if (colorStyle.opacity.value == 1.0) return shadedColor;
-    return shadedColor.withValues(alpha: colorStyle.opacity.value);
+    final beginStyle = beginTheme.getColor(colorStyle.token);
+    final endStyle = endTheme.getColor(colorStyle.token);
+
+    final Color beginBase = beginStyle.customColor ?? colorStyle.customColor ?? const Color(0x00000000);
+    final Color endBase = endStyle.customColor ?? colorStyle.customColor ?? const Color(0x00000000);
+
+    final Color lightResult = _resolveForBrightness(beginBase, false, colorStyle.shade);
+    final Color darkResult = _resolveForBrightness(endBase, true, colorStyle.shade);
+
+    print(
+      'progress: ${theme.progress.toStringAsFixed(2)}, '
+      'lightBase: ${beginBase.toARGB32().toRadixString(16)}, '
+      'lightResult: ${lightResult.toARGB32().toRadixString(16)}, '
+      'darkBase: ${endBase.toARGB32().toRadixString(16)}, '
+      'darkResult: ${darkResult.toARGB32().toRadixString(16)}',
+    );
+
+    return Color.lerp(lightResult, darkResult, theme.progress);
+
+    // if (colorStyle.shade.value != GaplyColorShade.defaultShade.value || colorStyle.autoInvert) {
+    //   if (finalColor is MaterialColor) {
+    //     finalColor = _getMaterialColorShade(finalColor, isDark);
+    //   } else {
+    //     finalColor = _applySmartShade(finalColor, isDark);
+    //   }
+    // }
+    //
+    // if (colorStyle.opacity.value != 1.0) {
+    //   finalColor = finalColor.withValues(alpha: (finalColor.a * colorStyle.opacity.value).clamp(0.0, 1.0));
+    // }
+    //
+    // return finalColor;
   }
 
-  Color _getMaterialColorShade(MaterialColor materialColor, bool isDark) {
-    final double shadeValue = colorStyle.shade.value;
-    final double effectiveValue = (colorStyle.autoInvert && isDark) ? 1.0 - shadeValue : shadeValue;
-    final int index = _valueToMaterialIndex(effectiveValue);
-    if (index == 50) return materialColor.shade50;
-    return materialColor[index] ?? materialColor[500]!;
+  Color _resolveForBrightness(Color baseColor, bool isDark, GaplyColorShade currentShade) {
+    Color finalColor = baseColor;
+
+    if (currentShade.value != GaplyColorShade.defaultShade.value || colorStyle.autoInvert) {
+      if (finalColor is MaterialColor) {
+        finalColor = _getMaterialColorShade(finalColor, isDark, currentShade);
+      } else {
+        finalColor = _applySmartShade(finalColor, isDark);
+      }
+    }
+
+    if (colorStyle.opacity.value != 1.0) {
+      finalColor = finalColor.withValues(alpha: (finalColor.a * colorStyle.opacity.value).clamp(0.0, 1.0));
+    }
+
+    return finalColor;
   }
 
   Color _applySmartShade(Color color, bool isDark) {
-    final double shadeValue = colorStyle.shade.value;
+    final double base = GaplyColorShade.defaultShade.value; // 0.5
+    double shade = colorStyle.shade.value;
 
-    if (shadeValue == 0.5) return color;
+    if (colorStyle.autoInvert && isDark) {
+      shade = (base * 2) - shade;
+    }
 
-    return GaplyProfiler.traceNano('Color.applyShade(${colorStyle.token.value})', () {
-      final double effectiveShade = (colorStyle.autoInvert && isDark) ? 1.0 - shadeValue : shadeValue;
-      final hsl = HSLColor.fromColor(color);
+    if (shade == base) return color;
 
-      final double offset = 0.5 - effectiveShade;
-
-      double newL = (hsl.lightness + offset).clamp(0.0, 1.0);
-      double newS = hsl.saturation;
-
-      newL = (newL * 1000).roundToDouble() / 1000;
-      newS = (newS * 1000).roundToDouble() / 1000;
-
-      final result = hsl.withLightness(newL).withSaturation(newS).toColor();
-
-      GaplyLogger.i(
-        '🎨 [SHADE_SUCCESS] ${colorStyle.token.value} | '
-        'L: ${hsl.lightness.toStringAsFixed(3)} -> $newL | '
-        'S: ${hsl.saturation.toStringAsFixed(3)} -> $newS',
-      );
-
-      return result;
-    });
+    if (shade < base) {
+      double t = (base - shade) / base;
+      return Color.lerp(color, Colors.black, t.clamp(0.0, 1.0))!;
+    } else {
+      double t = (shade - base) / (1.0 - base);
+      return Color.lerp(color, Colors.white, t.clamp(0.0, 1.0))!;
+    }
   }
 
-  int _valueToMaterialIndex(double value) {
-    if (value <= 0.05) return 50;
-    if (value >= 0.95) return 950;
-    return ((value * 10).round() * 100).clamp(100, 900);
+  static final List<Color> _allMaterials = [...Colors.primaries, ...Colors.accents];
+
+  Color _getMaterialColorShade(Color color, bool isDark, GaplyColorShade currentShade) {
+    Color targetColor = color;
+
+    if (targetColor is! MaterialColor) {
+      try {
+        targetColor = _allMaterials.firstWhere((mColor) => mColor.toARGB32() == color.toARGB32());
+      } catch (_) {}
+    }
+
+    if (targetColor is MaterialColor) {
+      final int index = _valueToMaterialIndex(currentShade, isDark);
+
+      print(
+        'DEBUG: target=${targetColor.runtimeType}, index=${_valueToMaterialIndex(currentShade, isDark)}, shade=${currentShade.value}',
+      );
+
+      final result = targetColor[index];
+      if (result != null) return result;
+    }
+
+    return _applySmartShade(targetColor, isDark);
+  }
+
+  int _valueToMaterialIndex(GaplyColorShade shade, bool isDark) {
+    double effectiveValue = isDark ? 1.0 - shade.value : shade.value;
+
+    if (effectiveValue <= 0.075) return 50;
+    if (effectiveValue >= 0.85) return 900;
+
+    int index = (effectiveValue * 10).round() * 100;
+    return index.clamp(50, 900);
   }
 }

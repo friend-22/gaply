@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:gaply/gaply.dart';
 import 'package:path_provider/path_provider.dart';
@@ -53,7 +52,7 @@ void main() async {
 void _setupGaplyThemes() {
   // 라이트 테마 등록
   final lightTheme = GaplyColorTheme(
-    duration: Duration(milliseconds: 1000),
+    duration: Duration(milliseconds: 200),
     brightness: Brightness.light,
     colors: {
       GaplyColorToken.primary: const GaplyColor(token: GaplyColorToken.primary, customColor: Colors.blue),
@@ -68,12 +67,9 @@ void _setupGaplyThemes() {
   // 다크 테마 등록
   final darkTheme = GaplyColorTheme(
     brightness: Brightness.dark,
-    duration: Duration(milliseconds: 1000),
+    duration: Duration(milliseconds: 200),
     colors: {
-      GaplyColorToken.primary: const GaplyColor(
-        token: GaplyColorToken.primary,
-        customColor: Colors.cyanAccent,
-      ),
+      GaplyColorToken.primary: const GaplyColor(token: GaplyColorToken.primary, customColor: Colors.cyan),
       GaplyColorToken.background: const GaplyColor(
         token: GaplyColorToken.background,
         customColor: Color(0xFF121212),
