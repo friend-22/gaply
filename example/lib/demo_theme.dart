@@ -47,7 +47,6 @@ class ThemeTestPage extends StatelessWidget {
 
     final bgColor = bgStyle.resolve(context) ?? Colors.white;
     final primaryColor = primaryStyle.resolve(context) ?? Colors.blue;
-    //debugPrint("🎨 Real-time Color: $primaryColor");
 
     return Container(
       color: bgColor,
@@ -81,10 +80,7 @@ class ThemeTestPage extends StatelessWidget {
           width: 80,
           height: 80,
           margin: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: style.resolve(context), // 여기서도 실시간 보간값 참조
-            borderRadius: BorderRadius.circular(12),
-          ),
+          decoration: BoxDecoration(color: style.resolve(context), borderRadius: BorderRadius.circular(12)),
         ),
         Text(label, style: const TextStyle(fontSize: 12)),
       ],

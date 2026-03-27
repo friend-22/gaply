@@ -215,22 +215,6 @@ mixin _GaplyColorMixin {
     return color;
   }
 
-  Color? _resolveByRole(BuildContext context) {
-    try {
-      final themeData = GaplyTheme.of<GaplyColorTheme>(context);
-      final token = colorStyle.token;
-
-      if (token != GaplyColorToken.none && !themeData.hasRole(token)) {
-        debugPrint('⚠️ [Gaply Warning] Color token "${token.value}" is not defined in the current theme.');
-      }
-
-      final GaplyColor themeColor = themeData.getColor(token);
-      return themeColor.customColor;
-    } catch (_) {
-      return null;
-    }
-  }
-
   int _valueToMaterialIndex(double value) {
     if (value <= 0.05) return 50;
     if (value >= 0.95) return 950;
