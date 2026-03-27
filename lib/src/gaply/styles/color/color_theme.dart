@@ -51,7 +51,7 @@ class GaplyColorTheme extends GaplyThemeData<GaplyColorTheme>
   GaplyColorTheme lerp(GaplyColorTheme? other, double t) {
     if (other == null) return this;
 
-    return GaplyProfiler.trace120('Theme.lerp(t=${t.toStringAsFixed(2)})', () {
+    return GaplyProfiler.traceNano('Theme.lerp(t=${t.toStringAsFixed(2)})', () {
       final lerpColors = <GaplyColorToken, GaplyColor>{};
       final allKeys = {...colors.keys, ...other.colors.keys};
 
@@ -60,8 +60,10 @@ class GaplyColorTheme extends GaplyThemeData<GaplyColorTheme>
         final endColor = other.colors[key];
 
         if (beginColor != null && endColor != null) {
+          GaplyLogger.i('🎨 [GaplyColor.lerp1]', isForce: true);
           lerpColors[key] = beginColor.lerp(endColor, t);
         } else {
+          GaplyLogger.i('🎨 [GaplyColor.lerp2]', isForce: true);
           lerpColors[key] = (t < 0.5 ? beginColor : endColor) ?? const GaplyColor.none();
         }
       }

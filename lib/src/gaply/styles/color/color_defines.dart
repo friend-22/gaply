@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:gaply/src/gaply/core/gaply_style.dart';
+import 'package:gaply/src/utils/gaply_perf.dart';
 
 @immutable
 class GaplyColorToken extends GaplyToken<String> {
@@ -23,7 +24,7 @@ class GaplyColorToken extends GaplyToken<String> {
 
     if (role is String) {
       if (role.trim().isEmpty) {
-        debugPrint("GaplyColorToken.resolve received an empty string.");
+        GaplyLogger.i("GaplyColorToken.resolve received an empty string.");
         return GaplyColorToken.none;
       }
 
@@ -31,7 +32,7 @@ class GaplyColorToken extends GaplyToken<String> {
     }
 
     if (role != null) {
-      debugPrint("Unsupported role type: ${role.runtimeType}. String or GaplyColorToken expected.");
+      GaplyLogger.i("Unsupported role type: ${role.runtimeType}. String or GaplyColorToken expected.");
     }
 
     return GaplyColorToken.none;
@@ -60,7 +61,7 @@ class GaplyColorOpacity extends GaplyToken<double> {
     if (value is GaplyColorOpacity) return value;
     if (value is num) return GaplyColorOpacity(value.toDouble());
     if (value != null) {
-      debugPrint(
+      GaplyLogger.i(
         "⚠️ [Gaply Warning] Unsupported opacity type: ${value.runtimeType}. "
         "Expected num or GaplyColorOpacity. Falling back to full.",
       );
@@ -93,7 +94,7 @@ class GaplyColorShade extends GaplyToken<double> {
     if (value is GaplyColorShade) return value;
     if (value is num) return GaplyColorShade(value.toDouble());
     if (value != null) {
-      debugPrint(
+      GaplyLogger.i(
         "⚠️ [Gaply Warning] Unsupported shade type: ${value.runtimeType}. "
         "Expected num or GaplyColorShade. Falling back to s500.",
       );

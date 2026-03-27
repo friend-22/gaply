@@ -95,11 +95,12 @@ class GaplyColor extends GaplyStyle<GaplyColor> with _GaplyColorMixin, ColorStyl
     final double lerpShade = lerpDouble(shade.value, other.shade.value, t) ?? shade.value;
     final Color? lerpColor = Color.lerp(customColor, other.customColor, t);
 
-    // debugPrint(
-    //   '🎨 [GaplyColor.lerp] t: ${t.toStringAsFixed(3)} | '
-    //   'Color: ${customColor?.value.toRadixString(16)} -> ${other.customColor?.value.toRadixString(16)} '
-    //   '==> Result: ${lerpColor?.value.toRadixString(16)}',
-    // );
+    GaplyLogger.i(
+      '🎨 [GaplyColor.lerp] t: ${t.toStringAsFixed(3)} | '
+      'Color: ${customColor?.toARGB32().toRadixString(16)} -> ${other.customColor?.toARGB32().toRadixString(16)} '
+      '==> Result: ${lerpColor?.toARGB32().toRadixString(16)}',
+      isForce: true,
+    );
 
     return GaplyColor(
       token: t < 0.5 ? token : other.token,
@@ -137,32 +138,52 @@ mixin _GaplyColorMixin {
     );
   }
 
-  static final Expando<Map<int, Color>> _cacheStorage = Expando();
+  //static final Expando<Map<int, Color>> _cacheStorage = Expando();
+  static final Map<int, Color> _cacheStorage = {};
+  static Brightness? _lastCachedBrightness;
 
   Color? resolve(BuildContext context, {bool useCache = true}) {
     if (!colorStyle.hasEffect) return null;
 
-    return GaplyProfiler.trace240('Color.resolve(${colorStyle.token.value})', () {
-      if (!useCache) return _resolveImpl(context);
+    if (colorStyle.customColor != null) {
+      GaplyLogger.i('🌈 [ANIM_VALUE] Using lerped color: ${colorStyle.customColor}');
+      return colorStyle.customColor;
+    }
 
-      final themeData = GaplyTheme.maybeOf<GaplyColorTheme>(context);
-      final int themeHash = themeData?.hashCode ?? 0;
+    final themeData = GaplyTheme.maybeOf<GaplyColorTheme>(context);
+    final currentBrightness = themeData?.brightness ?? Theme.of(context).brightness;
 
-      var contextCache = _cacheStorage[context] ??= {};
-      final cacheKey = Object.hash(
-        colorStyle.token,
-        colorStyle.shade.value,
-        colorStyle.opacity.value,
-        themeHash,
-      );
+    if (_lastCachedBrightness != null && _lastCachedBrightness != currentBrightness) {
+      _cacheStorage.clear();
+      GaplyLogger.i('🧹 [CACHE_CLEARED] Brightness changed: $_lastCachedBrightness -> $currentBrightness');
+    }
+    _lastCachedBrightness = currentBrightness;
 
-      if (contextCache.containsKey(cacheKey)) {
-        return contextCache[cacheKey];
-      }
+    final bool isAnimating = colorStyle.customColor != null;
 
+    final cacheKey = Object.hash(
+      colorStyle.token,
+      (colorStyle.shade.value * 1000).toInt(), // 정밀도 상향
+      (colorStyle.opacity.value * 1000).toInt(),
+      currentBrightness,
+      // 애니메이션 중일 때는 매 프레임 변하는 색상 값 자체를 키로 사용
+      isAnimating ? colorStyle.customColor!.toARGB32() : null,
+    );
+
+    if (useCache && !isAnimating && _cacheStorage.containsKey(cacheKey)) {
+      GaplyLogger.i('💾 [CACHE_HIT] key: $cacheKey, color: ${_cacheStorage[cacheKey]}');
+      return _cacheStorage[cacheKey];
+    }
+
+    return GaplyProfiler.traceNano('Color.resolve(${colorStyle.token.value})', () {
       final resolvedColor = _resolveImpl(context, themeData);
-      if (resolvedColor != null) {
-        contextCache[cacheKey] = resolvedColor;
+      GaplyLogger.i('✨ [RESOLVED] color: $resolvedColor');
+
+      if (resolvedColor != null && useCache && !isAnimating) {
+        _cacheStorage[cacheKey] = resolvedColor;
+        if (isAnimating) {
+          GaplyLogger.i('✨ [ANIM_RESOLVED] ${colorStyle.token.value}: $resolvedColor');
+        }
       }
 
       return resolvedColor;
@@ -176,6 +197,11 @@ mixin _GaplyColorMixin {
     Color? baseColor = colorStyle.customColor;
     if (baseColor == null && theme != null) {
       baseColor = theme.getColor(colorStyle.token).customColor;
+
+      GaplyLogger.i(
+        '🔍 [BASE_COLOR_DEBUG] Token: ${colorStyle.token.value} | '
+        'BaseColor: ${baseColor?.toString()}',
+      );
     }
 
     if (baseColor == null) return null;
@@ -198,26 +224,36 @@ mixin _GaplyColorMixin {
 
   Color _applySmartShade(Color color, bool isDark) {
     final double shadeValue = colorStyle.shade.value;
-    if (shadeValue == 0.5 && !colorStyle.autoInvert) return color;
 
-    final double effectiveValue = (colorStyle.autoInvert && isDark) ? 1.0 - shadeValue : shadeValue;
+    if (shadeValue == 0.5) return color;
 
-    final hsl = HSLColor.fromColor(color);
+    return GaplyProfiler.traceNano('Color.applyShade(${colorStyle.token.value})', () {
+      final double effectiveShade = (colorStyle.autoInvert && isDark) ? 1.0 - shadeValue : shadeValue;
+      final hsl = HSLColor.fromColor(color);
 
-    if (effectiveValue < 0.5) {
-      final factor = (0.5 - effectiveValue) * 2;
-      return hsl.withLightness(lerpDouble(hsl.lightness, 0.95, factor)!).toColor();
-    } else if (effectiveValue > 0.5) {
-      final factor = (effectiveValue - 0.5) * 2;
-      return hsl.withLightness(lerpDouble(hsl.lightness, 0.1, factor)!).toColor();
-    }
+      final double offset = 0.5 - effectiveShade;
 
-    return color;
+      double newL = (hsl.lightness + offset).clamp(0.0, 1.0);
+      double newS = hsl.saturation;
+
+      newL = (newL * 1000).roundToDouble() / 1000;
+      newS = (newS * 1000).roundToDouble() / 1000;
+
+      final result = hsl.withLightness(newL).withSaturation(newS).toColor();
+
+      GaplyLogger.i(
+        '🎨 [SHADE_SUCCESS] ${colorStyle.token.value} | '
+        'L: ${hsl.lightness.toStringAsFixed(3)} -> $newL | '
+        'S: ${hsl.saturation.toStringAsFixed(3)} -> $newS',
+      );
+
+      return result;
+    });
   }
 
   int _valueToMaterialIndex(double value) {
     if (value <= 0.05) return 50;
     if (value >= 0.95) return 950;
-    return (value * 10).round() * 100;
+    return ((value * 10).round() * 100).clamp(100, 900);
   }
 }

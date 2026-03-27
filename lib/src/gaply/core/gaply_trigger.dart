@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:gaply/src/utils/gaply_perf.dart';
 import 'gaply_style.dart';
 
 /// Mixin that handles animation triggering based on style or trigger changes.
@@ -53,7 +54,7 @@ mixin GaplyMotionTrigger<W extends StatefulWidget, MST extends GaplyAnimStyle<MS
       onDelay(style.delay, () {
         if (!mounted) {
           // Widget was disposed during delay - safe to ignore
-          debugPrint("🚨 딜레이 도중 위젯이 사라짐: ${style.delay}");
+          GaplyLogger.i("🚨 딜레이 도중 위젯이 사라짐: ${style.delay}");
           return;
         }
 
