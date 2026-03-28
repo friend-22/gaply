@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:gaply/src/utils/gaply_perf.dart';
 
 import 'gaply_style.dart';
 
@@ -21,17 +20,8 @@ class GaplyTheme<T extends GaplyThemeData<T>> extends InheritedWidget {
 
   @override
   bool updateShouldNotify(GaplyTheme<T> oldWidget) {
-    // final bool changed = data != oldWidget.data || data.hashCode != oldWidget.data.hashCode;
-    //
-    // // 🔍 [리빌드 추적 로그]
-    // // changed가 false라면 애니메이션이 돌아가도 화면은 갱신되지 않습니다.
-    // GaplyLogger.i(
-    //   '🔄 [GaplyTheme.updateShouldNotify] '
-    //   'Changed: $changed | '
-    //   'OldHash: ${oldWidget.data.hashCode} -> NewHash: ${data.hashCode}',
-    // );
-
-    return true;
+    final bool changed = data != oldWidget.data || data.hashCode != oldWidget.data.hashCode;
+    return changed;
   }
 }
 
@@ -90,18 +80,13 @@ class _AnimatedGaplyThemeState<T extends GaplyThemeData<T>> extends State<Animat
 
   @override
   Widget build(BuildContext context) {
-    GaplyLogger.i('💓 HEARTBEAT: ${_controller.value.toStringAsFixed(3)}', isForce: true);
-
     return AnimatedBuilder(
       animation: _controller,
       builder: (context, child) {
-        _currentTheme = _animation.value; // ✅ 현재 값 업데이트
-
-        // GaplyLogger.i('[_AnimatedGaplyThemeState.build]');
-
-        return GaplyTheme<T>(data: _currentTheme, child: widget.child);
+        _currentTheme = _animation.value;
+        return GaplyTheme<T>(data: _currentTheme, child: child!);
       },
-      //child: widget.child,
+      child: widget.child,
     );
   }
 }
@@ -111,16 +96,9 @@ class _ThemeTween<T extends GaplyThemeData<T>> extends Tween<T> {
 
   @override
   T lerp(double t) {
-    // GaplyLogger.i('🧬 TWEEN LERP: t=${t.toStringAsFixed(3)}', isForce: true);
-
     if (begin == null || end == null) return (begin ?? end)!;
 
     final result = begin!.lerp(end, t);
-    // GaplyLogger.i(
-    //   '🎨 [Theme.lerp] t: ${t.toStringAsFixed(3)} | '
-    //   'from: ${begin.runtimeType} to: ${end.runtimeType}',
-    //   isForce: true,
-    // );
     return result;
   }
 }

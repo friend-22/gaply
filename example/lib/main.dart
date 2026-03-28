@@ -73,11 +73,15 @@ void main() async {
 void _setupGaplyThemes() {
   // 라이트 테마 등록
   final lightTheme = GaplyColorTheme(
-    profiler: GaplyProfiler.traceNano(label: 'lightTheme'),
-    duration: Duration(milliseconds: 200),
+    profiler: GaplyProfiler.tracePerfect(label: 'lightTheme'),
+    duration: Duration(milliseconds: 1000),
     brightness: Brightness.light,
     colors: {
-      GaplyColorToken.primary: const GaplyColor(token: GaplyColorToken.primary, customColor: Colors.blue),
+      GaplyColorToken.primary: const GaplyColor(
+        profiler: GaplyProfiler.tracePerfect(label: 'PrimaryColor', filter: GaplyProfilerFilter.slowBad),
+        token: GaplyColorToken.primary,
+        customColor: Colors.blue,
+      ),
       GaplyColorToken.background: const GaplyColor(
         token: GaplyColorToken.background,
         customColor: Colors.white,
@@ -88,9 +92,9 @@ void _setupGaplyThemes() {
 
   // 다크 테마 등록
   final darkTheme = GaplyColorTheme(
-    profiler: GaplyProfiler.traceNano(label: 'darkTheme'),
+    profiler: GaplyProfiler.tracePerfect(label: 'darkTheme'),
     brightness: Brightness.dark,
-    duration: Duration(milliseconds: 200),
+    duration: Duration(milliseconds: 1000),
     colors: {
       GaplyColorToken.primary: const GaplyColor(token: GaplyColorToken.primary, customColor: Colors.cyan),
       GaplyColorToken.background: const GaplyColor(

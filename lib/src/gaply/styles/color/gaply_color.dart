@@ -250,6 +250,9 @@ mixin _GaplyColorMixin {
 
   static final Map<int, Color> _cacheStorage = {};
   static Brightness? _lastCachedBrightness;
+  static final Map<int, Color> _materialCache = {
+    for (var color in [...Colors.primaries, ...Colors.accents]) color.toARGB32(): color,
+  };
 
   Color? resolveWithProgress(double progress, {bool isDark = false}) {
     if (!_self.hasEffect) return null;
@@ -265,7 +268,11 @@ mixin _GaplyColorMixin {
     if (!_self.hasEffect) return null;
 
     return _self.profiler.trace(() {
-      final themeData = GaplyTheme.maybeOf<GaplyColorTheme>(context);
+      final themeData = _self.profiler.trace(
+        () => GaplyTheme.maybeOf<GaplyColorTheme>(context),
+        tag: 'findTheme',
+      );
+
       final currentBrightness = themeData?.brightness ?? Theme.of(context).brightness;
 
       final double currentProgress = themeData?.progress ?? _self._progress;
@@ -303,17 +310,25 @@ mixin _GaplyColorMixin {
   }
 
   Color? _resolveColor(GaplyColor style, double progress) {
-    final start = style._begin ?? style;
-    final finish = style._end ?? style;
+    return _self.profiler.trace(() {
+      final start = style._begin ?? style;
+      final finish = style._end ?? style;
 
-    final Color beginBase = start.customColor ?? const Color(0x00000000);
-    final Color endBase = finish.customColor ?? const Color(0x00000000);
+      final Color beginBase = start.customColor ?? const Color(0x00000000);
+      final Color endBase = finish.customColor ?? const Color(0x00000000);
 
-    final Color lightResult = _resolveForBrightness(beginBase, false, style);
-    final Color darkResult = _resolveForBrightness(endBase, true, style);
+      if (progress <= 0) {
+        return _resolveForBrightness(beginBase, false, style);
+      }
+      if (progress >= 1) {
+        return _resolveForBrightness(endBase, true, style);
+      }
 
-    final finalResult = Color.lerp(lightResult, darkResult, progress);
-    return finalResult;
+      final Color lightResult = _resolveForBrightness(beginBase, false, style);
+      final Color darkResult = _resolveForBrightness(endBase, true, style);
+
+      return Color.lerp(lightResult, darkResult, progress);
+    }, tag: '_resolveColor');
   }
 
   Color _resolveForBrightness(Color baseColor, bool isDark, GaplyColor style) {
@@ -353,16 +368,8 @@ mixin _GaplyColorMixin {
     }
   }
 
-  static final List<Color> _allMaterials = [...Colors.primaries, ...Colors.accents];
-
   Color _getMaterialColorShade(Color color, bool isDark, GaplyColor style) {
-    Color targetColor = color;
-
-    if (targetColor is! MaterialColor) {
-      try {
-        targetColor = _allMaterials.firstWhere((mColor) => mColor.toARGB32() == color.toARGB32());
-      } catch (_) {}
-    }
+    Color? targetColor = color is MaterialColor ? color : _materialCache[color.toARGB32()];
 
     if (targetColor is MaterialColor) {
       final int index = _valueToMaterialIndex(style.shade, isDark);
@@ -370,7 +377,7 @@ mixin _GaplyColorMixin {
       if (result != null) return result;
     }
 
-    return _applySmartShade(targetColor, isDark, style);
+    return _applySmartShade(targetColor ?? color, isDark, style);
   }
 
   int _valueToMaterialIndex(GaplyColorShade shade, bool isDark) {

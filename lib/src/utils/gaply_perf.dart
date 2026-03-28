@@ -187,103 +187,56 @@ class GaplyCompositeLogger implements GaplyLogger {
   }
 }
 
-// --- [Part 2] Gaply Profiler (The Engine) ---
-
-// class GaplyProfiler {
-//   GaplyProfiler._();
-//
-//   static bool showOnlyOverThreshold = true;
-//   static bool canLogger = true;
-//
-//   // Sync Trace
-//   static T trace<T>(String title, T Function() operation, {int thresholdUs = 0}) {
-//     if (!kDebugMode) return operation();
-//     final sw = Stopwatch()..start();
-//     final result = operation();
-//     sw.stop();
-//     _handleLog(title, sw.elapsedMicroseconds, thresholdUs);
-//     return result;
-//   }
-//
-//   // Async Trace
-//   static Future<T> traceAsync<T>(String title, Future<T> Function() operation, {int thresholdUs = 0}) async {
-//     if (!kDebugMode) return await operation();
-//     final sw = Stopwatch()..start();
-//     try {
-//       final result = await operation();
-//       sw.stop();
-//       _handleLog(title, sw.elapsedMicroseconds, thresholdUs, isAsync: true);
-//       return result;
-//     } catch (e) {
-//       sw.stop();
-//       GaplyLogger.i('❌ [$title] Error (${sw.elapsedMilliseconds}ms): $e');
-//       rethrow;
-//     }
-//   }
-//
-//   // Predefined Thresholds
-//   static T traceNano<T>(String title, T Function() op) => trace(title, op, thresholdUs: 100);
-//   static T trace240<T>(String title, T Function() op) => trace(title, op, thresholdUs: 250);
-//   static T trace120<T>(String title, T Function() op) => trace(title, op, thresholdUs: 500);
-//
-//   static void _handleLog(String title, int us, int thresholdUs, {bool isAsync = false}) {
-//     if (!canLogger) return;
-//     if (showOnlyOverThreshold && us < thresholdUs) return;
-//
-//     final ms = us / 1000;
-//     String colorTag = '';
-//     String statusLabel = '';
-//
-//     // Status Logic
-//     if (isAsync) {
-//       if (ms > 500) {
-//         colorTag = '\x1B[31m';
-//         statusLabel = '![CRIT]';
-//       } else {
-//         colorTag = '\x1B[34m';
-//         statusLabel = '.[ASYNC]';
-//       }
-//     } else {
-//       if (us > 5000) {
-//         colorTag = '\x1B[31m';
-//         statusLabel = '![BAD ]';
-//       } else if (us > 1000) {
-//         colorTag = '\x1B[33m';
-//         statusLabel = '*[SLOW]';
-//       } else {
-//         colorTag = '\x1B[32m';
-//         statusLabel = '.[GOOD]';
-//       }
-//     }
-//
-//     final reset = '\x1B[0m';
-//     final gray = '\x1B[90m';
-//
-//     final timeStr = '${ms.toStringAsFixed(3)}ms'.padLeft(9);
-//     final formattedTitle = title.length > 30 ? '${title.substring(0, 27)}...' : title.padRight(30);
-//     final ratio = thresholdUs > 0 ? (us / thresholdUs * 100).toInt() : 100;
-//     final timestamp = DateTime.now().toIso8601String().split('T').last.substring(0, 8);
-//
-//     GaplyLogger.i(
-//       '$gray[$timestamp]$reset $colorTag$statusLabel$reset $formattedTitle : '
-//       '$colorTag$timeStr$reset $gray($usμs)$reset | '
-//       '${ratio > 100 ? colorTag : gray}Budget: ${ratio.toString().padLeft(4)}%$reset',
-//     );
-//   }
-// }
+enum GaplyProfilerFilter { bad, over5000, slowBad, over1000, all }
 
 class GaplyProfiler {
   final String label;
   final bool enabled;
   final int thresholdUs;
+  final GaplyProfilerFilter filter;
 
-  const GaplyProfiler({required this.label, this.enabled = false, this.thresholdUs = 500});
+  const GaplyProfiler({
+    required this.label,
+    this.enabled = false,
+    this.thresholdUs = 500,
+    this.filter = GaplyProfilerFilter.bad,
+  });
 
-  const GaplyProfiler.none() : label = 'none', enabled = false, thresholdUs = 0;
-  const GaplyProfiler.traceNano({required this.label, this.enabled = true}) : thresholdUs = 100;
-  const GaplyProfiler.trace240({required this.label, this.enabled = true}) : thresholdUs = 250;
-  const GaplyProfiler.trace120({required this.label, this.enabled = true}) : thresholdUs = 500;
-  const GaplyProfiler.trace60({required this.label, this.enabled = true}) : thresholdUs = 1000;
+  const GaplyProfiler.none()
+    : label = 'none',
+      enabled = false,
+      thresholdUs = 0,
+      filter = GaplyProfilerFilter.bad;
+
+  const GaplyProfiler.tracePerfect({
+    required this.label,
+    this.enabled = true,
+    this.filter = GaplyProfilerFilter.bad,
+  }) : thresholdUs = 0;
+
+  const GaplyProfiler.traceNano({
+    required this.label,
+    this.enabled = true,
+    this.filter = GaplyProfilerFilter.bad,
+  }) : thresholdUs = 100;
+
+  const GaplyProfiler.trace240({
+    required this.label,
+    this.enabled = true,
+    this.filter = GaplyProfilerFilter.bad,
+  }) : thresholdUs = 250;
+
+  const GaplyProfiler.trace120({
+    required this.label,
+    this.enabled = true,
+    this.filter = GaplyProfilerFilter.bad,
+  }) : thresholdUs = 500;
+
+  const GaplyProfiler.trace60({
+    required this.label,
+    this.enabled = true,
+    this.filter = GaplyProfilerFilter.bad,
+  }) : thresholdUs = 1000;
 
   T trace<T>(T Function() operation, {String? tag}) {
     if (!enabled || !kDebugMode) return operation();
@@ -314,7 +267,23 @@ class GaplyProfiler {
   }
 
   void _log(int us, {String? tag, bool isAsync = false}) {
-    if (us < thresholdUs) return;
+    int effectiveThreshold;
+
+    switch (filter) {
+      case GaplyProfilerFilter.bad:
+      case GaplyProfilerFilter.over5000:
+        effectiveThreshold = 5000; // 5ms
+        break;
+      case GaplyProfilerFilter.slowBad:
+      case GaplyProfilerFilter.over1000:
+        effectiveThreshold = 1000; // 1ms
+        break;
+      case GaplyProfilerFilter.all:
+        effectiveThreshold = 0; // 전부 다
+        break;
+    }
+
+    if (us < effectiveThreshold) return;
 
     final ms = us / 1000;
     String colorTag = '';
@@ -324,21 +293,21 @@ class GaplyProfiler {
     if (isAsync) {
       if (ms > 500) {
         colorTag = '\x1B[31m';
-        statusLabel = '![CRIT]';
+        statusLabel = '[CRIT]';
       } else {
         colorTag = '\x1B[34m';
-        statusLabel = '.[ASYNC]';
+        statusLabel = '[ASYNC]';
       }
     } else {
       if (us > 5000) {
         colorTag = '\x1B[31m';
-        statusLabel = '![BAD ]';
+        statusLabel = '[BAD ]';
       } else if (us > 1000) {
         colorTag = '\x1B[33m';
-        statusLabel = '*[SLOW]';
+        statusLabel = '[SLOW]';
       } else {
         colorTag = '\x1B[32m';
-        statusLabel = '.[GOOD]';
+        statusLabel = '[GOOD]';
       }
     }
 
