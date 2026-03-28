@@ -6,6 +6,7 @@ import 'package:shimmer/shimmer.dart';
 import 'package:gaply/src/gaply/core/gaply_style.dart';
 import 'package:gaply/src/gaply/styles/color/gaply_color.dart';
 import 'package:gaply/src/gaply/styles/shimmer/shimmer_presets.dart';
+import 'package:gaply/src/utils/gaply_perf.dart';
 
 import 'shimmer_style_modifier.dart';
 
@@ -21,6 +22,7 @@ class GaplyShimmer extends GaplyStyle<GaplyShimmer>
   final GaplyColor highlightColor;
 
   const GaplyShimmer({
+    super.profiler,
     this.period = const Duration(milliseconds: 1500),
     required this.baseColor,
     required this.highlightColor,
@@ -37,21 +39,25 @@ class GaplyShimmer extends GaplyStyle<GaplyShimmer>
 
   static void register(String name, GaplyShimmer style) => GaplyShimmerPreset.register(name, style);
 
-  factory GaplyShimmer.preset(String name, {int? loop}) {
+  factory GaplyShimmer.preset(String name, {GaplyProfiler? profiler, int? loop}) {
     final style = GaplyShimmerPreset.of(name);
     if (style == null) {
       throw ArgumentError(GaplyShimmerPreset.instance.errorMessage("GaplyShimmer", name));
     }
-    return loop != null ? style.copyWith(loop: loop) : style;
+    return style.copyWith(profiler: profiler, loop: loop);
   }
 
-  GaplyShimmer withSpeed(double speed) {
+  GaplyShimmer withSpeed(double speed, {GaplyProfiler? profiler}) {
     final resolvePeriod = period.inMilliseconds * speed;
-    return copyWith(period: Duration(milliseconds: resolvePeriod.toInt()));
+    return copyWith(
+      profiler: profiler,
+      period: Duration(milliseconds: resolvePeriod.toInt()),
+    );
   }
 
   @override
   GaplyShimmer copyWith({
+    GaplyProfiler? profiler,
     Duration? period,
     ShimmerDirection? direction,
     int? loop,
@@ -59,6 +65,7 @@ class GaplyShimmer extends GaplyStyle<GaplyShimmer>
     GaplyColor? highlightColor,
   }) {
     return GaplyShimmer(
+      profiler: profiler ?? this.profiler,
       period: period ?? this.period,
       direction: direction ?? this.direction,
       loop: loop ?? this.loop,
@@ -71,19 +78,21 @@ class GaplyShimmer extends GaplyStyle<GaplyShimmer>
   GaplyShimmer lerp(GaplyShimmer? other, double t) {
     if (other == null) return this;
 
-    return GaplyShimmer(
-      period: Duration(
-        milliseconds: lerpDouble(
-          period.inMilliseconds.toDouble(),
-          other.period.inMilliseconds.toDouble(),
-          t,
-        )!.round(),
-      ),
-      direction: t < 0.5 ? direction : other.direction,
-      loop: t < 0.5 ? loop : other.loop,
-      baseColor: baseColor.lerp(other.baseColor, t),
-      highlightColor: highlightColor.lerp(other.highlightColor, t),
-    );
+    return profiler.trace(() {
+      return GaplyShimmer(
+        period: Duration(
+          milliseconds: lerpDouble(
+            period.inMilliseconds.toDouble(),
+            other.period.inMilliseconds.toDouble(),
+            t,
+          )!.round(),
+        ),
+        direction: t < 0.5 ? direction : other.direction,
+        loop: t < 0.5 ? loop : other.loop,
+        baseColor: baseColor.lerp(other.baseColor, t),
+        highlightColor: highlightColor.lerp(other.highlightColor, t),
+      );
+    }, tag: 'lerp');
   }
 
   @override
@@ -94,10 +103,12 @@ class GaplyShimmer extends GaplyStyle<GaplyShimmer>
 }
 
 mixin _GaplyShimmerMixin {
-  GaplyShimmer get shimmerStyle => this as GaplyShimmer;
+  GaplyShimmer get _self => this as GaplyShimmer;
+  GaplyShimmer get shimmerStyle => _self;
 
   GaplyShimmer copyWithShimmer(GaplyShimmer shimmer) {
-    return shimmerStyle.copyWith(
+    return _self.copyWith(
+      profiler: shimmer.profiler,
       period: shimmer.period,
       direction: shimmer.direction,
       loop: shimmer.loop,
@@ -107,8 +118,8 @@ mixin _GaplyShimmerMixin {
   }
 
   Widget buildWidget({required BuildContext context, required Widget child}) {
-    if (!shimmerStyle.hasEffect) return child;
+    if (!_self.hasEffect) return child;
 
-    return _ShimmerWidget(style: shimmerStyle, child: child);
+    return _ShimmerWidget(style: _self, child: child);
   }
 }

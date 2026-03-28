@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:flutter/widgets.dart';
+import 'package:gaply/src/utils/gaply_perf.dart';
 import 'package:gaply/src/gaply/core/gaply_style.dart';
 import 'package:gaply/src/gaply/core/gaply_trigger.dart';
 
@@ -64,6 +65,7 @@ class ShakeStyle extends GaplyAnimStyle<ShakeStyle>
   final bool isVertical;
 
   const ShakeStyle({
+    super.profiler,
     Duration? duration,
     Curve? curve,
     Duration? delay,
@@ -93,6 +95,7 @@ class ShakeStyle extends GaplyAnimStyle<ShakeStyle>
 
   factory ShakeStyle.preset(
     String name, {
+    GaplyProfiler? profiler,
     double? distance,
     double? count,
     bool? isVertical,
@@ -102,19 +105,31 @@ class ShakeStyle extends GaplyAnimStyle<ShakeStyle>
     if (style == null) {
       throw ArgumentError(GaplyShakePreset.instance.errorMessage("ShakeStyle", name));
     }
-    return style.copyWith(distance: distance, count: count, isVertical: isVertical, onComplete: onComplete);
+    return style.copyWith(
+      profiler: profiler,
+
+      distance: distance,
+      count: count,
+      isVertical: isVertical,
+      onComplete: onComplete,
+    );
   }
 
   /// Returns a new [ShakeStyle] with intensity multiplied by [intensity].
   ///
   /// Both distance and count are scaled proportionally.
-  ShakeStyle withIntensityScale(double intensity) {
+  ShakeStyle withIntensityScale(double intensity, {GaplyProfiler? profiler}) {
     assert(intensity >= 0, 'intensity must be non-negative');
-    return copyWith(distance: distance * intensity, count: (count * intensity).toDouble());
+    return copyWith(
+      profiler: profiler,
+      distance: distance * intensity,
+      count: (count * intensity).toDouble(),
+    );
   }
 
   @override
   ShakeStyle copyWith({
+    GaplyProfiler? profiler,
     Duration? duration,
     Curve? curve,
     Duration? delay,
@@ -127,6 +142,7 @@ class ShakeStyle extends GaplyAnimStyle<ShakeStyle>
     bool? isVertical,
   }) {
     return ShakeStyle(
+      profiler: profiler ?? this.profiler,
       duration: duration ?? this.duration,
       delay: delay ?? this.delay,
       curve: curve ?? this.curve,
@@ -144,18 +160,21 @@ class ShakeStyle extends GaplyAnimStyle<ShakeStyle>
   ShakeStyle lerp(GaplyAnimStyle? other, double t) {
     if (other is! ShakeStyle) return this;
 
-    return ShakeStyle(
-      duration: t < 0.5 ? duration : other.duration,
-      curve: t < 0.5 ? curve : other.curve,
-      delay: t < 0.5 ? delay : other.delay,
-      onComplete: other.onComplete,
-      progress: lerpDouble(progress, other.progress, t) ?? other.progress,
-      distance: lerpDouble(distance, other.distance, t) ?? distance,
-      count: lerpDouble(count, other.count, t) ?? count,
-      useHaptic: t < 0.5 ? useHaptic : other.useHaptic,
-      useRepaintBoundary: t < 0.5 ? useRepaintBoundary : other.useRepaintBoundary,
-      isVertical: t < 0.5 ? isVertical : other.isVertical,
-    );
+    return profiler.trace(() {
+      return ShakeStyle(
+        profiler: other.profiler,
+        duration: t < 0.5 ? duration : other.duration,
+        curve: t < 0.5 ? curve : other.curve,
+        delay: t < 0.5 ? delay : other.delay,
+        onComplete: other.onComplete,
+        progress: lerpDouble(progress, other.progress, t) ?? other.progress,
+        distance: lerpDouble(distance, other.distance, t) ?? distance,
+        count: lerpDouble(count, other.count, t) ?? count,
+        useHaptic: t < 0.5 ? useHaptic : other.useHaptic,
+        useRepaintBoundary: t < 0.5 ? useRepaintBoundary : other.useRepaintBoundary,
+        isVertical: t < 0.5 ? isVertical : other.isVertical,
+      );
+    }, tag: 'lerp');
   }
 
   @override
@@ -166,10 +185,12 @@ class ShakeStyle extends GaplyAnimStyle<ShakeStyle>
 }
 
 mixin _ShakeStyleMixin {
-  ShakeStyle get shakeStyle => this as ShakeStyle;
+  ShakeStyle get _self => this as ShakeStyle;
+  ShakeStyle get shakeStyle => _self;
 
   ShakeStyle copyWithShake(ShakeStyle shake) {
-    return shakeStyle.copyWith(
+    return _self.copyWith(
+      profiler: shake.profiler,
       duration: shake.duration,
       curve: shake.curve,
       delay: shake.delay,
@@ -184,8 +205,8 @@ mixin _ShakeStyleMixin {
   }
 
   Widget buildWidget({required Widget child, Object? trigger}) {
-    if (!shakeStyle.hasEffect) return child;
+    if (!_self.hasEffect) return child;
 
-    return _GaplyShakeTrigger(style: shakeStyle, trigger: trigger ?? DateTime.now(), child: child);
+    return _GaplyShakeTrigger(style: _self, trigger: trigger ?? DateTime.now(), child: child);
   }
 }

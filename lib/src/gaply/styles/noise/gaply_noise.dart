@@ -4,6 +4,7 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:gaply/src/gaply/core/gaply_style.dart';
+import 'package:gaply/src/utils/gaply_perf.dart';
 
 import 'noise_presets.dart';
 import 'noise_style_modifier.dart';
@@ -18,6 +19,7 @@ class GaplyNoise extends GaplyStyle<GaplyNoise> with _GaplyNoiseMixin, NoiseStyl
   final BlendMode blendMode;
 
   const GaplyNoise({
+    super.profiler,
     this.intensity = 0.0,
     this.density = 1.0,
     this.isColored = false,
@@ -28,33 +30,44 @@ class GaplyNoise extends GaplyStyle<GaplyNoise> with _GaplyNoiseMixin, NoiseStyl
 
   static void register(String name, GaplyNoise style) => GaplyNoisePreset.register(name, style);
 
-  factory GaplyNoise.preset(String name) {
+  factory GaplyNoise.preset(String name, {GaplyProfiler? profiler}) {
     final style = GaplyNoisePreset.of(name);
     if (style == null) {
       throw ArgumentError(GaplyNoisePreset.instance.errorMessage("GaplyNoise", name));
     }
-    return style;
+    return style.copyWith(profiler: profiler);
   }
 
   @override
-  GaplyNoise lerp(GaplyNoise? other, double t) {
-    if (other == null) return this;
+  GaplyNoise copyWith({
+    GaplyProfiler? profiler,
+    double? intensity,
+    double? density,
+    bool? isColored,
+    BlendMode? blendMode,
+  }) {
     return GaplyNoise(
-      intensity: lerpDouble(intensity, other.intensity, t) ?? intensity,
-      density: lerpDouble(density, other.density, t) ?? density,
-      isColored: t < 0.5 ? isColored : other.isColored,
-      blendMode: t < 0.5 ? blendMode : other.blendMode,
-    );
-  }
-
-  @override
-  GaplyNoise copyWith({double? intensity, double? density, bool? isColored, BlendMode? blendMode}) {
-    return GaplyNoise(
+      profiler: profiler ?? this.profiler,
       intensity: intensity ?? this.intensity,
       density: density ?? this.density,
       isColored: isColored ?? this.isColored,
       blendMode: blendMode ?? this.blendMode,
     );
+  }
+
+  @override
+  GaplyNoise lerp(GaplyNoise? other, double t) {
+    if (other == null) return this;
+
+    return profiler.trace(() {
+      return GaplyNoise(
+        profiler: other.profiler,
+        intensity: lerpDouble(intensity, other.intensity, t) ?? intensity,
+        density: lerpDouble(density, other.density, t) ?? density,
+        isColored: t < 0.5 ? isColored : other.isColored,
+        blendMode: t < 0.5 ? blendMode : other.blendMode,
+      );
+    }, tag: 'lerp');
   }
 
   @override
@@ -65,15 +78,22 @@ class GaplyNoise extends GaplyStyle<GaplyNoise> with _GaplyNoiseMixin, NoiseStyl
 }
 
 mixin _GaplyNoiseMixin {
-  GaplyNoise get noiseStyle => this as GaplyNoise;
+  GaplyNoise get _self => this as GaplyNoise;
+  GaplyNoise get noiseStyle => _self;
 
   GaplyNoise copyWithNoise(GaplyNoise noise) {
-    return noiseStyle.copyWith();
+    return _self.copyWith(
+      profiler: noise.profiler,
+      intensity: noise.intensity,
+      density: noise.density,
+      isColored: noise.isColored,
+      blendMode: noise.blendMode,
+    );
   }
 
   Widget buildWidget({required BuildContext context, required Widget child}) {
-    if (!noiseStyle.hasEffect) return child;
+    if (!_self.hasEffect) return child;
 
-    return _NoiseWidget(style: noiseStyle, child: child);
+    return _NoiseWidget(style: _self, child: child);
   }
 }

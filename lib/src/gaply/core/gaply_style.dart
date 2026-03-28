@@ -1,6 +1,8 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/widgets.dart';
 
+import 'package:gaply/src/utils/gaply_perf.dart';
+
 @immutable
 abstract class GaplyToken<T> extends Equatable {
   final T value;
@@ -27,13 +29,15 @@ abstract class GaplyToken<T> extends Equatable {
 
 @immutable
 abstract class GaplyStyle<T> extends Equatable {
-  const GaplyStyle();
+  final GaplyProfiler profiler;
+
+  const GaplyStyle({GaplyProfiler? profiler}) : profiler = profiler ?? const GaplyProfiler.none();
 
   bool get hasEffect;
 
   T lerp(T? other, double t);
 
-  T copyWith();
+  T copyWith({GaplyProfiler? profiler});
 
   @override
   List<Object?> get props;
@@ -46,10 +50,22 @@ abstract class GaplyTweenStyle<T extends GaplyTweenStyle<T>> extends GaplyStyle<
   final VoidCallback? onComplete;
   final double progress;
 
-  const GaplyTweenStyle({required this.duration, required this.curve, this.onComplete, this.progress = 1.0});
+  const GaplyTweenStyle({
+    super.profiler,
+    required this.duration,
+    required this.curve,
+    this.onComplete,
+    this.progress = 1.0,
+  });
 
   @override
-  T copyWith({Duration? duration, Curve? curve, VoidCallback? onComplete, double? progress});
+  T copyWith({
+    GaplyProfiler? profiler,
+    Duration? duration,
+    Curve? curve,
+    VoidCallback? onComplete,
+    double? progress,
+  });
 
   GaplyTweenStyle withDurationScale(double scale);
 
@@ -75,6 +91,7 @@ abstract class GaplyAnimStyle<T extends GaplyAnimStyle<T>> extends GaplyTweenSty
   final Duration delay;
 
   const GaplyAnimStyle({
+    super.profiler,
     required super.duration,
     required super.curve,
     super.onComplete,
@@ -83,7 +100,14 @@ abstract class GaplyAnimStyle<T extends GaplyAnimStyle<T>> extends GaplyTweenSty
   });
 
   @override
-  T copyWith({Duration? duration, Curve? curve, Duration? delay, VoidCallback? onComplete, double? progress});
+  T copyWith({
+    GaplyProfiler? profiler,
+    Duration? duration,
+    Curve? curve,
+    Duration? delay,
+    VoidCallback? onComplete,
+    double? progress,
+  });
 
   GaplyAnimStyle withDelay(Duration delay);
 
@@ -104,6 +128,7 @@ abstract class GaplyThemeData<T extends GaplyThemeData<T>> extends GaplyTweenSty
   final Brightness brightness;
 
   const GaplyThemeData({
+    super.profiler,
     required this.brightness,
     required super.duration,
     required super.curve,
@@ -113,6 +138,7 @@ abstract class GaplyThemeData<T extends GaplyThemeData<T>> extends GaplyTweenSty
 
   @override
   T copyWith({
+    GaplyProfiler? profiler,
     Brightness? brightness,
     Duration? duration,
     Curve? curve,

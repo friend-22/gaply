@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 
+import 'package:gaply/src/utils/gaply_perf.dart';
 import 'package:gaply/src/gaply/core/gaply_style.dart';
 import 'package:gaply/src/gaply/core/gaply_trigger.dart';
 
@@ -24,6 +25,7 @@ class SizeStyle extends GaplyAnimStyle<SizeStyle>
   final double minFactor;
 
   const SizeStyle({
+    super.profiler,
     Duration? duration,
     Curve? curve,
     Duration? delay,
@@ -45,6 +47,7 @@ class SizeStyle extends GaplyAnimStyle<SizeStyle>
 
   factory SizeStyle.preset(
     String name, {
+    GaplyProfiler? profiler,
     double? axisAlignment,
     bool? isExpanded,
     double? minFactor,
@@ -56,6 +59,7 @@ class SizeStyle extends GaplyAnimStyle<SizeStyle>
     }
 
     return style.copyWith(
+      profiler: profiler,
       axisAlignment: axisAlignment,
       isExpanded: isExpanded,
       minFactor: minFactor,
@@ -64,6 +68,7 @@ class SizeStyle extends GaplyAnimStyle<SizeStyle>
   }
 
   const SizeStyle.left({
+    GaplyProfiler? profiler,
     Duration? duration,
     Duration? delay,
     Curve? curve,
@@ -71,6 +76,7 @@ class SizeStyle extends GaplyAnimStyle<SizeStyle>
     bool isExpanded = true,
     double minFactor = 0.0,
   }) : this(
+         profiler: profiler,
          duration: duration,
          curve: curve,
          delay: delay,
@@ -82,6 +88,7 @@ class SizeStyle extends GaplyAnimStyle<SizeStyle>
        );
 
   const SizeStyle.right({
+    GaplyProfiler? profiler,
     Duration? duration,
     Duration? delay,
     Curve? curve,
@@ -89,6 +96,7 @@ class SizeStyle extends GaplyAnimStyle<SizeStyle>
     bool isExpanded = true,
     double minFactor = 0.0,
   }) : this(
+         profiler: profiler,
          duration: duration,
          curve: curve,
          delay: delay,
@@ -100,6 +108,7 @@ class SizeStyle extends GaplyAnimStyle<SizeStyle>
        );
 
   const SizeStyle.up({
+    GaplyProfiler? profiler,
     Duration? duration,
     Duration? delay,
     Curve? curve,
@@ -107,6 +116,7 @@ class SizeStyle extends GaplyAnimStyle<SizeStyle>
     bool isExpanded = true,
     double minFactor = 0.0,
   }) : this(
+         profiler: profiler,
          duration: duration,
          curve: curve,
          delay: delay,
@@ -118,6 +128,7 @@ class SizeStyle extends GaplyAnimStyle<SizeStyle>
        );
 
   const SizeStyle.down({
+    GaplyProfiler? profiler,
     Duration? duration,
     Duration? delay,
     Curve? curve,
@@ -125,6 +136,7 @@ class SizeStyle extends GaplyAnimStyle<SizeStyle>
     bool isExpanded = true,
     double minFactor = 0.0,
   }) : this(
+         profiler: profiler,
          duration: duration,
          curve: curve,
          delay: delay,
@@ -136,6 +148,7 @@ class SizeStyle extends GaplyAnimStyle<SizeStyle>
        );
 
   const SizeStyle.vertical({
+    GaplyProfiler? profiler,
     Duration? duration,
     Duration? delay,
     Curve? curve,
@@ -143,6 +156,7 @@ class SizeStyle extends GaplyAnimStyle<SizeStyle>
     bool isExpanded = true,
     double minFactor = 0.0,
   }) : this(
+         profiler: profiler,
          duration: duration,
          curve: curve,
          delay: delay,
@@ -154,6 +168,7 @@ class SizeStyle extends GaplyAnimStyle<SizeStyle>
        );
 
   const SizeStyle.horizontal({
+    GaplyProfiler? profiler,
     Duration? duration,
     Duration? delay,
     Curve? curve,
@@ -161,6 +176,7 @@ class SizeStyle extends GaplyAnimStyle<SizeStyle>
     bool isExpanded = true,
     double minFactor = 0.0,
   }) : this(
+         profiler: profiler,
          duration: duration,
          curve: curve,
          delay: delay,
@@ -173,6 +189,7 @@ class SizeStyle extends GaplyAnimStyle<SizeStyle>
 
   @override
   SizeStyle copyWith({
+    GaplyProfiler? profiler,
     Duration? duration,
     Curve? curve,
     Duration? delay,
@@ -184,6 +201,7 @@ class SizeStyle extends GaplyAnimStyle<SizeStyle>
     double? minFactor,
   }) {
     return SizeStyle(
+      profiler: profiler ?? this.profiler,
       duration: duration ?? this.duration,
       curve: curve ?? this.curve,
       delay: delay ?? this.delay,
@@ -200,17 +218,20 @@ class SizeStyle extends GaplyAnimStyle<SizeStyle>
   SizeStyle lerp(GaplyAnimStyle? other, double t) {
     if (other is! SizeStyle) return this;
 
-    return SizeStyle(
-      duration: t < 0.5 ? duration : other.duration,
-      curve: t < 0.5 ? curve : other.curve,
-      delay: t < 0.5 ? delay : other.delay,
-      onComplete: other.onComplete,
-      progress: lerpDouble(progress, other.progress, t) ?? other.progress,
-      axis: t < 0.5 ? axis : other.axis,
-      axisAlignment: lerpDouble(axisAlignment, other.axisAlignment, t) ?? axisAlignment,
-      isExpanded: t < 0.5 ? isExpanded : other.isExpanded,
-      minFactor: lerpDouble(minFactor, other.minFactor, t) ?? minFactor,
-    );
+    return profiler.trace(() {
+      return SizeStyle(
+        profiler: other.profiler,
+        duration: t < 0.5 ? duration : other.duration,
+        curve: t < 0.5 ? curve : other.curve,
+        delay: t < 0.5 ? delay : other.delay,
+        onComplete: other.onComplete,
+        progress: lerpDouble(progress, other.progress, t) ?? other.progress,
+        axis: t < 0.5 ? axis : other.axis,
+        axisAlignment: lerpDouble(axisAlignment, other.axisAlignment, t) ?? axisAlignment,
+        isExpanded: t < 0.5 ? isExpanded : other.isExpanded,
+        minFactor: lerpDouble(minFactor, other.minFactor, t) ?? minFactor,
+      );
+    }, tag: 'lerp');
   }
 
   @override
@@ -223,10 +244,12 @@ class SizeStyle extends GaplyAnimStyle<SizeStyle>
 }
 
 mixin _SizeStyleMixin {
-  SizeStyle get sizeStyle => this as SizeStyle;
+  SizeStyle get _self => this as SizeStyle;
+  SizeStyle get sizeStyle => _self;
 
   SizeStyle copyWithSize(SizeStyle size) {
-    return sizeStyle.copyWith(
+    return _self.copyWith(
+      profiler: size.profiler,
       duration: size.duration,
       curve: size.curve,
       delay: size.delay,
@@ -240,8 +263,8 @@ mixin _SizeStyleMixin {
   }
 
   Widget buildWidget({required Widget child, Object? trigger}) {
-    if (!sizeStyle.hasEffect) return child;
+    if (!_self.hasEffect) return child;
 
-    return _GaplySizeTrigger(style: sizeStyle, trigger: trigger ?? DateTime.now(), child: child);
+    return _GaplySizeTrigger(style: _self, trigger: trigger ?? DateTime.now(), child: child);
   }
 }

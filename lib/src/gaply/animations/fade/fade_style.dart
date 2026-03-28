@@ -4,10 +4,10 @@ import 'package:flutter/material.dart';
 
 import 'package:gaply/src/gaply/core/gaply_style.dart';
 import 'package:gaply/src/gaply/core/gaply_trigger.dart';
+import 'package:gaply/src/utils/gaply_perf.dart';
 
 import 'fade_presets.dart';
 import 'gaply_fade.dart';
-
 import 'fade_style_modifier.dart';
 
 part 'fade_trigger.dart';
@@ -41,6 +41,7 @@ class FadeStyle extends GaplyAnimStyle<FadeStyle>
   final bool isVisible;
 
   const FadeStyle({
+    super.profiler,
     Duration? duration,
     Curve? curve,
     Duration? delay,
@@ -61,28 +62,47 @@ class FadeStyle extends GaplyAnimStyle<FadeStyle>
   /// Throws [ArgumentError] if the [name] is not registered.
   static void register(String name, FadeStyle style) => GaplyFadePreset.register(name, style);
 
-  factory FadeStyle.preset(String name, {VoidCallback? onComplete}) {
+  factory FadeStyle.preset(String name, {GaplyProfiler? profiler, VoidCallback? onComplete}) {
     final style = GaplyFadePreset.of(name);
     if (style == null) {
       throw ArgumentError(GaplyFadePreset.instance.errorMessage("FadeStyle", name));
     }
-    return (onComplete != null) ? style.copyWith(onComplete: onComplete) : style;
+    return style.copyWith(profiler: profiler, onComplete: onComplete);
   }
 
-  const FadeStyle.fadeIn({Duration? duration, Duration? delay, Curve? curve, VoidCallback? onComplete})
-    : this(duration: duration, curve: curve, delay: delay, onComplete: onComplete, isVisible: true);
+  const FadeStyle.fadeIn({
+    GaplyProfiler? profiler,
+    Duration? duration,
+    Duration? delay,
+    Curve? curve,
+    VoidCallback? onComplete,
+  }) : this(
+         profiler: profiler,
+         duration: duration,
+         curve: curve,
+         delay: delay,
+         onComplete: onComplete,
+         isVisible: true,
+       );
 
-  const FadeStyle.fadeOut({Duration? duration, Duration? delay, Curve? curve, VoidCallback? onComplete})
-    : this(
-        duration: duration,
-        curve: curve ?? Curves.easeOut,
-        delay: delay,
-        onComplete: onComplete,
-        isVisible: false,
-      );
+  const FadeStyle.fadeOut({
+    GaplyProfiler? profiler,
+    Duration? duration,
+    Duration? delay,
+    Curve? curve,
+    VoidCallback? onComplete,
+  }) : this(
+         profiler: profiler,
+         duration: duration,
+         curve: curve ?? Curves.easeOut,
+         delay: delay,
+         onComplete: onComplete,
+         isVisible: false,
+       );
 
   @override
   FadeStyle copyWith({
+    GaplyProfiler? profiler,
     Duration? duration,
     Curve? curve,
     Duration? delay,
@@ -91,6 +111,7 @@ class FadeStyle extends GaplyAnimStyle<FadeStyle>
     bool? isVisible,
   }) {
     return FadeStyle(
+      profiler: profiler ?? this.profiler,
       duration: duration ?? this.duration,
       curve: curve ?? this.curve,
       delay: delay ?? this.delay,
@@ -104,14 +125,17 @@ class FadeStyle extends GaplyAnimStyle<FadeStyle>
   FadeStyle lerp(GaplyAnimStyle? other, double t) {
     if (other is! FadeStyle) return this;
 
-    return FadeStyle(
-      duration: t < 0.5 ? duration : other.duration,
-      curve: t < 0.5 ? curve : other.curve,
-      delay: t < 0.5 ? delay : other.delay,
-      onComplete: other.onComplete,
-      progress: lerpDouble(progress, other.progress, t) ?? other.progress,
-      isVisible: t < 0.5 ? isVisible : other.isVisible,
-    );
+    return profiler.trace(() {
+      return FadeStyle(
+        profiler: other.profiler,
+        duration: t < 0.5 ? duration : other.duration,
+        curve: t < 0.5 ? curve : other.curve,
+        delay: t < 0.5 ? delay : other.delay,
+        onComplete: other.onComplete,
+        progress: lerpDouble(progress, other.progress, t) ?? other.progress,
+        isVisible: t < 0.5 ? isVisible : other.isVisible,
+      );
+    }, tag: 'lerp');
   }
 
   @override
@@ -122,10 +146,12 @@ class FadeStyle extends GaplyAnimStyle<FadeStyle>
 }
 
 mixin _FadeStyleMixin {
-  FadeStyle get fadeStyle => this as FadeStyle;
+  FadeStyle get _self => this as FadeStyle;
+  FadeStyle get fadeStyle => _self;
 
   FadeStyle copyWithFade(FadeStyle fade) {
-    return fadeStyle.copyWith(
+    return _self.copyWith(
+      profiler: fade.profiler,
       duration: fade.duration,
       curve: fade.curve,
       delay: fade.delay,
@@ -136,8 +162,8 @@ mixin _FadeStyleMixin {
   }
 
   Widget buildWidget({required Widget child, Object? trigger}) {
-    if (!fadeStyle.hasEffect) return child;
+    if (!_self.hasEffect) return child;
 
-    return _GaplyFadeTrigger(style: fadeStyle, trigger: trigger ?? DateTime.now(), child: child);
+    return _GaplyFadeTrigger(style: _self, trigger: trigger ?? DateTime.now(), child: child);
   }
 }

@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 
+import 'package:gaply/src/utils/gaply_perf.dart';
 import 'package:gaply/src/gaply/core/core.dart';
 import 'package:gaply/src/gaply/styles/styles.dart';
 import 'package:gaply/src/gaply/animations/animations.dart';
@@ -46,6 +47,7 @@ class BoxStyle extends GaplyTweenStyle<BoxStyle>
   final VoidCallback? onPressed;
 
   const BoxStyle({
+    super.profiler,
     Duration? duration,
     Curve? curve,
     super.onComplete,
@@ -67,16 +69,17 @@ class BoxStyle extends GaplyTweenStyle<BoxStyle>
 
   static void register(String name, BoxStyle style) => GaplyBoxPreset.register(name, style);
 
-  factory BoxStyle.preset(String name) {
+  factory BoxStyle.preset(String name, {GaplyProfiler? profiler}) {
     final style = GaplyBoxPreset.of(name);
     if (style == null) {
       throw ArgumentError(GaplyBoxPreset.instance.errorMessage("BoxStyle", name));
     }
-    return style;
+    return style.copyWith(profiler: profiler);
   }
 
   @override
   BoxStyle copyWith({
+    GaplyProfiler? profiler,
     Duration? duration,
     Curve? curve,
     VoidCallback? onComplete,
@@ -95,6 +98,7 @@ class BoxStyle extends GaplyTweenStyle<BoxStyle>
     VoidCallback? onPressed,
   }) {
     return BoxStyle(
+      profiler: profiler ?? this.profiler,
       duration: duration ?? this.duration,
       curve: curve ?? this.curve,
       onComplete: onComplete ?? this.onComplete,
@@ -117,23 +121,26 @@ class BoxStyle extends GaplyTweenStyle<BoxStyle>
   BoxStyle lerp(BoxStyle? other, double t) {
     if (other == null) return this;
 
-    return BoxStyle(
-      duration: t < 0.5 ? duration : other.duration,
-      curve: t < 0.5 ? curve : other.curve,
-      onComplete: other.onComplete,
-      progress: lerpDouble(progress, other.progress, t) ?? other.progress,
-      layout: layout.lerp(other.layout, t),
-      color: color.lerp(other.color, t),
-      borderColor: borderColor.lerp(other.borderColor, t),
-      shadows: _lerpShadowList(shadows, other.shadows, t),
-      blur: blur.lerp(other.blur, t),
-      gradient: gradient.lerp(other.gradient, t),
-      shimmer: shimmer.lerp(other.shimmer, t),
-      filter: filter.lerp(other.filter, t),
-      noise: noise.lerp(other.noise, t),
-      motion: motion.lerp(other.motion, t),
-      onPressed: t < 0.5 ? onPressed : other.onPressed,
-    );
+    return profiler.trace(() {
+      return BoxStyle(
+        profiler: other.profiler,
+        duration: t < 0.5 ? duration : other.duration,
+        curve: t < 0.5 ? curve : other.curve,
+        onComplete: other.onComplete,
+        progress: lerpDouble(progress, other.progress, t) ?? other.progress,
+        layout: layout.lerp(other.layout, t),
+        color: color.lerp(other.color, t),
+        borderColor: borderColor.lerp(other.borderColor, t),
+        shadows: _lerpShadowList(shadows, other.shadows, t),
+        blur: blur.lerp(other.blur, t),
+        gradient: gradient.lerp(other.gradient, t),
+        shimmer: shimmer.lerp(other.shimmer, t),
+        filter: filter.lerp(other.filter, t),
+        noise: noise.lerp(other.noise, t),
+        motion: motion.lerp(other.motion, t),
+        onPressed: t < 0.5 ? onPressed : other.onPressed,
+      );
+    }, tag: 'lerp');
   }
 
   List<GaplyShadow> _lerpShadowList(List<GaplyShadow> a, List<GaplyShadow> b, double t) {
@@ -164,10 +171,12 @@ class BoxStyle extends GaplyTweenStyle<BoxStyle>
 }
 
 mixin _BoxStyleMixin {
-  BoxStyle get boxStyle => this as BoxStyle;
+  BoxStyle get _self => this as BoxStyle;
+  BoxStyle get boxStyle => _self;
 
   BoxStyle copyWithBox(BoxStyle box) {
-    return boxStyle.copyWith(
+    return _self.copyWith(
+      profiler: box.profiler,
       duration: box.duration,
       curve: box.curve,
       onComplete: box.onComplete,
@@ -187,6 +196,6 @@ mixin _BoxStyleMixin {
   }
 
   Widget buildWidget({required Widget child}) {
-    return GaplyBox(style: boxStyle, child: child);
+    return GaplyBox(style: _self, child: child);
   }
 }

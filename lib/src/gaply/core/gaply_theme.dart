@@ -15,10 +15,8 @@ class GaplyTheme<T extends GaplyThemeData<T>> extends InheritedWidget {
   }
 
   static T? maybeOf<T extends GaplyThemeData<T>>(BuildContext context) {
-    return GaplyProfiler.trace240('GaplyTheme.maybeOf<$T>', () {
-      final theme = context.dependOnInheritedWidgetOfExactType<GaplyTheme<T>>();
-      return theme?.data;
-    });
+    final theme = context.dependOnInheritedWidgetOfExactType<GaplyTheme<T>>();
+    return theme?.data;
   }
 
   @override

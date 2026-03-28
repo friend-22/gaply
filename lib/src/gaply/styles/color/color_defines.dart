@@ -22,6 +22,10 @@ class GaplyColorToken extends GaplyToken<String> {
   static GaplyColorToken resolve(dynamic role) {
     if (role is GaplyColorToken) return role;
 
+    if (role is Enum) {
+      return GaplyColorToken(role.name);
+    }
+
     if (role is String) {
       if (role.trim().isEmpty) {
         GaplyLogger.i("GaplyColorToken.resolve received an empty string.");

@@ -13,6 +13,7 @@ class GaplyColorTheme extends GaplyThemeData<GaplyColorTheme>
   final Map<GaplyColorToken, GaplyColor> colors;
 
   const GaplyColorTheme({
+    super.profiler,
     Duration? duration,
     Curve? curve,
     super.onComplete,
@@ -23,16 +24,17 @@ class GaplyColorTheme extends GaplyThemeData<GaplyColorTheme>
 
   static void register(String name, GaplyColorTheme style) => GaplyColorThemePreset.register(name, style);
 
-  factory GaplyColorTheme.preset(String name) {
+  factory GaplyColorTheme.preset(String name, {GaplyProfiler? profiler}) {
     final style = GaplyColorThemePreset.of(name);
     if (style == null) {
       throw ArgumentError(GaplyColorThemePreset.instance.errorMessage("GaplyColorTheme", name));
     }
-    return style;
+    return style.copyWith(profiler: profiler);
   }
 
   @override
   GaplyColorTheme copyWith({
+    GaplyProfiler? profiler,
     Duration? duration,
     Curve? curve,
     VoidCallback? onComplete,
@@ -41,6 +43,7 @@ class GaplyColorTheme extends GaplyThemeData<GaplyColorTheme>
     Map<GaplyColorToken, GaplyColor>? colors,
   }) {
     return GaplyColorTheme(
+      profiler: profiler ?? this.profiler,
       duration: duration ?? this.duration,
       curve: curve ?? this.curve,
       onComplete: onComplete ?? this.onComplete,
@@ -54,7 +57,7 @@ class GaplyColorTheme extends GaplyThemeData<GaplyColorTheme>
   GaplyColorTheme lerp(GaplyColorTheme? other, double t) {
     if (other == null) return this;
 
-    return GaplyProfiler.trace240('Theme.lerp(t=${t.toStringAsFixed(2)})', () {
+    return profiler.trace(() {
       final lerpColors = <GaplyColorToken, GaplyColor>{};
       final allKeys = {...colors.keys, ...other.colors.keys};
 
@@ -70,6 +73,7 @@ class GaplyColorTheme extends GaplyThemeData<GaplyColorTheme>
       }
 
       return GaplyColorTheme(
+        profiler: other.profiler,
         duration: t < 0.5 ? duration : other.duration,
         curve: t < 0.5 ? curve : other.curve,
         onComplete: other.onComplete,
@@ -77,21 +81,23 @@ class GaplyColorTheme extends GaplyThemeData<GaplyColorTheme>
         brightness: t < 0.5 ? brightness : other.brightness,
         colors: lerpColors,
       );
-    });
+    }, tag: 'lerp');
   }
 
   @override
   bool get hasEffect => colors.isNotEmpty;
 
   @override
-  List<Object?> get props => [...super.props, ...colors.entries];
+  List<Object?> get props => [...super.props, colors];
 }
 
 mixin _GaplyColorThemeMixin {
-  GaplyColorTheme get colorTheme => this as GaplyColorTheme;
+  GaplyColorTheme get _self => this as GaplyColorTheme;
+  GaplyColorTheme get colorTheme => _self;
 
   GaplyColorTheme copyWithColorTheme(GaplyColorTheme theme) {
-    return colorTheme.copyWith(
+    return _self.copyWith(
+      profiler: theme.profiler,
       duration: theme.duration,
       curve: theme.curve,
       onComplete: theme.onComplete,
@@ -103,14 +109,14 @@ mixin _GaplyColorThemeMixin {
 
   bool hasToken(dynamic token) {
     final resolvedToken = GaplyColorToken.resolve(token);
-    return colorTheme.colors.containsKey(resolvedToken);
+    return _self.colors.containsKey(resolvedToken);
   }
 
   GaplyColor getColor(dynamic token) {
-    return colorTheme.colors[GaplyColorToken.resolve(token)] ?? const GaplyColor.none();
+    return _self.colors[GaplyColorToken.resolve(token)] ?? const GaplyColor.none();
   }
 
   Color? toColor(BuildContext context, dynamic token) {
-    return getColor(token).resolve(context);
+    return _self.profiler.trace(() => getColor(token).resolve(context), tag: 'toColor');
   }
 }

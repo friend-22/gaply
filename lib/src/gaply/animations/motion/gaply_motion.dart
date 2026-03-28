@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+import 'package:gaply/src/utils/gaply_perf.dart';
 import 'package:gaply/src/gaply/core/gaply_style.dart';
 import 'motion_style_modifier.dart';
 
@@ -19,18 +20,18 @@ class GaplyMotion extends GaplyStyle<GaplyMotion>
   final List<GaplyMotion> children;
   final VoidCallback? onComplete;
 
-  const GaplyMotion({required this.animations, this.children = const [], this.onComplete});
+  const GaplyMotion({super.profiler, required this.animations, this.children = const [], this.onComplete});
 
   const GaplyMotion.none() : this(animations: const []);
 
   static void register(String name, GaplyMotion style) => GaplyMotionPreset.register(name, style);
 
-  factory GaplyMotion.preset(String name, {VoidCallback? onComplete}) {
+  factory GaplyMotion.preset(String name, {GaplyProfiler? profiler, VoidCallback? onComplete}) {
     final style = GaplyMotionPreset.of(name);
     if (style == null) {
       throw ArgumentError(GaplyMotionPreset.instance.errorMessage("GaplyMotion", name));
     }
-    return style.copyWith(onComplete: onComplete);
+    return style.copyWith(profiler: profiler, onComplete: onComplete);
   }
 
   GaplyMotion addAnimation(GaplyAnimStyle style) {
@@ -45,48 +46,53 @@ class GaplyMotion extends GaplyStyle<GaplyMotion>
   GaplyMotion lerp(GaplyMotion? other, double t) {
     if (other == null) return this;
 
-    final int maxLength = math.max(animations.length, other.animations.length);
-    final List<GaplyAnimStyle> lerpAnimations = [];
+    return profiler.trace(() {
+      final int maxLength = math.max(animations.length, other.animations.length);
+      final List<GaplyAnimStyle> lerpAnimations = [];
 
-    for (int i = 0; i < maxLength; i++) {
-      if (i < animations.length && i < other.animations.length) {
-        final anim = animations[i];
-        final otherAnim = other.animations[i];
-        lerpAnimations.add((anim as dynamic).lerp(otherAnim, t) as GaplyAnimStyle);
-      } else if (i < other.animations.length) {
-        if (t >= 0.5) lerpAnimations.add(other.animations[i]);
-      } else {
-        if (t < 0.5) lerpAnimations.add(animations[i]);
+      for (int i = 0; i < maxLength; i++) {
+        if (i < animations.length && i < other.animations.length) {
+          final anim = animations[i];
+          final otherAnim = other.animations[i];
+          lerpAnimations.add((anim as dynamic).lerp(otherAnim, t) as GaplyAnimStyle);
+        } else if (i < other.animations.length) {
+          if (t >= 0.5) lerpAnimations.add(other.animations[i]);
+        } else {
+          if (t < 0.5) lerpAnimations.add(animations[i]);
+        }
       }
-    }
 
-    final int maxChildren = math.max(children.length, other.children.length);
-    final List<GaplyMotion> lerpChildren = [];
+      final int maxChildren = math.max(children.length, other.children.length);
+      final List<GaplyMotion> lerpChildren = [];
 
-    for (int i = 0; i < maxChildren; i++) {
-      if (i < children.length && i < other.children.length) {
-        lerpChildren.add(children[i].lerp(other.children[i], t));
-      } else if (i < other.children.length) {
-        if (t >= 0.5) lerpChildren.add(other.children[i]);
-      } else {
-        if (t < 0.5) lerpChildren.add(children[i]);
+      for (int i = 0; i < maxChildren; i++) {
+        if (i < children.length && i < other.children.length) {
+          lerpChildren.add(children[i].lerp(other.children[i], t));
+        } else if (i < other.children.length) {
+          if (t >= 0.5) lerpChildren.add(other.children[i]);
+        } else {
+          if (t < 0.5) lerpChildren.add(children[i]);
+        }
       }
-    }
 
-    return GaplyMotion(
-      animations: lerpAnimations,
-      children: lerpChildren,
-      onComplete: t < 0.5 ? onComplete : other.onComplete,
-    );
+      return GaplyMotion(
+        profiler: other.profiler,
+        animations: lerpAnimations,
+        children: lerpChildren,
+        onComplete: t < 0.5 ? onComplete : other.onComplete,
+      );
+    }, tag: 'lerp');
   }
 
   @override
   GaplyMotion copyWith({
+    GaplyProfiler? profiler,
     List<GaplyAnimStyle>? animations,
     List<GaplyMotion>? children,
     VoidCallback? onComplete,
   }) {
     return GaplyMotion(
+      profiler: profiler ?? this.profiler,
       animations: animations ?? this.animations,
       children: children ?? this.children,
       onComplete: onComplete ?? this.onComplete,
@@ -117,10 +123,12 @@ class GaplyMotion extends GaplyStyle<GaplyMotion>
 }
 
 mixin _GaplyMotionMixin on GaplyMotionMixin {
-  GaplyMotion get motionStyle => this as GaplyMotion;
+  GaplyMotion get _self => this as GaplyMotion;
+  GaplyMotion get motionStyle => _self;
 
   GaplyMotion copyWithMotion(GaplyMotion motion) {
-    return motionStyle.copyWith(
+    return _self.copyWith(
+      profiler: motion.profiler,
       animations: motion.animations,
       children: motion.children,
       onComplete: motion.onComplete,
@@ -128,7 +136,7 @@ mixin _GaplyMotionMixin on GaplyMotionMixin {
   }
 
   Widget buildWidget({required Widget child, Object? trigger}) {
-    return applyMotion(motionStyle, child, trigger: trigger);
+    return applyMotion(_self, child, trigger: trigger);
   }
 }
 
@@ -136,18 +144,20 @@ mixin GaplyMotionMixin {
   Widget applyMotion(GaplyMotion motion, Widget child, {Object? trigger}) {
     if (!motion.hasEffect) return child;
 
-    Widget result = child;
+    return motion.profiler.trace(() {
+      Widget result = child;
 
-    if (motion.children.isNotEmpty) {
-      result = _buildChildrenChain(motion, result, trigger);
-    }
+      if (motion.children.isNotEmpty) {
+        result = _buildChildrenChain(motion, result, trigger);
+      }
 
-    return _buildAnimChain(
-      animations: motion.animations,
-      child: result,
-      trigger: trigger,
-      finalCallback: motion.children.isEmpty ? motion.onComplete : null,
-    );
+      return _buildAnimChain(
+        animations: motion.animations,
+        child: result,
+        trigger: trigger,
+        finalCallback: motion.children.isEmpty ? motion.onComplete : null,
+      );
+    }, tag: 'applyMotion');
   }
 
   Widget _buildChildrenChain(GaplyMotion motion, Widget child, Object? trigger) {

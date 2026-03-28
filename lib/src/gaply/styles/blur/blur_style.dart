@@ -1,9 +1,11 @@
 import 'dart:ui';
 
 import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
+
 import 'package:gaply/src/gaply/core/gaply_style.dart';
 import 'package:gaply/src/gaply/styles/color/gaply_color.dart';
-import 'package:flutter/material.dart';
+import 'package:gaply/src/utils/gaply_perf.dart';
 
 import 'blur_presets.dart';
 import 'blur_style_modifier.dart';
@@ -15,51 +17,67 @@ class BlurStyle extends GaplyStyle<BlurStyle> with _BlurStyleMixin, BlurStyleMod
   final double sigma;
   final GaplyColor color;
 
-  const BlurStyle({required this.sigma, this.color = const GaplyColor.transparent()})
+  const BlurStyle({super.profiler, required this.sigma, this.color = const GaplyColor.transparent()})
     : assert(sigma >= 0, 'Sigma must be greater than or equal to 0.');
 
   const BlurStyle.none() : this(sigma: 0.0, color: const GaplyColor.none());
 
   static void register(String name, BlurStyle style) => GaplyBlurPreset.register(name, style);
 
-  factory BlurStyle.preset(String name, {GaplyColor? color}) {
+  factory BlurStyle.preset(String name, {GaplyProfiler? profiler, GaplyColor? color}) {
     final style = GaplyBlurPreset.of(name);
     if (style == null) {
       throw ArgumentError(GaplyBlurPreset.instance.errorMessage("BlurStyle", name));
     }
-    return color != null ? style.copyWith(color: color) : style;
+    return style.copyWith(profiler: profiler, color: color);
   }
 
   @override
-  BlurStyle copyWith({double? sigma, GaplyColor? color}) {
-    return BlurStyle(sigma: sigma ?? this.sigma, color: color ?? this.color);
+  BlurStyle copyWith({GaplyProfiler? profiler, double? sigma, GaplyColor? color}) {
+    return BlurStyle(
+      profiler: profiler ?? this.profiler,
+      sigma: sigma ?? this.sigma,
+      color: color ?? this.color,
+    );
   }
 
   @override
   BlurStyle lerp(BlurStyle? other, double t) {
     if (other == null) return this;
 
-    return BlurStyle(sigma: lerpDouble(sigma, other.sigma, t) ?? sigma, color: color.lerp(other.color, t));
+    return profiler.trace(
+      () => BlurStyle(
+        profiler: other.profiler,
+        sigma: lerpDouble(sigma, other.sigma, t) ?? sigma,
+        color: color.lerp(other.color, t),
+      ),
+      tag: 'lerp',
+    );
   }
-
-  @override
-  List<Object?> get props => [sigma, color];
 
   @override
   bool get hasEffect => sigma > 0 && color.hasEffect;
+
+  @override
+  List<Object?> get props => [sigma, color];
 }
 
 mixin _BlurStyleMixin {
-  BlurStyle get blurStyle => this as BlurStyle;
+  BlurStyle get _self => this as BlurStyle;
+
+  BlurStyle get blurStyle => _self;
 
   BlurStyle copyWithBlur(BlurStyle blur) {
-    return blurStyle.copyWith(sigma: blur.sigma, color: blur.color);
+    return _self.copyWith(profiler: blur.profiler, sigma: blur.sigma, color: blur.color);
   }
 
   ImageFilter? resolve() {
-    if (!blurStyle.hasEffect) return null;
+    if (!_self.hasEffect) return null;
 
-    return ImageFilter.blur(sigmaX: blurStyle.sigma, sigmaY: blurStyle.sigma);
+    return _self.profiler.trace(
+      () => ImageFilter.blur(sigmaX: _self.sigma, sigmaY: _self.sigma),
+      tag: 'resolve',
+    );
   }
 
   Widget buildWidget({
@@ -67,8 +85,8 @@ mixin _BlurStyleMixin {
     required Widget child,
     BorderRadiusGeometry? borderRadius,
   }) {
-    if (!blurStyle.hasEffect) return child;
+    if (!_self.hasEffect) return child;
 
-    return _BlurWidget(style: blurStyle, borderRadius: borderRadius, child: child);
+    return _BlurWidget(style: _self, borderRadius: borderRadius, child: child);
   }
 }

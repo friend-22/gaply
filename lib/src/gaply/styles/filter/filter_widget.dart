@@ -10,9 +10,11 @@ class _FilterWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     if (!style.hasEffect) return child;
 
-    final colorFilter = style.resolve(context);
-    if (colorFilter == null) return child;
+    return style.profiler.trace(() {
+      final colorFilter = style.resolve(context);
+      if (colorFilter == null) return child;
 
-    return ColorFiltered(colorFilter: colorFilter, child: child);
+      return ColorFiltered(colorFilter: colorFilter, child: child);
+    }, tag: 'build');
   }
 }

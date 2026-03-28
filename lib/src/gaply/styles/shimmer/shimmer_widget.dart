@@ -10,18 +10,20 @@ class _ShimmerWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     if (!style.hasEffect) return child;
 
-    final baseColor = style.baseColor.resolve(context);
-    final highlightColor = style.highlightColor.resolve(context);
+    return style.profiler.trace(() {
+      final baseColor = style.baseColor.resolve(context);
+      final highlightColor = style.highlightColor.resolve(context);
 
-    if (baseColor == null || highlightColor == null) return child;
+      if (baseColor == null || highlightColor == null) return child;
 
-    return Shimmer.fromColors(
-      period: style.period,
-      direction: style.direction,
-      loop: style.loop,
-      baseColor: baseColor,
-      highlightColor: highlightColor,
-      child: child,
-    );
+      return Shimmer.fromColors(
+        period: style.period,
+        direction: style.direction,
+        loop: style.loop,
+        baseColor: baseColor,
+        highlightColor: highlightColor,
+        child: child,
+      );
+    }, tag: 'build');
   }
 }

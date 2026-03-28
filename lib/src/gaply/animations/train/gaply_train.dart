@@ -94,37 +94,39 @@ class GaplyTrainState<T> extends State<GaplyTrain<T>> with SingleTickerProviderS
     final first = _isForward ? prev : curr;
     final second = _isForward ? curr : prev;
 
-    return AnimatedBuilder(
-      animation: _curve,
-      builder: (context, _) {
-        return RepaintBoundary(
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              final size = _isHorizontal ? constraints.maxWidth : constraints.maxHeight;
-              final travel = _isForward ? -size * _curve.value : -size + (size * _curve.value);
-              final offset = _isHorizontal ? Offset(travel, 0) : Offset(0, travel);
+    return widget.style.profiler.trace(() {
+      return AnimatedBuilder(
+        animation: _curve,
+        builder: (context, _) {
+          return RepaintBoundary(
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final size = _isHorizontal ? constraints.maxWidth : constraints.maxHeight;
+                final travel = _isForward ? -size * _curve.value : -size + (size * _curve.value);
+                final offset = _isHorizontal ? Offset(travel, 0) : Offset(0, travel);
 
-              final double firstOpacity = 1.0 - _curve.value;
-              final double secondOpacity = _curve.value;
+                final double firstOpacity = 1.0 - _curve.value;
+                final double secondOpacity = _curve.value;
 
-              return ClipRect(
-                child: Transform.translate(
-                  offset: offset,
-                  child: Flex(
-                    direction: _axis,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      _buildTrainCar(first, firstOpacity, size),
-                      _buildTrainCar(second, secondOpacity, size),
-                    ],
+                return ClipRect(
+                  child: Transform.translate(
+                    offset: offset,
+                    child: Flex(
+                      direction: _axis,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        _buildTrainCar(first, firstOpacity, size),
+                        _buildTrainCar(second, secondOpacity, size),
+                      ],
+                    ),
                   ),
-                ),
-              );
-            },
-          ),
-        );
-      },
-    );
+                );
+              },
+            ),
+          );
+        },
+      );
+    }, tag: 'build');
   }
 
   Widget _buildTrainCar(Widget child, double opacity, double size) {

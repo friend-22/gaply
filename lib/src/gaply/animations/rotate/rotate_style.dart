@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:flutter/widgets.dart';
+import 'package:gaply/src/utils/gaply_perf.dart';
 import 'package:gaply/src/gaply/core/gaply_trigger.dart';
 import 'package:gaply/src/gaply/core/gaply_style.dart';
 
@@ -24,6 +25,7 @@ class RotateStyle extends GaplyAnimStyle<RotateStyle>
   final bool useRadians;
 
   const RotateStyle({
+    super.profiler,
     Duration? duration,
     Curve? curve,
     Duration? delay,
@@ -44,15 +46,27 @@ class RotateStyle extends GaplyAnimStyle<RotateStyle>
 
   static void register(String name, RotateStyle style) => GaplyRotatePreset.register(name, style);
 
-  factory RotateStyle.preset(String name, {Alignment? alignment, bool? isRotated, VoidCallback? onComplete}) {
+  factory RotateStyle.preset(
+    String name, {
+    GaplyProfiler? profiler,
+    Alignment? alignment,
+    bool? isRotated,
+    VoidCallback? onComplete,
+  }) {
     final style = GaplyRotatePreset.of(name);
     if (style == null) {
       throw ArgumentError(GaplyRotatePreset.instance.errorMessage("RotateStyle", name));
     }
-    return style.copyWith(alignment: alignment, isRotated: isRotated, onComplete: onComplete);
+    return style.copyWith(
+      profiler: profiler,
+      alignment: alignment,
+      isRotated: isRotated,
+      onComplete: onComplete,
+    );
   }
 
   const RotateStyle.rotate90({
+    GaplyProfiler? profiler,
     Duration? duration,
     Duration? delay,
     Curve? curve,
@@ -60,6 +74,7 @@ class RotateStyle extends GaplyAnimStyle<RotateStyle>
     bool isRotated = true,
     bool useRadians = false,
   }) : this(
+         profiler: profiler,
          duration: duration,
          curve: curve,
          delay: delay,
@@ -72,6 +87,7 @@ class RotateStyle extends GaplyAnimStyle<RotateStyle>
        );
 
   const RotateStyle.rotate180({
+    GaplyProfiler? profiler,
     Duration? duration,
     Duration? delay,
     Curve? curve,
@@ -79,6 +95,7 @@ class RotateStyle extends GaplyAnimStyle<RotateStyle>
     bool isRotated = true,
     bool useRadians = false,
   }) : this(
+         profiler: profiler,
          duration: duration,
          curve: curve,
          delay: delay,
@@ -91,6 +108,7 @@ class RotateStyle extends GaplyAnimStyle<RotateStyle>
        );
 
   const RotateStyle.rotate270({
+    GaplyProfiler? profiler,
     Duration? duration,
     Duration? delay,
     Curve? curve,
@@ -98,6 +116,7 @@ class RotateStyle extends GaplyAnimStyle<RotateStyle>
     bool isRotated = true,
     bool useRadians = false,
   }) : this(
+         profiler: profiler,
          duration: duration,
          curve: curve,
          delay: delay,
@@ -110,6 +129,7 @@ class RotateStyle extends GaplyAnimStyle<RotateStyle>
        );
 
   const RotateStyle.rotate360({
+    GaplyProfiler? profiler,
     Duration? duration,
     Duration? delay,
     Curve? curve,
@@ -117,6 +137,7 @@ class RotateStyle extends GaplyAnimStyle<RotateStyle>
     bool isRotated = true,
     bool useRadians = false,
   }) : this(
+         profiler: profiler,
          duration: duration,
          curve: curve,
          delay: delay,
@@ -130,6 +151,7 @@ class RotateStyle extends GaplyAnimStyle<RotateStyle>
 
   @override
   RotateStyle copyWith({
+    GaplyProfiler? profiler,
     Duration? duration,
     Curve? curve,
     Duration? delay,
@@ -142,6 +164,7 @@ class RotateStyle extends GaplyAnimStyle<RotateStyle>
     bool? useRadians,
   }) {
     return RotateStyle(
+      profiler: profiler ?? this.profiler,
       duration: duration ?? this.duration,
       curve: curve ?? this.curve,
       delay: delay ?? this.delay,
@@ -159,18 +182,21 @@ class RotateStyle extends GaplyAnimStyle<RotateStyle>
   RotateStyle lerp(GaplyAnimStyle? other, double t) {
     if (other is! RotateStyle) return this;
 
-    return RotateStyle(
-      duration: t < 0.5 ? duration : other.duration,
-      curve: t < 0.5 ? curve : other.curve,
-      delay: t < 0.5 ? delay : other.delay,
-      onComplete: other.onComplete,
-      progress: lerpDouble(progress, other.progress, t) ?? other.progress,
-      begin: lerpDouble(begin, other.begin, t) ?? begin,
-      end: lerpDouble(end, other.end, t) ?? end,
-      alignment: Alignment.lerp(alignment, other.alignment, t) ?? alignment,
-      isRotated: t < 0.5 ? isRotated : other.isRotated,
-      useRadians: t < 0.5 ? useRadians : other.useRadians,
-    );
+    return profiler.trace(() {
+      return RotateStyle(
+        profiler: other.profiler,
+        duration: t < 0.5 ? duration : other.duration,
+        curve: t < 0.5 ? curve : other.curve,
+        delay: t < 0.5 ? delay : other.delay,
+        onComplete: other.onComplete,
+        progress: lerpDouble(progress, other.progress, t) ?? other.progress,
+        begin: lerpDouble(begin, other.begin, t) ?? begin,
+        end: lerpDouble(end, other.end, t) ?? end,
+        alignment: Alignment.lerp(alignment, other.alignment, t) ?? alignment,
+        isRotated: t < 0.5 ? isRotated : other.isRotated,
+        useRadians: t < 0.5 ? useRadians : other.useRadians,
+      );
+    }, tag: 'lerp');
   }
 
   @override
@@ -181,10 +207,12 @@ class RotateStyle extends GaplyAnimStyle<RotateStyle>
 }
 
 mixin _RotateStyleMixin {
-  RotateStyle get rotateStyle => this as RotateStyle;
+  RotateStyle get _self => this as RotateStyle;
+  RotateStyle get rotateStyle => _self;
 
   RotateStyle copyWithRotate(RotateStyle rotate) {
-    return rotateStyle.copyWith(
+    return _self.copyWith(
+      profiler: rotate.profiler,
       duration: rotate.duration,
       curve: rotate.curve,
       delay: rotate.delay,
@@ -199,8 +227,8 @@ mixin _RotateStyleMixin {
   }
 
   Widget buildWidget({required Widget child, Object? trigger}) {
-    if (!rotateStyle.hasEffect) return child;
+    if (!_self.hasEffect) return child;
 
-    return _GaplyRotateTrigger(style: rotateStyle, trigger: trigger ?? DateTime.now(), child: child);
+    return _GaplyRotateTrigger(style: _self, trigger: trigger ?? DateTime.now(), child: child);
   }
 }

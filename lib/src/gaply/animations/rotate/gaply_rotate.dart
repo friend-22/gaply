@@ -111,6 +111,8 @@ class GaplyRotateState extends State<GaplyRotate> with SingleTickerProviderState
   Widget build(BuildContext context) {
     if (!widget.style.hasEffect) return widget.child;
 
-    return RotationTransition(turns: _turns, alignment: widget.style.alignment, child: widget.child);
+    return widget.style.profiler.trace(() {
+      return RotationTransition(turns: _turns, alignment: widget.style.alignment, child: widget.child);
+    }, tag: 'build');
   }
 }

@@ -98,23 +98,25 @@ class GaplySizeState extends State<GaplySize> with SingleTickerProviderStateMixi
   Widget build(BuildContext context) {
     if (!widget.style.hasEffect) return widget.child;
 
-    return AnimatedBuilder(
-      animation: _sizeAnimation,
-      builder: (context, child) {
-        if (_controller.isDismissed && widget.style.minFactor == 0) {
-          return const SizedBox.shrink();
-        }
+    return widget.style.profiler.trace(() {
+      return AnimatedBuilder(
+        animation: _sizeAnimation,
+        builder: (context, child) {
+          if (_controller.isDismissed && widget.style.minFactor == 0) {
+            return const SizedBox.shrink();
+          }
 
-        return ClipRect(
-          child: SizeTransition(
-            sizeFactor: _sizeAnimation,
-            axis: widget.style.axis,
-            axisAlignment: widget.style.axisAlignment,
-            child: child,
-          ),
-        );
-      },
-      child: widget.child,
-    );
+          return ClipRect(
+            child: SizeTransition(
+              sizeFactor: _sizeAnimation,
+              axis: widget.style.axis,
+              axisAlignment: widget.style.axisAlignment,
+              child: child,
+            ),
+          );
+        },
+        child: widget.child,
+      );
+    }, tag: 'build');
   }
 }

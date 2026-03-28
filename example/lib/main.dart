@@ -6,16 +6,37 @@ import 'package:path_provider/path_provider.dart';
 
 import 'demo_theme.dart';
 
+// void testColor(String label, GaplyColor start, GaplyColor end, double p) {
+//   final tween = start.lerp(end, 0.0);
+//   final result = tween.resolveWithProgress(p);
+//   print('🧪 [$label] $tween, $result');
+// }
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // {
+  //   final start = GaplyColor.fromColor(Colors.blue);
+  //   final end = start.copyWith(opacity: 0.1, shade: GaplyColorShade.s200);
+  //   testColor('test1', start, end, 0.5);
+  // }
+  //
+  // {
+  //   final start = GaplyColor.fromColor(Colors.orange);
+  //   final end = start.copyWith(shade: GaplyColorShade.s900);
+  //   testColor('test2', start, end, 0.5);
+  // }
+  //
+  // {
+  //   final start = GaplyColor.fromColor(Colors.grey, opacity: GaplyColorOpacity.o30);
+  //   final end = start.copyWith(opacity: 0.8, shade: GaplyColorShade.s800);
+  //   testColor('test3', start, end, 0.5);
+  // }
 
   final directory = await getApplicationDocumentsDirectory();
   final logPath = '${directory.path}/app_logs.txt';
 
   GaplyLogger.init([GaplyConsoleLogger(), GaplyFileLogger(logPath, mode: FileMode.write)]);
-
-  GaplyProfiler.showOnlyOverThreshold = true;
-  GaplyProfiler.canLogger = true;
 
   // BoxStyle.register(
   //   'glassCard',
@@ -52,7 +73,8 @@ void main() async {
 void _setupGaplyThemes() {
   // 라이트 테마 등록
   final lightTheme = GaplyColorTheme(
-    duration: Duration(milliseconds: 500),
+    profiler: GaplyProfiler.traceNano(label: 'lightTheme'),
+    duration: Duration(milliseconds: 200),
     brightness: Brightness.light,
     colors: {
       GaplyColorToken.primary: const GaplyColor(token: GaplyColorToken.primary, customColor: Colors.blue),
@@ -66,8 +88,9 @@ void _setupGaplyThemes() {
 
   // 다크 테마 등록
   final darkTheme = GaplyColorTheme(
+    profiler: GaplyProfiler.traceNano(label: 'darkTheme'),
     brightness: Brightness.dark,
-    duration: Duration(milliseconds: 500),
+    duration: Duration(milliseconds: 200),
     colors: {
       GaplyColorToken.primary: const GaplyColor(token: GaplyColorToken.primary, customColor: Colors.cyan),
       GaplyColorToken.background: const GaplyColor(

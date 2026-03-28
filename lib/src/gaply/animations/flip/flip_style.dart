@@ -2,9 +2,11 @@ import 'dart:math' as math;
 import 'dart:ui';
 
 import 'package:flutter/widgets.dart';
-import 'package:gaply/src/gaply/core/gaply_style.dart';
 import 'package:flutter/material.dart';
+
+import 'package:gaply/src/gaply/core/gaply_style.dart';
 import 'package:gaply/src/gaply/core/gaply_trigger.dart';
+import 'package:gaply/src/utils/gaply_perf.dart';
 
 import 'gaply_flip.dart';
 import 'flip_presets.dart';
@@ -40,6 +42,7 @@ class FlipStyle extends GaplyAnimStyle<FlipStyle>
   final Widget? backWidget;
 
   const FlipStyle({
+    super.profiler,
     Duration? duration,
     Curve? curve,
     Duration? delay,
@@ -64,22 +67,35 @@ class FlipStyle extends GaplyAnimStyle<FlipStyle>
   /// Throws [ArgumentError] if the [name] is not registered.
   static void register(String name, FlipStyle style) => GaplyFlipPreset.register(name, style);
 
-  factory FlipStyle.preset(String name, {Widget? backWidget, bool? isFlipped, VoidCallback? onComplete}) {
+  factory FlipStyle.preset(
+    String name, {
+    GaplyProfiler? profiler,
+    Widget? backWidget,
+    bool? isFlipped,
+    VoidCallback? onComplete,
+  }) {
     final style = GaplyFlipPreset.of(name);
     if (style == null) {
       throw ArgumentError(GaplyFlipPreset.instance.errorMessage("FlipStyle", name));
     }
-    return style.copyWith(isFlipped: isFlipped, backWidget: backWidget, onComplete: onComplete);
+    return style.copyWith(
+      profiler: profiler,
+      backWidget: backWidget,
+      isFlipped: isFlipped,
+      onComplete: onComplete,
+    );
   }
 
   const FlipStyle.vertical(
     Widget backWidget, {
+    GaplyProfiler? profiler,
     Duration? duration,
     Curve? curve,
     Duration? delay,
     VoidCallback? onComplete,
     bool isFlipped = true,
   }) : this(
+         profiler: profiler,
          backWidget: backWidget,
          duration: duration,
          curve: curve,
@@ -91,12 +107,14 @@ class FlipStyle extends GaplyAnimStyle<FlipStyle>
 
   const FlipStyle.horizontal(
     Widget backWidget, {
+    GaplyProfiler? profiler,
     Duration? duration,
     Curve? curve,
     Duration? delay,
     VoidCallback? onComplete,
     bool isFlipped = true,
   }) : this(
+         profiler: profiler,
          backWidget: backWidget,
          duration: duration,
          curve: curve,
@@ -108,6 +126,7 @@ class FlipStyle extends GaplyAnimStyle<FlipStyle>
 
   @override
   FlipStyle copyWith({
+    GaplyProfiler? profiler,
     Duration? duration,
     Curve? curve,
     Duration? delay,
@@ -119,6 +138,7 @@ class FlipStyle extends GaplyAnimStyle<FlipStyle>
     Widget? backWidget,
   }) {
     return FlipStyle(
+      profiler: profiler ?? this.profiler,
       duration: duration ?? this.duration,
       curve: curve ?? this.curve,
       delay: delay ?? this.delay,
@@ -135,17 +155,20 @@ class FlipStyle extends GaplyAnimStyle<FlipStyle>
   FlipStyle lerp(GaplyAnimStyle? other, double t) {
     if (other is! FlipStyle) return this;
 
-    return FlipStyle(
-      duration: t < 0.5 ? duration : other.duration,
-      curve: t < 0.5 ? curve : other.curve,
-      delay: t < 0.5 ? delay : other.delay,
-      onComplete: other.onComplete,
-      progress: lerpDouble(progress, other.progress, t) ?? other.progress,
-      axis: t < 0.5 ? axis : other.axis,
-      angleRange: lerpDouble(angleRange, other.angleRange, t) ?? angleRange,
-      isFlipped: t < 0.5 ? isFlipped : other.isFlipped,
-      backWidget: t < 0.5 ? backWidget : other.backWidget,
-    );
+    return profiler.trace(() {
+      return FlipStyle(
+        profiler: other.profiler,
+        duration: t < 0.5 ? duration : other.duration,
+        curve: t < 0.5 ? curve : other.curve,
+        delay: t < 0.5 ? delay : other.delay,
+        onComplete: other.onComplete,
+        progress: lerpDouble(progress, other.progress, t) ?? other.progress,
+        axis: t < 0.5 ? axis : other.axis,
+        angleRange: lerpDouble(angleRange, other.angleRange, t) ?? angleRange,
+        isFlipped: t < 0.5 ? isFlipped : other.isFlipped,
+        backWidget: t < 0.5 ? backWidget : other.backWidget,
+      );
+    }, tag: 'lerp');
   }
 
   @override
@@ -156,10 +179,12 @@ class FlipStyle extends GaplyAnimStyle<FlipStyle>
 }
 
 mixin _GaplyFlipMixin {
-  FlipStyle get flipStyle => this as FlipStyle;
+  FlipStyle get _self => this as FlipStyle;
+  FlipStyle get flipStyle => _self;
 
   FlipStyle copyWithFlip(FlipStyle flip) {
-    return flipStyle.copyWith(
+    return _self.copyWith(
+      profiler: flip.profiler,
       duration: flip.duration,
       curve: flip.curve,
       delay: flip.delay,
@@ -173,13 +198,13 @@ mixin _GaplyFlipMixin {
   }
 
   Widget buildWidget({required Widget child, Object? trigger}) {
-    if (!flipStyle.hasEffect) return child;
+    if (!_self.hasEffect) return child;
 
     return _GaplyFlipTrigger(
       front: child,
-      back: flipStyle.backWidget ?? child,
+      back: _self.backWidget ?? child,
       trigger: trigger ?? DateTime.now(),
-      style: flipStyle,
+      style: _self,
     );
   }
 }

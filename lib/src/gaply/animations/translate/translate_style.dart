@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 
+import 'package:gaply/src/utils/gaply_perf.dart';
 import 'package:gaply/src/gaply/core/gaply_style.dart';
 import 'package:gaply/src/gaply/core/gaply_trigger.dart';
 
@@ -23,6 +24,7 @@ class TranslateStyle extends GaplyAnimStyle<TranslateStyle>
   final bool isMoved;
 
   const TranslateStyle({
+    super.profiler,
     Duration? duration,
     Curve? curve,
     Duration? delay,
@@ -42,16 +44,22 @@ class TranslateStyle extends GaplyAnimStyle<TranslateStyle>
 
   static void register(String name, TranslateStyle style) => GaplyTranslatePreset.register(name, style);
 
-  factory TranslateStyle.preset(String name, {bool? isMoved, VoidCallback? onComplete}) {
+  factory TranslateStyle.preset(
+    String name, {
+    GaplyProfiler? profiler,
+    bool? isMoved,
+    VoidCallback? onComplete,
+  }) {
     final style = GaplyTranslatePreset.of(name);
     if (style == null) {
       throw ArgumentError(GaplyTranslatePreset.instance.errorMessage("TranslateStyle", name));
     }
-    return style.copyWith(isMoved: isMoved, onComplete: onComplete);
+    return style.copyWith(profiler: profiler, isMoved: isMoved, onComplete: onComplete);
   }
 
   @override
   TranslateStyle copyWith({
+    GaplyProfiler? profiler,
     Duration? duration,
     Curve? curve,
     Duration? delay,
@@ -62,6 +70,7 @@ class TranslateStyle extends GaplyAnimStyle<TranslateStyle>
     bool? isMoved,
   }) {
     return TranslateStyle(
+      profiler: profiler ?? this.profiler,
       duration: duration ?? this.duration,
       curve: curve ?? this.curve,
       delay: delay ?? this.delay,
@@ -77,16 +86,19 @@ class TranslateStyle extends GaplyAnimStyle<TranslateStyle>
   TranslateStyle lerp(GaplyAnimStyle? other, double t) {
     if (other is! TranslateStyle) return this;
 
-    return TranslateStyle(
-      duration: t < 0.5 ? duration : other.duration,
-      curve: t < 0.5 ? curve : other.curve,
-      delay: t < 0.5 ? delay : other.delay,
-      onComplete: other.onComplete,
-      progress: lerpDouble(progress, other.progress, t) ?? other.progress,
-      begin: Offset.lerp(begin, other.begin, t)!,
-      end: Offset.lerp(end, other.end, t)!,
-      isMoved: t < 0.5 ? isMoved : other.isMoved,
-    );
+    return profiler.trace(() {
+      return TranslateStyle(
+        profiler: other.profiler,
+        duration: t < 0.5 ? duration : other.duration,
+        curve: t < 0.5 ? curve : other.curve,
+        delay: t < 0.5 ? delay : other.delay,
+        onComplete: other.onComplete,
+        progress: lerpDouble(progress, other.progress, t) ?? other.progress,
+        begin: Offset.lerp(begin, other.begin, t)!,
+        end: Offset.lerp(end, other.end, t)!,
+        isMoved: t < 0.5 ? isMoved : other.isMoved,
+      );
+    }, tag: 'lerp');
   }
 
   @override
@@ -97,10 +109,12 @@ class TranslateStyle extends GaplyAnimStyle<TranslateStyle>
 }
 
 mixin _GaplyTranslateMixin {
-  TranslateStyle get translateStyle => this as TranslateStyle;
+  TranslateStyle get _self => this as TranslateStyle;
+  TranslateStyle get translateStyle => _self;
 
   TranslateStyle copyWithTranslate(TranslateStyle translate) {
-    return translateStyle.copyWith(
+    return _self.copyWith(
+      profiler: translate.profiler,
       duration: translate.duration,
       curve: translate.curve,
       delay: translate.delay,
@@ -113,8 +127,8 @@ mixin _GaplyTranslateMixin {
   }
 
   Widget buildWidget({required Widget child, Object? trigger}) {
-    if (!translateStyle.hasEffect) return child;
+    if (!_self.hasEffect) return child;
 
-    return _GaplyTranslateTrigger(style: translateStyle, trigger: trigger ?? DateTime.now(), child: child);
+    return _GaplyTranslateTrigger(style: _self, trigger: trigger ?? DateTime.now(), child: child);
   }
 }

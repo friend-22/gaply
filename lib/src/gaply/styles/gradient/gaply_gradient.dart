@@ -3,6 +3,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:gaply/src/gaply/core/gaply_style.dart';
+import 'package:gaply/src/utils/gaply_perf.dart';
 
 import '../color/gaply_color.dart';
 import 'gradient_style_modifier.dart';
@@ -22,6 +23,7 @@ class GaplyGradient extends GaplyStyle<GaplyGradient>
   final double endAngle;
 
   const GaplyGradient({
+    super.profiler,
     this.type = GradientType.linear,
     required this.colors,
     required this.stops,
@@ -35,16 +37,17 @@ class GaplyGradient extends GaplyStyle<GaplyGradient>
 
   static void register(String name, GaplyGradient style) => GaplyGradientPreset.register(name, style);
 
-  factory GaplyGradient.preset(String name, {GradientType? type}) {
+  factory GaplyGradient.preset(String name, {GaplyProfiler? profiler, GradientType? type}) {
     final style = GaplyGradientPreset.of(name);
     if (style == null) {
       throw ArgumentError(GaplyGradientPreset.instance.errorMessage("GaplyGradient", name));
     }
-    return type != null ? style.copyWith(type: type) : style;
+    return style.copyWith(profiler: profiler, type: type);
   }
 
   @override
   GaplyGradient copyWith({
+    GaplyProfiler? profiler,
     GradientType? type,
     List<GaplyColor>? colors,
     List<double>? stops,
@@ -66,6 +69,7 @@ class GaplyGradient extends GaplyStyle<GaplyGradient>
     }
 
     return GaplyGradient(
+      profiler: profiler ?? this.profiler,
       type: type ?? this.type,
       colors: colors ?? this.colors,
       stops: stops ?? this.stops,
@@ -80,33 +84,35 @@ class GaplyGradient extends GaplyStyle<GaplyGradient>
   GaplyGradient lerp(GaplyGradient? other, double t) {
     if (other == null) return this;
 
-    final lerpColors = <GaplyColor>[];
-    final maxLength = math.max(colors.length, other.colors.length);
+    return profiler.trace(() {
+      final lerpColors = <GaplyColor>[];
+      final maxLength = math.max(colors.length, other.colors.length);
 
-    for (var i = 0; i < maxLength; i++) {
-      final startColor = i < colors.length ? colors[i] : colors.last;
-      final endColor = i < other.colors.length ? other.colors[i] : other.colors.last;
+      for (var i = 0; i < maxLength; i++) {
+        final startColor = i < colors.length ? colors[i] : colors.last;
+        final endColor = i < other.colors.length ? other.colors[i] : other.colors.last;
 
-      lerpColors.add(startColor.lerp(endColor, t));
-    }
+        lerpColors.add(startColor.lerp(endColor, t));
+      }
 
-    final lerpStops = <double>[];
-    for (var i = 0; i < maxLength; i++) {
-      final startStop = i < stops.length ? stops[i] : (i == 0 ? 0.0 : 1.0);
-      final endStop = i < other.stops.length ? other.stops[i] : (i == 0 ? 0.0 : 1.0);
+      final lerpStops = <double>[];
+      for (var i = 0; i < maxLength; i++) {
+        final startStop = i < stops.length ? stops[i] : (i == 0 ? 0.0 : 1.0);
+        final endStop = i < other.stops.length ? other.stops[i] : (i == 0 ? 0.0 : 1.0);
 
-      lerpStops.add(lerpDouble(startStop, endStop, t) ?? startStop);
-    }
+        lerpStops.add(lerpDouble(startStop, endStop, t) ?? startStop);
+      }
 
-    return GaplyGradient(
-      type: t < 0.5 ? type : other.type,
-      colors: lerpColors,
-      stops: lerpStops,
-      begin: AlignmentGeometry.lerp(begin, other.begin, t) ?? begin,
-      end: AlignmentGeometry.lerp(end, other.end, t) ?? end,
-      startAngle: lerpDouble(startAngle, other.startAngle, t) ?? startAngle,
-      endAngle: lerpDouble(endAngle, other.endAngle, t) ?? endAngle,
-    );
+      return GaplyGradient(
+        type: t < 0.5 ? type : other.type,
+        colors: lerpColors,
+        stops: lerpStops,
+        begin: AlignmentGeometry.lerp(begin, other.begin, t) ?? begin,
+        end: AlignmentGeometry.lerp(end, other.end, t) ?? end,
+        startAngle: lerpDouble(startAngle, other.startAngle, t) ?? startAngle,
+        endAngle: lerpDouble(endAngle, other.endAngle, t) ?? endAngle,
+      );
+    }, tag: 'lerp');
   }
 
   @override
@@ -117,10 +123,12 @@ class GaplyGradient extends GaplyStyle<GaplyGradient>
 }
 
 mixin _GaplyGradientMixin {
-  GaplyGradient get gradientStyle => this as GaplyGradient;
+  GaplyGradient get _self => this as GaplyGradient;
+  GaplyGradient get gradientStyle => _self;
 
   GaplyGradient copyWithGradient(GaplyGradient gradient) {
-    return gradientStyle.copyWith(
+    return _self.copyWith(
+      profiler: gradient.profiler,
       type: gradient.type,
       colors: gradient.colors,
       stops: gradient.stops,
@@ -132,28 +140,30 @@ mixin _GaplyGradientMixin {
   }
 
   Gradient? resolve(BuildContext context) {
-    if (!gradientStyle.hasEffect) return null;
+    if (!_self.hasEffect) return null;
 
-    final resolvedColors = gradientStyle.colors.map((p) => p.resolve(context)).whereType<Color>().toList();
+    return _self.profiler.trace(() {
+      final resolvedColors = _self.colors.map((p) => p.resolve(context)).whereType<Color>().toList();
 
-    if (resolvedColors.length != gradientStyle.colors.length) {
-      return null;
-    }
+      if (resolvedColors.length != _self.colors.length) {
+        return null;
+      }
 
-    return switch (gradientStyle.type) {
-      GradientType.linear => LinearGradient(
-        colors: resolvedColors,
-        stops: gradientStyle.stops,
-        begin: gradientStyle.begin,
-        end: gradientStyle.end,
-      ),
-      GradientType.radial => RadialGradient(colors: resolvedColors, stops: gradientStyle.stops),
-      GradientType.sweep => SweepGradient(
-        colors: resolvedColors,
-        stops: gradientStyle.stops,
-        startAngle: gradientStyle.startAngle,
-        endAngle: gradientStyle.endAngle,
-      ),
-    };
+      return switch (_self.type) {
+        GradientType.linear => LinearGradient(
+          colors: resolvedColors,
+          stops: _self.stops,
+          begin: _self.begin,
+          end: _self.end,
+        ),
+        GradientType.radial => RadialGradient(colors: resolvedColors, stops: _self.stops),
+        GradientType.sweep => SweepGradient(
+          colors: resolvedColors,
+          stops: _self.stops,
+          startAngle: _self.startAngle,
+          endAngle: _self.endAngle,
+        ),
+      };
+    }, tag: 'resolve');
   }
 }

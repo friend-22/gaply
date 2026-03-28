@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/widgets.dart';
 import 'package:gaply/src/gaply/core/gaply_style.dart';
+import 'package:gaply/src/utils/gaply_perf.dart';
 
 import 'layout_presets.dart';
 import 'layout_style_modifier.dart';
@@ -18,6 +19,7 @@ class GaplyLayout extends GaplyStyle<GaplyLayout> with _GaplyLayoutMixin, Layout
   final double borderWidth;
 
   const GaplyLayout({
+    super.profiler,
     this.padding,
     this.margin,
     this.borderRadius,
@@ -40,16 +42,17 @@ class GaplyLayout extends GaplyStyle<GaplyLayout> with _GaplyLayoutMixin, Layout
 
   static void register(String name, GaplyLayout style) => GaplyLayoutPreset.register(name, style);
 
-  factory GaplyLayout.preset(String name) {
+  factory GaplyLayout.preset(String name, {GaplyProfiler? profiler}) {
     final style = GaplyLayoutPreset.of(name);
     if (style == null) {
       throw ArgumentError(GaplyLayoutPreset.instance.errorMessage("GaplyLayout", name));
     }
-    return style;
+    return style.copyWith(profiler: profiler);
   }
 
   @override
   GaplyLayout copyWith({
+    GaplyProfiler? profiler,
     EdgeInsetsGeometry? padding,
     EdgeInsetsGeometry? margin,
     BorderRadiusGeometry? borderRadius,
@@ -60,6 +63,7 @@ class GaplyLayout extends GaplyStyle<GaplyLayout> with _GaplyLayoutMixin, Layout
     double? borderWidth,
   }) {
     return GaplyLayout(
+      profiler: profiler ?? this.profiler,
       padding: padding ?? this.padding,
       margin: margin ?? this.margin,
       borderRadius: borderRadius ?? this.borderRadius,
@@ -75,16 +79,19 @@ class GaplyLayout extends GaplyStyle<GaplyLayout> with _GaplyLayoutMixin, Layout
   GaplyLayout lerp(GaplyLayout? other, double t) {
     if (other == null) return this;
 
-    return GaplyLayout(
-      padding: EdgeInsetsGeometry.lerp(padding, other.padding, t),
-      margin: EdgeInsetsGeometry.lerp(margin, other.margin, t),
-      borderRadius: BorderRadiusGeometry.lerp(borderRadius, other.borderRadius, t),
-      alignment: AlignmentGeometry.lerp(alignment, other.alignment, t),
-      width: lerpDouble(width, other.width, t),
-      height: lerpDouble(height, other.height, t),
-      scale: lerpDouble(scale, other.scale, t) ?? scale,
-      borderWidth: lerpDouble(borderWidth, other.borderWidth, t) ?? borderWidth,
-    );
+    return profiler.trace(() {
+      return GaplyLayout(
+        profiler: other.profiler,
+        padding: EdgeInsetsGeometry.lerp(padding, other.padding, t),
+        margin: EdgeInsetsGeometry.lerp(margin, other.margin, t),
+        borderRadius: BorderRadiusGeometry.lerp(borderRadius, other.borderRadius, t),
+        alignment: AlignmentGeometry.lerp(alignment, other.alignment, t),
+        width: lerpDouble(width, other.width, t),
+        height: lerpDouble(height, other.height, t),
+        scale: lerpDouble(scale, other.scale, t) ?? scale,
+        borderWidth: lerpDouble(borderWidth, other.borderWidth, t) ?? borderWidth,
+      );
+    }, tag: 'lerp');
   }
 
   @override
@@ -95,10 +102,12 @@ class GaplyLayout extends GaplyStyle<GaplyLayout> with _GaplyLayoutMixin, Layout
 }
 
 mixin _GaplyLayoutMixin {
+  GaplyLayout get _self => this as GaplyLayout;
   GaplyLayout get layoutStyle => this as GaplyLayout;
 
   GaplyLayout copyWithLayout(GaplyLayout layout) {
-    return layoutStyle.copyWith(
+    return _self.copyWith(
+      profiler: layout.profiler,
       padding: layout.padding,
       margin: layout.margin,
       borderRadius: layout.borderRadius,

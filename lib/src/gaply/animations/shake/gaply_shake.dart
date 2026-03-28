@@ -101,17 +101,22 @@ class GaplyShakeState extends State<GaplyShake> with SingleTickerProviderStateMi
   Widget build(BuildContext context) {
     if (!widget.style.hasEffect) return widget.child;
 
-    Widget result = AnimatedBuilder(
-      animation: _controller,
-      builder: (context, child) {
-        final dampingFactor = 1.0 - _curved.value;
-        final sineValue = math.sin(_controller.value * math.pi * 2 * _activeCount);
-        final offset = sineValue * _activeDistance * dampingFactor;
-        return Transform.translate(offset: _isVertical ? Offset(0, offset) : Offset(offset, 0), child: child);
-      },
-      child: widget.child,
-    );
+    return widget.style.profiler.trace(() {
+      Widget result = AnimatedBuilder(
+        animation: _controller,
+        builder: (context, child) {
+          final dampingFactor = 1.0 - _curved.value;
+          final sineValue = math.sin(_controller.value * math.pi * 2 * _activeCount);
+          final offset = sineValue * _activeDistance * dampingFactor;
+          return Transform.translate(
+            offset: _isVertical ? Offset(0, offset) : Offset(offset, 0),
+            child: child,
+          );
+        },
+        child: widget.child,
+      );
 
-    return widget.style.useRepaintBoundary ? RepaintBoundary(child: result) : result;
+      return widget.style.useRepaintBoundary ? RepaintBoundary(child: result) : result;
+    }, tag: 'build');
   }
 }

@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/widgets.dart';
 
+import 'package:gaply/src/utils/gaply_perf.dart';
 import 'package:gaply/src/gaply/core/gaply_style.dart';
 import 'package:gaply/src/gaply/core/gaply_direction.dart';
 import 'package:gaply/src/gaply/animations/fade/fade_style.dart';
@@ -26,6 +27,7 @@ class RevealStyle extends GaplyAnimStyle<RevealStyle>
   final bool useFade;
 
   const RevealStyle({
+    super.profiler,
     Duration? duration,
     Curve? curve,
     Duration? delay,
@@ -47,6 +49,7 @@ class RevealStyle extends GaplyAnimStyle<RevealStyle>
 
   factory RevealStyle.preset(
     String name, {
+    GaplyProfiler? profiler,
     bool? isVisible,
     bool? fixedSize,
     bool? useFade,
@@ -57,6 +60,7 @@ class RevealStyle extends GaplyAnimStyle<RevealStyle>
       throw ArgumentError(GaplyRevealPreset.instance.errorMessage("RevealStyle", name));
     }
     return style.copyWith(
+      profiler: profiler,
       isVisible: isVisible,
       fixedSize: fixedSize,
       useFade: useFade,
@@ -65,6 +69,7 @@ class RevealStyle extends GaplyAnimStyle<RevealStyle>
   }
 
   const RevealStyle.up({
+    GaplyProfiler? profiler,
     Duration? duration,
     Curve? curve,
     Duration? delay,
@@ -73,6 +78,7 @@ class RevealStyle extends GaplyAnimStyle<RevealStyle>
     bool fixedSize = false,
     bool useFade = true,
   }) : this(
+         profiler: profiler,
          duration: duration,
          curve: curve,
          delay: delay,
@@ -84,6 +90,7 @@ class RevealStyle extends GaplyAnimStyle<RevealStyle>
        );
 
   const RevealStyle.down({
+    GaplyProfiler? profiler,
     Duration? duration,
     Curve? curve,
     Duration? delay,
@@ -92,6 +99,7 @@ class RevealStyle extends GaplyAnimStyle<RevealStyle>
     bool fixedSize = false,
     bool useFade = true,
   }) : this(
+         profiler: profiler,
          duration: duration,
          curve: curve,
          delay: delay,
@@ -103,6 +111,7 @@ class RevealStyle extends GaplyAnimStyle<RevealStyle>
        );
 
   const RevealStyle.left({
+    GaplyProfiler? profiler,
     Duration? duration,
     Curve? curve,
     Duration? delay,
@@ -111,6 +120,7 @@ class RevealStyle extends GaplyAnimStyle<RevealStyle>
     bool fixedSize = false,
     bool useFade = true,
   }) : this(
+         profiler: profiler,
          duration: duration,
          curve: curve,
          delay: delay,
@@ -122,6 +132,7 @@ class RevealStyle extends GaplyAnimStyle<RevealStyle>
        );
 
   const RevealStyle.right({
+    GaplyProfiler? profiler,
     Duration? duration,
     Curve? curve,
     Duration? delay,
@@ -130,6 +141,7 @@ class RevealStyle extends GaplyAnimStyle<RevealStyle>
     bool fixedSize = false,
     bool useFade = true,
   }) : this(
+         profiler: profiler,
          duration: duration,
          curve: curve,
          delay: delay,
@@ -142,6 +154,7 @@ class RevealStyle extends GaplyAnimStyle<RevealStyle>
 
   @override
   RevealStyle copyWith({
+    GaplyProfiler? profiler,
     Duration? duration,
     Curve? curve,
     Duration? delay,
@@ -153,6 +166,7 @@ class RevealStyle extends GaplyAnimStyle<RevealStyle>
     bool? useFade,
   }) {
     return RevealStyle(
+      profiler: profiler ?? this.profiler,
       duration: duration ?? this.duration,
       curve: curve ?? this.curve,
       delay: delay ?? this.delay,
@@ -169,17 +183,20 @@ class RevealStyle extends GaplyAnimStyle<RevealStyle>
   RevealStyle lerp(GaplyAnimStyle? other, double t) {
     if (other is! RevealStyle) return this;
 
-    return RevealStyle(
-      duration: t < 0.5 ? duration : other.duration,
-      curve: t < 0.5 ? curve : other.curve,
-      delay: t < 0.5 ? delay : other.delay,
-      onComplete: other.onComplete,
-      progress: lerpDouble(progress, other.progress, t) ?? other.progress,
-      direction: t < 0.5 ? direction : other.direction,
-      isVisible: t < 0.5 ? isVisible : other.isVisible,
-      fixedSize: t < 0.5 ? fixedSize : other.fixedSize,
-      useFade: t < 0.5 ? useFade : other.useFade,
-    );
+    return profiler.trace(() {
+      return RevealStyle(
+        profiler: other.profiler,
+        duration: t < 0.5 ? duration : other.duration,
+        curve: t < 0.5 ? curve : other.curve,
+        delay: t < 0.5 ? delay : other.delay,
+        onComplete: other.onComplete,
+        progress: lerpDouble(progress, other.progress, t) ?? other.progress,
+        direction: t < 0.5 ? direction : other.direction,
+        isVisible: t < 0.5 ? isVisible : other.isVisible,
+        fixedSize: t < 0.5 ? fixedSize : other.fixedSize,
+        useFade: t < 0.5 ? useFade : other.useFade,
+      );
+    }, tag: 'lerp');
   }
 
   @override
@@ -190,10 +207,12 @@ class RevealStyle extends GaplyAnimStyle<RevealStyle>
 }
 
 mixin _RevealStyleMixin {
-  RevealStyle get revealStyle => this as RevealStyle;
+  RevealStyle get _self => this as RevealStyle;
+  RevealStyle get revealStyle => _self;
 
   RevealStyle copyWithReveal(RevealStyle reveal) {
-    return revealStyle.copyWith(
+    return _self.copyWith(
+      profiler: reveal.profiler,
       duration: reveal.duration,
       curve: reveal.curve,
       delay: reveal.delay,
@@ -207,33 +226,35 @@ mixin _RevealStyleMixin {
   }
 
   Widget buildWidget({required Widget child, Object? trigger}) {
-    if (!revealStyle.hasEffect) return child;
+    if (!_self.hasEffect) return child;
 
-    final List<GaplyAnimStyle> animations = [];
-    if (revealStyle.useFade) animations.add(_fade);
-    if (!revealStyle.fixedSize) animations.add(_size);
+    return _self.profiler.trace(() {
+      final List<GaplyAnimStyle> animations = [];
+      if (_self.useFade) animations.add(_fade);
+      if (!_self.fixedSize) animations.add(_size);
 
-    return GaplyMotion(
-      animations: animations,
-      onComplete: revealStyle.onComplete,
-    ).buildWidget(child: child, trigger: trigger ?? DateTime.now());
+      return GaplyMotion(
+        animations: animations,
+        onComplete: _self.onComplete,
+      ).buildWidget(child: child, trigger: trigger ?? DateTime.now());
+    }, tag: 'buildWidget');
   }
 
   FadeStyle get _fade => FadeStyle(
-    duration: revealStyle.duration,
-    curve: revealStyle.curve,
-    isVisible: revealStyle.useFade ? revealStyle.isVisible : true,
-    delay: revealStyle.delay,
+    duration: _self.duration,
+    curve: _self.curve,
+    isVisible: _self.useFade ? _self.isVisible : true,
+    delay: _self.delay,
   );
 
   SizeStyle get _size => SizeStyle(
-    duration: revealStyle.duration,
-    curve: revealStyle.curve,
-    axis: revealStyle.axis,
-    axisAlignment: (revealStyle.direction == AxisDirection.up || revealStyle.direction == AxisDirection.left)
+    duration: _self.duration,
+    curve: _self.curve,
+    axis: _self.axis,
+    axisAlignment: (_self.direction == AxisDirection.up || _self.direction == AxisDirection.left)
         ? 1.0
         : -1.0,
-    isExpanded: revealStyle.fixedSize ? true : revealStyle.isVisible,
-    delay: revealStyle.delay,
+    isExpanded: _self.fixedSize ? true : _self.isVisible,
+    delay: _self.delay,
   );
 }

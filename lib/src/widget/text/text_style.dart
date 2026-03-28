@@ -1,6 +1,8 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+
+import 'package:gaply/src/utils/gaply_perf.dart';
 import 'package:gaply/src/gaply/core/core.dart';
 import 'package:gaply/src/gaply/styles/styles.dart';
 import 'package:gaply/src/gaply/animations/animations.dart';
@@ -34,6 +36,7 @@ class GaplyTextStyle extends GaplyTweenStyle<GaplyTextStyle>
   final GaplyMotion motion;
 
   const GaplyTextStyle({
+    super.profiler,
     Duration? duration,
     Curve? curve,
     super.onComplete,
@@ -56,33 +59,44 @@ class GaplyTextStyle extends GaplyTweenStyle<GaplyTextStyle>
 
   static void register(String name, GaplyTextStyle style) => GaplyTextPreset.register(name, style);
 
-  factory GaplyTextStyle.preset(String name) {
+  factory GaplyTextStyle.preset(String name, {GaplyProfiler? profiler}) {
     final style = GaplyTextPreset.of(name);
     if (style == null) {
       throw ArgumentError(GaplyTextPreset.instance.errorMessage("GaplyTextStyle", name));
     }
-    return style;
+    return style.copyWith(profiler: profiler);
   }
 
   @override
-  List<Object?> get props => [
-    ...super.props,
-    fontSize,
-    fontWeight,
-    letterSpacing,
-    height,
-    decoration,
-    fontFamily,
-    alignRole,
-    color,
-    blur,
-    shimmer,
-    motion,
-    features,
-  ];
+  GaplyTextStyle lerp(GaplyTextStyle? other, double t) {
+    if (other == null) return this;
+
+    return profiler.trace(() {
+      return GaplyTextStyle(
+        profiler: other.profiler,
+        duration: t < 0.5 ? duration : other.duration,
+        curve: t < 0.5 ? curve : other.curve,
+        onComplete: other.onComplete,
+        progress: lerpDouble(progress, other.progress, t) ?? other.progress,
+        fontSize: lerpDouble(fontSize, other.fontSize, t),
+        fontWeight: FontWeight.lerp(fontWeight, other.fontWeight, t),
+        color: color.lerp(other.color, t),
+        letterSpacing: lerpDouble(letterSpacing, other.letterSpacing, t) ?? other.letterSpacing,
+        height: lerpDouble(height, other.height, t),
+        decoration: t < 0.5 ? decoration : other.decoration,
+        fontFamily: t < 0.5 ? fontFamily : other.fontFamily,
+        alignRole: t < 0.5 ? alignRole : other.alignRole,
+        blur: blur.lerp(other.blur, t),
+        shimmer: shimmer.lerp(other.shimmer, t),
+        motion: motion.lerp(other.motion, t),
+        features: t < 0.5 ? features : other.features,
+      );
+    }, tag: 'lerp');
+  }
 
   @override
   GaplyTextStyle copyWith({
+    GaplyProfiler? profiler,
     Duration? duration,
     Curve? curve,
     VoidCallback? onComplete,
@@ -101,6 +115,7 @@ class GaplyTextStyle extends GaplyTweenStyle<GaplyTextStyle>
     Set<FontFeature>? features,
   }) {
     return GaplyTextStyle(
+      profiler: profiler ?? this.profiler,
       duration: duration ?? this.duration,
       curve: curve ?? this.curve,
       onComplete: onComplete ?? this.onComplete,
@@ -121,38 +136,33 @@ class GaplyTextStyle extends GaplyTweenStyle<GaplyTextStyle>
   }
 
   @override
-  GaplyTextStyle lerp(GaplyTextStyle? other, double t) {
-    if (other == null) return this;
-
-    return copyWith(
-      duration: t < 0.5 ? duration : other.duration,
-      curve: t < 0.5 ? curve : other.curve,
-      onComplete: other.onComplete,
-      progress: lerpDouble(progress, other.progress, t) ?? other.progress,
-      fontSize: lerpDouble(fontSize, other.fontSize, t),
-      fontWeight: FontWeight.lerp(fontWeight, other.fontWeight, t),
-      color: color.lerp(other.color, t),
-      letterSpacing: lerpDouble(letterSpacing, other.letterSpacing, t),
-      height: lerpDouble(height, other.height, t),
-      decoration: t < 0.5 ? decoration : other.decoration,
-      fontFamily: t < 0.5 ? fontFamily : other.fontFamily,
-      alignRole: t < 0.5 ? alignRole : other.alignRole,
-      blur: blur.lerp(other.blur, t),
-      shimmer: shimmer.lerp(other.shimmer, t),
-      motion: motion.lerp(other.motion, t),
-      features: t < 0.5 ? features : other.features,
-    );
-  }
+  List<Object?> get props => [
+    ...super.props,
+    fontSize,
+    fontWeight,
+    letterSpacing,
+    height,
+    decoration,
+    fontFamily,
+    alignRole,
+    color,
+    blur,
+    shimmer,
+    motion,
+    features,
+  ];
 
   @override
   bool get hasEffect => true;
 }
 
 mixin _GaplyTextStyleMixin {
-  GaplyTextStyle get textStyle => this as GaplyTextStyle;
+  GaplyTextStyle get _self => this as GaplyTextStyle;
+  GaplyTextStyle get textStyle => _self;
 
   GaplyTextStyle copyWithText(GaplyTextStyle text) {
-    return textStyle.copyWith(
+    return _self.copyWith(
+      profiler: text.profiler,
       duration: text.duration,
       curve: text.curve,
       onComplete: text.onComplete,

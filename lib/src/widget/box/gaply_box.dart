@@ -59,57 +59,59 @@ class _GaplyBoxWidgetState extends AnimatedWidgetBaseState<_GaplyBoxWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final currentStyle = _styleTween?.evaluate(animation) ?? widget.style;
+    return widget.style.profiler.trace(() {
+      final currentStyle = _styleTween?.evaluate(animation) ?? widget.style;
 
-    final layout = currentStyle.layout;
+      final layout = currentStyle.layout;
 
-    final bool staticEffect = currentStyle.noise.hasEffect || currentStyle.filter.hasEffect;
-    final bool dynamicEffect = currentStyle.shimmer.hasEffect;
+      final bool staticEffect = currentStyle.noise.hasEffect || currentStyle.filter.hasEffect;
+      final bool dynamicEffect = currentStyle.shimmer.hasEffect;
 
-    Widget result = Container(
-      width: layout.width,
-      height: layout.height,
-      padding: layout.padding,
-      margin: layout.margin,
-      alignment: layout.alignment,
-      decoration: _buildDecoration(context, currentStyle),
-      clipBehavior: layout.borderRadius != null ? Clip.antiAlias : Clip.none,
-      child: widget.child,
-    );
-
-    if (currentStyle.noise.hasEffect) {
-      result = currentStyle.noise.buildWidget(context: context, child: result);
-    }
-
-    if (currentStyle.filter.hasEffect) {
-      result = currentStyle.filter.buildWidget(context: context, child: result);
-    }
-
-    if (dynamicEffect) {
-      result = currentStyle.shimmer.buildWidget(context: context, child: result);
-    }
-
-    if (staticEffect || dynamicEffect) {
-      result = RepaintBoundary(child: result);
-    }
-
-    if (currentStyle.onPressed != null) {
-      result = GestureDetector(
-        onTap: currentStyle.onPressed,
-        behavior: HitTestBehavior.opaque,
-        child: MouseRegion(cursor: SystemMouseCursors.click, child: result),
+      Widget result = Container(
+        width: layout.width,
+        height: layout.height,
+        padding: layout.padding,
+        margin: layout.margin,
+        alignment: layout.alignment,
+        decoration: _buildDecoration(context, currentStyle),
+        clipBehavior: layout.borderRadius != null ? Clip.antiAlias : Clip.none,
+        child: widget.child,
       );
-    }
 
-    if (layout.scale != 1.0) {
-      result = Transform.scale(scale: layout.scale, child: result);
-    }
+      if (currentStyle.noise.hasEffect) {
+        result = currentStyle.noise.buildWidget(context: context, child: result);
+      }
 
-    if (currentStyle.motion.hasEffect) {
-      result = currentStyle.motion.buildWidget(child: result);
-    }
+      if (currentStyle.filter.hasEffect) {
+        result = currentStyle.filter.buildWidget(context: context, child: result);
+      }
 
-    return result;
+      if (dynamicEffect) {
+        result = currentStyle.shimmer.buildWidget(context: context, child: result);
+      }
+
+      if (staticEffect || dynamicEffect) {
+        result = RepaintBoundary(child: result);
+      }
+
+      if (currentStyle.onPressed != null) {
+        result = GestureDetector(
+          onTap: currentStyle.onPressed,
+          behavior: HitTestBehavior.opaque,
+          child: MouseRegion(cursor: SystemMouseCursors.click, child: result),
+        );
+      }
+
+      if (layout.scale != 1.0) {
+        result = Transform.scale(scale: layout.scale, child: result);
+      }
+
+      if (currentStyle.motion.hasEffect) {
+        result = currentStyle.motion.buildWidget(child: result);
+      }
+
+      return result;
+    }, tag: 'build');
   }
 
   BoxDecoration? _buildDecoration(BuildContext context, BoxStyle style) {

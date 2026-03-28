@@ -11,19 +11,21 @@ class _BlurWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     if (!style.hasEffect) return child;
 
-    return Stack(
-      children: [
-        Positioned.fill(
-          child: ClipRRect(
-            borderRadius: borderRadius ?? BorderRadius.zero,
-            child: BackdropFilter(
-              filter: style.resolve()!,
-              child: Container(color: style.color.resolve(context)),
+    return style.profiler.trace(() {
+      return Stack(
+        children: [
+          Positioned.fill(
+            child: ClipRRect(
+              borderRadius: borderRadius ?? BorderRadius.zero,
+              child: BackdropFilter(
+                filter: style.resolve()!,
+                child: Container(color: style.color.resolve(context)),
+              ),
             ),
           ),
-        ),
-        child,
-      ],
-    );
+          child,
+        ],
+      );
+    }, tag: 'build');
   }
 }

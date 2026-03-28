@@ -1,12 +1,12 @@
 import 'dart:ui';
 
 import 'package:flutter/widgets.dart';
+import 'package:gaply/src/utils/gaply_perf.dart';
 import 'package:gaply/src/gaply/core/gaply_style.dart';
 import 'package:gaply/src/gaply/core/gaply_trigger.dart';
 
 import 'gaply_scale.dart';
 import 'scale_presets.dart';
-
 import 'scale_style_modifier.dart';
 
 part 'scale_trigger.dart';
@@ -24,6 +24,7 @@ class ScaleStyle extends GaplyAnimStyle<ScaleStyle>
   final bool isScaled;
 
   const ScaleStyle({
+    super.profiler,
     Duration? duration,
     Curve? curve,
     Duration? delay,
@@ -51,16 +52,28 @@ class ScaleStyle extends GaplyAnimStyle<ScaleStyle>
 
   static void register(String name, ScaleStyle style) => GaplyScalePreset.register(name, style);
 
-  factory ScaleStyle.preset(String name, {Alignment? alignment, bool? isScaled, VoidCallback? onComplete}) {
+  factory ScaleStyle.preset(
+    String name, {
+    GaplyProfiler? profiler,
+    Alignment? alignment,
+    bool? isScaled,
+    VoidCallback? onComplete,
+  }) {
     final style = GaplyScalePreset.of(name);
     if (style == null) {
       throw ArgumentError(GaplyScalePreset.instance.errorMessage("ScaleStyle", name));
     }
-    return style.copyWith(alignment: alignment, isScaled: isScaled, onComplete: onComplete);
+    return style.copyWith(
+      profiler: profiler,
+      alignment: alignment,
+      isScaled: isScaled,
+      onComplete: onComplete,
+    );
   }
 
   @override
   ScaleStyle copyWith({
+    GaplyProfiler? profiler,
     Duration? duration,
     Curve? curve,
     Duration? delay,
@@ -72,6 +85,7 @@ class ScaleStyle extends GaplyAnimStyle<ScaleStyle>
     bool? isScaled,
   }) {
     return ScaleStyle(
+      profiler: profiler ?? this.profiler,
       duration: duration ?? this.duration,
       curve: curve ?? this.curve,
       delay: delay ?? this.delay,
@@ -88,17 +102,20 @@ class ScaleStyle extends GaplyAnimStyle<ScaleStyle>
   ScaleStyle lerp(GaplyAnimStyle? other, double t) {
     if (other is! ScaleStyle) return this;
 
-    return ScaleStyle(
-      duration: t < 0.5 ? duration : other.duration,
-      curve: t < 0.5 ? curve : other.curve,
-      delay: t < 0.5 ? delay : other.delay,
-      onComplete: other.onComplete,
-      progress: lerpDouble(progress, other.progress, t) ?? other.progress,
-      begin: lerpDouble(begin, other.begin, t) ?? begin,
-      end: lerpDouble(end, other.end, t) ?? end,
-      alignment: Alignment.lerp(alignment, other.alignment, t) ?? alignment,
-      isScaled: t < 0.5 ? isScaled : other.isScaled,
-    );
+    return profiler.trace(() {
+      return ScaleStyle(
+        profiler: other.profiler,
+        duration: t < 0.5 ? duration : other.duration,
+        curve: t < 0.5 ? curve : other.curve,
+        delay: t < 0.5 ? delay : other.delay,
+        onComplete: other.onComplete,
+        progress: lerpDouble(progress, other.progress, t) ?? other.progress,
+        begin: lerpDouble(begin, other.begin, t) ?? begin,
+        end: lerpDouble(end, other.end, t) ?? end,
+        alignment: Alignment.lerp(alignment, other.alignment, t) ?? alignment,
+        isScaled: t < 0.5 ? isScaled : other.isScaled,
+      );
+    }, tag: 'lerp');
   }
 
   @override
@@ -109,10 +126,12 @@ class ScaleStyle extends GaplyAnimStyle<ScaleStyle>
 }
 
 mixin _ScaleStyleMixin {
-  ScaleStyle get scaleStyle => this as ScaleStyle;
+  ScaleStyle get _self => this as ScaleStyle;
+  ScaleStyle get scaleStyle => _self;
 
   ScaleStyle copyWithScale(ScaleStyle scale) {
-    return scaleStyle.copyWith(
+    return _self.copyWith(
+      profiler: scale.profiler,
       duration: scale.duration,
       curve: scale.curve,
       delay: scale.delay,
@@ -126,8 +145,8 @@ mixin _ScaleStyleMixin {
   }
 
   Widget buildWidget({required Widget child, Object? trigger}) {
-    if (!scaleStyle.hasEffect) return child;
+    if (!_self.hasEffect) return child;
 
-    return _GaplyScaleTrigger(style: scaleStyle, trigger: trigger ?? DateTime.now(), child: child);
+    return _GaplyScaleTrigger(style: _self, trigger: trigger ?? DateTime.now(), child: child);
   }
 }

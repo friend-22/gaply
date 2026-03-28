@@ -1,9 +1,9 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:gaply/gaply.dart';
 import 'package:gaply/src/gaply/core/gaply_style.dart';
 import 'package:gaply/src/gaply/core/gaply_theme.dart';
+import 'package:gaply/src/utils/gaply_perf.dart';
 
 import 'color_defines.dart';
 import 'color_style_modifier.dart';
@@ -22,6 +22,7 @@ class GaplyColor extends GaplyStyle<GaplyColor> with _GaplyColorMixin, ColorStyl
   final double _progress;
 
   const GaplyColor({
+    super.profiler,
     required this.token,
     this.shade = GaplyColorShade.s500,
     this.opacity = GaplyColorOpacity.full,
@@ -32,6 +33,7 @@ class GaplyColor extends GaplyStyle<GaplyColor> with _GaplyColorMixin, ColorStyl
        _progress = 1.0;
 
   const GaplyColor._internal({
+    required super.profiler,
     required this.token,
     required this.shade,
     required this.opacity,
@@ -46,19 +48,40 @@ class GaplyColor extends GaplyStyle<GaplyColor> with _GaplyColorMixin, ColorStyl
 
   const GaplyColor.none() : this(token: GaplyColorToken.none);
 
+  factory GaplyColor.resolve({
+    GaplyProfiler? profiler,
+    required dynamic token,
+    dynamic shade,
+    dynamic opacity,
+    Color? customColor,
+    bool autoInvert = true,
+  }) {
+    return GaplyColor(
+      profiler: profiler,
+      token: GaplyColorToken.resolve(token),
+      shade: GaplyColorShade.resolve(shade),
+      opacity: GaplyColorOpacity.resolve(opacity),
+      customColor: customColor,
+      autoInvert: autoInvert,
+    );
+  }
+
   const GaplyColor.fromToken(
     GaplyColorToken token, {
+    GaplyProfiler? profiler,
     GaplyColorShade shade = GaplyColorShade.s500,
     GaplyColorOpacity opacity = GaplyColorOpacity.full,
     bool autoInvert = true,
-  }) : this(token: token, shade: shade, opacity: opacity, autoInvert: autoInvert);
+  }) : this(profiler: profiler, token: token, shade: shade, opacity: opacity, autoInvert: autoInvert);
 
   const GaplyColor.fromColor(
     Color color, {
+    GaplyProfiler? profiler,
     GaplyColorShade shade = GaplyColorShade.s500,
     GaplyColorOpacity opacity = GaplyColorOpacity.full,
     bool autoInvert = true,
   }) : this(
+         profiler: profiler,
          token: GaplyColorToken.none,
          customColor: color,
          shade: shade,
@@ -68,10 +91,12 @@ class GaplyColor extends GaplyStyle<GaplyColor> with _GaplyColorMixin, ColorStyl
 
   GaplyColor.fromInt(
     int value, {
+    GaplyProfiler? profiler,
     GaplyColorShade shade = GaplyColorShade.s500,
     GaplyColorOpacity opacity = GaplyColorOpacity.full,
     bool autoInvert = true,
   }) : this(
+         profiler: profiler,
          token: GaplyColorToken.none,
          customColor: Color(value),
          shade: shade,
@@ -79,25 +104,43 @@ class GaplyColor extends GaplyStyle<GaplyColor> with _GaplyColorMixin, ColorStyl
          autoInvert: autoInvert,
        );
 
-  const GaplyColor.transparent()
+  const GaplyColor.transparent({GaplyProfiler? profiler})
     : this(
+        profiler: profiler,
         token: GaplyColorToken.none,
         customColor: Colors.transparent,
         opacity: GaplyColorOpacity.transparent,
       );
 
-  const GaplyColor.subtle(GaplyColorToken token, {GaplyColorShade shade = GaplyColorShade.s500})
-    : this(token: token, shade: shade, opacity: GaplyColorOpacity.subtle);
+  const GaplyColor.subtle(
+    GaplyColorToken token, {
+    GaplyProfiler? profiler,
+    GaplyColorShade shade = GaplyColorShade.s500,
+  }) : this(profiler: profiler, token: token, shade: shade, opacity: GaplyColorOpacity.subtle);
 
-  const GaplyColor.half(GaplyColorToken token, {GaplyColorShade shade = GaplyColorShade.s500})
-    : this(token: token, shade: shade, opacity: GaplyColorOpacity.half);
+  const GaplyColor.half(
+    GaplyColorToken token, {
+    GaplyProfiler? profiler,
+    GaplyColorShade shade = GaplyColorShade.s500,
+  }) : this(profiler: profiler, token: token, shade: shade, opacity: GaplyColorOpacity.half);
 
-  const GaplyColor.solid(GaplyColorToken token, {GaplyColorShade shade = GaplyColorShade.s500})
-    : this(token: token, shade: shade, opacity: GaplyColorOpacity.solid);
+  const GaplyColor.solid(
+    GaplyColorToken token, {
+    GaplyProfiler? profiler,
+    GaplyColorShade shade = GaplyColorShade.s500,
+  }) : this(profiler: profiler, token: token, shade: shade, opacity: GaplyColorOpacity.solid);
 
   @override
-  GaplyColor copyWith({dynamic token, dynamic opacity, dynamic shade, Color? customColor, bool? autoInvert}) {
+  GaplyColor copyWith({
+    GaplyProfiler? profiler,
+    dynamic token,
+    dynamic opacity,
+    dynamic shade,
+    Color? customColor,
+    bool? autoInvert,
+  }) {
     return GaplyColor._internal(
+      profiler: profiler ?? this.profiler,
       token: token != null ? GaplyColorToken.resolve(token) : this.token,
       opacity: opacity != null ? GaplyColorOpacity.resolve(opacity) : this.opacity,
       shade: shade != null ? GaplyColorShade.resolve(shade) : this.shade,
@@ -110,6 +153,7 @@ class GaplyColor extends GaplyStyle<GaplyColor> with _GaplyColorMixin, ColorStyl
   }
 
   GaplyColor _copyWithInternal({
+    GaplyProfiler? profiler,
     dynamic token,
     dynamic opacity,
     dynamic shade,
@@ -120,6 +164,7 @@ class GaplyColor extends GaplyStyle<GaplyColor> with _GaplyColorMixin, ColorStyl
     double? progress,
   }) {
     return GaplyColor._internal(
+      profiler: profiler ?? this.profiler,
       token: token != null ? GaplyColorToken.resolve(token) : this.token,
       opacity: opacity != null ? GaplyColorOpacity.resolve(opacity) : this.opacity,
       shade: shade != null ? GaplyColorShade.resolve(shade) : this.shade,
@@ -135,20 +180,23 @@ class GaplyColor extends GaplyStyle<GaplyColor> with _GaplyColorMixin, ColorStyl
   GaplyColor lerp(GaplyColor? other, double t) {
     if (other == null) return this;
 
-    final double lerpOpacity = lerpDouble(opacity.value, other.opacity.value, t) ?? opacity.value;
-    final double lerpShade = lerpDouble(shade.value, other.shade.value, t) ?? shade.value;
-    final Color? lerpColor = Color.lerp(customColor, other.customColor, t);
+    return profiler.trace(() {
+      final double lerpOpacity = lerpDouble(opacity.value, other.opacity.value, t) ?? opacity.value;
+      final double lerpShade = lerpDouble(shade.value, other.shade.value, t) ?? shade.value;
+      final Color? lerpColor = Color.lerp(customColor, other.customColor, t);
 
-    return GaplyColor._internal(
-      token: t < 0.5 ? token : other.token,
-      opacity: GaplyColorOpacity(lerpOpacity),
-      shade: GaplyColorShade(lerpShade),
-      autoInvert: t < 0.5 ? autoInvert : other.autoInvert,
-      customColor: lerpColor,
-      begin: this,
-      end: other,
-      progress: t,
-    );
+      return GaplyColor._internal(
+        profiler: other.profiler,
+        token: t < 0.5 ? token : other.token,
+        opacity: GaplyColorOpacity(lerpOpacity),
+        shade: GaplyColorShade(lerpShade),
+        autoInvert: t < 0.5 ? autoInvert : other.autoInvert,
+        customColor: lerpColor,
+        begin: this,
+        end: other,
+        progress: t,
+      );
+    }, tag: 'lerp');
   }
 
   @override
@@ -167,36 +215,28 @@ class GaplyColor extends GaplyStyle<GaplyColor> with _GaplyColorMixin, ColorStyl
   @override
   String toString() {
     final String tokenName = token.toString().toUpperCase();
+
+    final String hexColor = customColor != null
+        ? " #${customColor!.toARGB32().toRadixString(16).padLeft(8, '0').toUpperCase()}"
+        : "";
+
     final String shadeInfo = "S${(shade.value * 1000).toInt()}";
-    final String opacityInfo = opacity.value < 1.0 ? "(${(opacity.value * 100).toInt()}%)" : "";
 
-    // 진행률에 따른 아이콘 표시
-    String modeIcon = _progress > 0.5 ? "🌙" : "☀️";
+    final String opacityInfo = opacity.value < 1.0 ? " (${(opacity.value * 100).toInt()}%)" : "";
 
-    return '🎨 [$tokenName] $modeIcon | $shadeInfo$opacityInfo';
-  }
+    final String progressPct = (_progress * 100).toStringAsFixed(0);
 
-  String toColorString(Color color, {double? progress}) {
-    final String tokenName = token.toString().toUpperCase();
-    final String shadeInfo = "S${(shade.value * 1000).toInt()}";
-    final String opacityInfo = opacity.value < 1.0 ? "(${(opacity.value * 100).toInt()}%)" : "";
-
-    String modeIcon = "✨";
-    if (progress != null) {
-      modeIcon = progress > 0.5 ? "🌙" : "☀️";
-    }
-
-    final hex = color.toARGB32().toRadixString(16).toUpperCase().padLeft(8, '0');
-
-    return '🎨 [$tokenName] $modeIcon #$hex | $shadeInfo$opacityInfo';
+    return '🎨 [$tokenName]$hexColor ($progressPct%) ➔ $shadeInfo$opacityInfo';
   }
 }
 
 mixin _GaplyColorMixin {
-  GaplyColor get colorStyle => this as GaplyColor;
+  GaplyColor get _self => this as GaplyColor;
+  GaplyColor get colorStyle => _self;
 
   GaplyColor copyWithColor(GaplyColor color) {
-    return colorStyle._copyWithInternal(
+    return _self._copyWithInternal(
+      profiler: color.profiler,
       token: color.token,
       opacity: color.opacity,
       customColor: color.customColor,
@@ -208,101 +248,97 @@ mixin _GaplyColorMixin {
     );
   }
 
-  //static final Expando<Map<int, Color>> _cacheStorage = Expando();
   static final Map<int, Color> _cacheStorage = {};
   static Brightness? _lastCachedBrightness;
 
-  Color? resolve(BuildContext context, {bool useCache = true}) {
-    if (!colorStyle.hasEffect) return null;
+  Color? resolveWithProgress(double progress, {bool isDark = false}) {
+    if (!_self.hasEffect) return null;
 
-    final themeData = GaplyTheme.maybeOf<GaplyColorTheme>(context);
-    final currentBrightness = themeData?.brightness ?? Theme.of(context).brightness;
+    final start = _self._begin ?? _self;
+    final finish = _self._end ?? _self;
 
-    final double currentProgress = themeData?.progress ?? colorStyle._progress;
-    final bool isAnimating = currentProgress > 0.0 && currentProgress < 1.0;
-
-    final cacheKey = Object.hash(
-      colorStyle.token,
-      colorStyle.customColor?.toARGB32(),
-      (colorStyle.shade.value * 1000).toInt(),
-      (colorStyle.opacity.value * 1000).toInt(),
-      currentBrightness,
-      currentProgress == 1.0 ? 1 : 0,
-    );
-
-    if (_lastCachedBrightness != null && _lastCachedBrightness != currentBrightness) {
-      _cacheStorage.clear();
-    }
-    _lastCachedBrightness = currentBrightness;
-
-    if (useCache && !isAnimating && _cacheStorage.containsKey(cacheKey)) {
-      final cachedColor = _cacheStorage[cacheKey];
-      if (cachedColor != null) {
-        // GaplyLogger.i(
-        //   'Hit cachedColor: ${colorStyle.toColorString(cachedColor, progress: currentProgress)} (p:${currentProgress.toStringAsFixed(2)})',
-        //   isForce: true,
-        // );
-        return cachedColor;
-      }
-    }
-
-    final result = _resolveImpl(context, themeData);
-
-    if (result != null && useCache && !isAnimating) {
-      _cacheStorage[cacheKey] = result;
-    }
-
-    return result;
+    final GaplyColor blendedStyle = start.lerp(finish, progress);
+    return _resolveColor(blendedStyle, progress);
   }
 
-  Color? _resolveImpl(BuildContext context, [GaplyColorTheme? themeData]) {
-    final theme = themeData ?? GaplyTheme.maybeOf<GaplyColorTheme>(context);
-    final double effectiveProgress = theme?.progress ?? colorStyle._progress;
+  Color? resolve(BuildContext context, {bool useCache = true}) {
+    if (!_self.hasEffect) return null;
 
-    final start = colorStyle._begin ?? colorStyle;
-    final finish = colorStyle._end ?? colorStyle;
+    return _self.profiler.trace(() {
+      final themeData = GaplyTheme.maybeOf<GaplyColorTheme>(context);
+      final currentBrightness = themeData?.brightness ?? Theme.of(context).brightness;
 
-    final Color beginBase = start.customColor ?? colorStyle.customColor ?? const Color(0x00000000);
-    final Color endBase = finish.customColor ?? colorStyle.customColor ?? const Color(0x00000000);
+      final double currentProgress = themeData?.progress ?? _self._progress;
+      final bool isAnimating = currentProgress > 0.0 && currentProgress < 1.0;
 
-    final Color lightResult = _resolveForBrightness(beginBase, false, colorStyle.shade);
-    final Color darkResult = _resolveForBrightness(endBase, true, colorStyle.shade);
-
-    final finalResult = Color.lerp(lightResult, darkResult, effectiveProgress);
-
-    if (finalResult != null) {
-      final String label = theme == null ? "INTERNAL" : "THEME";
-
-      GaplyLogger.i(
-        '[$label] ${colorStyle.toColorString(finalResult, progress: effectiveProgress)} (p:${effectiveProgress.toStringAsFixed(2)})',
-        isForce: true,
+      final cacheKey = Object.hash(
+        _self.token,
+        _self.customColor?.toARGB32(),
+        (_self.shade.value * 1000).toInt(),
+        (_self.opacity.value * 1000).toInt(),
+        currentBrightness,
+        currentProgress == 1.0 ? 1 : 0,
       );
-    }
 
+      if (_lastCachedBrightness != null && _lastCachedBrightness != currentBrightness) {
+        _cacheStorage.clear();
+      }
+      _lastCachedBrightness = currentBrightness;
+
+      if (useCache && !isAnimating && _cacheStorage.containsKey(cacheKey)) {
+        final cachedColor = _cacheStorage[cacheKey];
+        if (cachedColor != null) {
+          return cachedColor;
+        }
+      }
+
+      final result = _resolveColor(_self, currentProgress);
+
+      if (result != null && useCache && !isAnimating) {
+        _cacheStorage[cacheKey] = result;
+      }
+
+      return result;
+    }, tag: 'resolve');
+  }
+
+  Color? _resolveColor(GaplyColor style, double progress) {
+    final start = style._begin ?? style;
+    final finish = style._end ?? style;
+
+    final Color beginBase = start.customColor ?? const Color(0x00000000);
+    final Color endBase = finish.customColor ?? const Color(0x00000000);
+
+    final Color lightResult = _resolveForBrightness(beginBase, false, style);
+    final Color darkResult = _resolveForBrightness(endBase, true, style);
+
+    final finalResult = Color.lerp(lightResult, darkResult, progress);
     return finalResult;
   }
 
-  Color _resolveForBrightness(Color baseColor, bool isDark, GaplyColorShade currentShade) {
-    Color finalColor = baseColor;
+  Color _resolveForBrightness(Color baseColor, bool isDark, GaplyColor style) {
+    return _self.profiler.trace(() {
+      Color finalColor = baseColor;
 
-    if (finalColor is MaterialColor) {
-      finalColor = _getMaterialColorShade(finalColor, isDark, currentShade);
-    } else {
-      finalColor = _applySmartShade(finalColor, isDark);
-    }
+      if (finalColor is MaterialColor) {
+        finalColor = _getMaterialColorShade(finalColor, isDark, style);
+      } else {
+        finalColor = _applySmartShade(finalColor, isDark, style);
+      }
 
-    if (colorStyle.opacity.value != 1.0) {
-      finalColor = finalColor.withValues(alpha: (finalColor.a * colorStyle.opacity.value).clamp(0.0, 1.0));
-    }
+      if (style.opacity.value != 1.0) {
+        finalColor = finalColor.withValues(alpha: (finalColor.a * style.opacity.value).clamp(0.0, 1.0));
+      }
 
-    return finalColor;
+      return finalColor;
+    }, tag: 'compute');
   }
 
-  Color _applySmartShade(Color color, bool isDark) {
+  Color _applySmartShade(Color color, bool isDark, GaplyColor style) {
     final double base = GaplyColorShade.defaultShade.value; // 0.5
-    double shade = colorStyle.shade.value;
+    double shade = style.shade.value;
 
-    if (colorStyle.autoInvert && isDark) {
+    if (style.autoInvert && isDark) {
       shade = (base * 2) - shade;
     }
 
@@ -319,7 +355,7 @@ mixin _GaplyColorMixin {
 
   static final List<Color> _allMaterials = [...Colors.primaries, ...Colors.accents];
 
-  Color _getMaterialColorShade(Color color, bool isDark, GaplyColorShade currentShade) {
+  Color _getMaterialColorShade(Color color, bool isDark, GaplyColor style) {
     Color targetColor = color;
 
     if (targetColor is! MaterialColor) {
@@ -329,12 +365,12 @@ mixin _GaplyColorMixin {
     }
 
     if (targetColor is MaterialColor) {
-      final int index = _valueToMaterialIndex(currentShade, isDark);
+      final int index = _valueToMaterialIndex(style.shade, isDark);
       final result = targetColor[index];
       if (result != null) return result;
     }
 
-    return _applySmartShade(targetColor, isDark);
+    return _applySmartShade(targetColor, isDark, style);
   }
 
   int _valueToMaterialIndex(GaplyColorShade shade, bool isDark) {

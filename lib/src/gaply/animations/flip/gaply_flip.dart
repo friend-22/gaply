@@ -105,29 +105,31 @@ class GaplyFlipState extends State<GaplyFlip> with SingleTickerProviderStateMixi
   Widget build(BuildContext context) {
     if (!widget.style.hasEffect) return widget.front;
 
-    return AnimatedBuilder(
-      animation: _curve,
-      builder: (context, child) {
-        final angle = _curve.value * widget.style.angleRange;
-        final isBack = _curve.value > 0.5;
+    return widget.style.profiler.trace(() {
+      return AnimatedBuilder(
+        animation: _curve,
+        builder: (context, child) {
+          final angle = _curve.value * widget.style.angleRange;
+          final isBack = _curve.value > 0.5;
 
-        return Transform(
-          alignment: Alignment.center,
-          transform: Matrix4.identity()
-            ..setEntry(3, 2, 0.001)
-            ..rotateY(widget.style.axis == Axis.vertical ? angle : 0)
-            ..rotateX(widget.style.axis == Axis.horizontal ? angle : 0),
-          child: isBack
-              ? Transform(
-                  alignment: Alignment.center,
-                  transform: widget.style.axis == Axis.vertical
-                      ? (Matrix4.identity()..rotateY(math.pi))
-                      : (Matrix4.identity()..rotateX(math.pi)),
-                  child: widget.back,
-                )
-              : widget.front,
-        );
-      },
-    );
+          return Transform(
+            alignment: Alignment.center,
+            transform: Matrix4.identity()
+              ..setEntry(3, 2, 0.001)
+              ..rotateY(widget.style.axis == Axis.vertical ? angle : 0)
+              ..rotateX(widget.style.axis == Axis.horizontal ? angle : 0),
+            child: isBack
+                ? Transform(
+                    alignment: Alignment.center,
+                    transform: widget.style.axis == Axis.vertical
+                        ? (Matrix4.identity()..rotateY(math.pi))
+                        : (Matrix4.identity()..rotateX(math.pi)),
+                    child: widget.back,
+                  )
+                : widget.front,
+          );
+        },
+      );
+    }, tag: 'build');
   }
 }

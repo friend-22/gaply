@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 
+import 'package:gaply/src/utils/gaply_perf.dart';
 import 'package:gaply/src/gaply/core/gaply_direction.dart';
 import 'package:gaply/src/gaply/core/gaply_style.dart';
 import 'package:gaply/src/gaply/core/gaply_trigger.dart';
@@ -25,6 +26,7 @@ class TrainStyle extends GaplyAnimStyle<TrainStyle>
   final bool useOpacity;
 
   const TrainStyle({
+    super.profiler,
     Duration? duration,
     Curve? curve,
     Duration? delay,
@@ -42,21 +44,28 @@ class TrainStyle extends GaplyAnimStyle<TrainStyle>
 
   static void register(String name, TrainStyle style) => GaplyTrainPreset.register(name, style);
 
-  factory TrainStyle.preset(String name, {bool? useOpacity, VoidCallback? onComplete}) {
+  factory TrainStyle.preset(
+    String name, {
+    GaplyProfiler? profiler,
+    bool? useOpacity,
+    VoidCallback? onComplete,
+  }) {
     final style = GaplyTrainPreset.of(name);
     if (style == null) {
       throw ArgumentError(GaplyTrainPreset.instance.errorMessage("TrainStyle", name));
     }
-    return style.copyWith(useOpacity: useOpacity, onComplete: onComplete);
+    return style.copyWith(profiler: profiler, useOpacity: useOpacity, onComplete: onComplete);
   }
 
   const TrainStyle.left({
+    GaplyProfiler? profiler,
     Duration? duration,
     Duration? delay,
     Curve? curve,
     VoidCallback? onComplete,
     bool useOpacity = true,
   }) : this(
+         profiler: profiler,
          duration: duration,
          curve: curve,
          delay: delay,
@@ -66,12 +75,14 @@ class TrainStyle extends GaplyAnimStyle<TrainStyle>
        );
 
   const TrainStyle.right({
+    GaplyProfiler? profiler,
     Duration? duration,
     Duration? delay,
     Curve? curve,
     VoidCallback? onComplete,
     bool useOpacity = true,
   }) : this(
+         profiler: profiler,
          duration: duration,
          curve: curve,
          delay: delay,
@@ -81,12 +92,14 @@ class TrainStyle extends GaplyAnimStyle<TrainStyle>
        );
 
   const TrainStyle.up({
+    GaplyProfiler? profiler,
     Duration? duration,
     Duration? delay,
     Curve? curve,
     VoidCallback? onComplete,
     bool useOpacity = true,
   }) : this(
+         profiler: profiler,
          duration: duration,
          curve: curve,
          delay: delay,
@@ -96,12 +109,14 @@ class TrainStyle extends GaplyAnimStyle<TrainStyle>
        );
 
   const TrainStyle.down({
+    GaplyProfiler? profiler,
     Duration? duration,
     Duration? delay,
     Curve? curve,
     VoidCallback? onComplete,
     bool useOpacity = true,
   }) : this(
+         profiler: profiler,
          duration: duration,
          curve: curve,
          delay: delay,
@@ -116,6 +131,7 @@ class TrainStyle extends GaplyAnimStyle<TrainStyle>
 
   @override
   TrainStyle copyWith({
+    GaplyProfiler? profiler,
     Duration? duration,
     Curve? curve,
     Duration? delay,
@@ -125,6 +141,7 @@ class TrainStyle extends GaplyAnimStyle<TrainStyle>
     bool? useOpacity,
   }) {
     return TrainStyle(
+      profiler: profiler ?? this.profiler,
       duration: duration ?? this.duration,
       curve: curve ?? this.curve,
       delay: delay ?? this.delay,
@@ -139,15 +156,18 @@ class TrainStyle extends GaplyAnimStyle<TrainStyle>
   TrainStyle lerp(GaplyAnimStyle? other, double t) {
     if (other is! TrainStyle) return this;
 
-    return TrainStyle(
-      duration: t < 0.5 ? duration : other.duration,
-      curve: t < 0.5 ? curve : other.curve,
-      delay: t < 0.5 ? delay : other.delay,
-      onComplete: other.onComplete,
-      progress: lerpDouble(progress, other.progress, t) ?? other.progress,
-      direction: t < 0.5 ? direction : other.direction,
-      useOpacity: t < 0.5 ? useOpacity : other.useOpacity,
-    );
+    return profiler.trace(() {
+      return TrainStyle(
+        profiler: other.profiler,
+        duration: t < 0.5 ? duration : other.duration,
+        curve: t < 0.5 ? curve : other.curve,
+        delay: t < 0.5 ? delay : other.delay,
+        onComplete: other.onComplete,
+        progress: lerpDouble(progress, other.progress, t) ?? other.progress,
+        direction: t < 0.5 ? direction : other.direction,
+        useOpacity: t < 0.5 ? useOpacity : other.useOpacity,
+      );
+    }, tag: 'lerp');
   }
 
   @override
@@ -158,10 +178,12 @@ class TrainStyle extends GaplyAnimStyle<TrainStyle>
 }
 
 mixin _TrainStyleMixin {
-  TrainStyle get trainStyle => this as TrainStyle;
+  TrainStyle get _self => this as TrainStyle;
+  TrainStyle get trainStyle => _self;
 
   TrainStyle copyWithTrain(TrainStyle train) {
-    return trainStyle.copyWith(
+    return _self.copyWith(
+      profiler: train.profiler,
       duration: train.duration,
       curve: train.curve,
       delay: train.delay,
@@ -187,7 +209,7 @@ mixin _TrainStyleMixin {
       previousItem: previousItem,
       itemBuilder: itemBuilder,
       trigger: DateTime.now(),
-      style: trainStyle,
+      style: _self,
     );
   }
 }

@@ -10,26 +10,28 @@ class _NoiseWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     if (!style.hasEffect) return child;
 
-    return RepaintBoundary(
-      child: Stack(
-        fit: StackFit.passthrough,
-        children: [
-          child,
-          Positioned.fill(
-            child: IgnorePointer(
-              child: CustomPaint(
-                painter: _NoisePainter(
-                  intensity: style.intensity,
-                  density: style.density,
-                  isColored: style.isColored,
-                  blendMode: style.blendMode,
+    return style.profiler.trace(() {
+      return RepaintBoundary(
+        child: Stack(
+          fit: StackFit.passthrough,
+          children: [
+            child,
+            Positioned.fill(
+              child: IgnorePointer(
+                child: CustomPaint(
+                  painter: _NoisePainter(
+                    intensity: style.intensity,
+                    density: style.density,
+                    isColored: style.isColored,
+                    blendMode: style.blendMode,
+                  ),
                 ),
               ),
             ),
-          ),
-        ],
-      ),
-    );
+          ],
+        ),
+      );
+    }, tag: 'build');
   }
 }
 

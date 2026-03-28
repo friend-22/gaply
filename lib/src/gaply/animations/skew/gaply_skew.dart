@@ -94,17 +94,19 @@ class GaplySkewState extends State<GaplySkew> with SingleTickerProviderStateMixi
   Widget build(BuildContext context) {
     if (!widget.style.hasEffect) return widget.child;
 
-    return AnimatedBuilder(
-      animation: _skewAnimation,
-      builder: (context, child) {
-        final skewValue = _skewAnimation.value;
-        return Transform(
-          transform: Matrix4.skew(skewValue.dx, skewValue.dy),
-          alignment: Alignment.center,
-          child: child,
-        );
-      },
-      child: widget.child,
-    );
+    return widget.style.profiler.trace(() {
+      return AnimatedBuilder(
+        animation: _skewAnimation,
+        builder: (context, child) {
+          final skewValue = _skewAnimation.value;
+          return Transform(
+            transform: Matrix4.skew(skewValue.dx, skewValue.dy),
+            alignment: Alignment.center,
+            child: child,
+          );
+        },
+        child: widget.child,
+      );
+    }, tag: 'build');
   }
 }

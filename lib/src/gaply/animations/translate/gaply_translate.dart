@@ -94,12 +94,14 @@ class GaplyTranslateState extends State<GaplyTranslate> with SingleTickerProvide
   Widget build(BuildContext context) {
     if (!widget.style.hasEffect) return widget.child;
 
-    return AnimatedBuilder(
-      animation: _offsetAnimation,
-      builder: (context, child) {
-        return Transform.translate(offset: _offsetAnimation.value, child: child);
-      },
-      child: widget.child,
-    );
+    return widget.style.profiler.trace(() {
+      return AnimatedBuilder(
+        animation: _offsetAnimation,
+        builder: (context, child) {
+          return Transform.translate(offset: _offsetAnimation.value, child: child);
+        },
+        child: widget.child,
+      );
+    }, tag: 'build');
   }
 }

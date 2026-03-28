@@ -1,8 +1,10 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+
 import 'package:gaply/src/gaply/core/gaply_style.dart';
 import 'package:gaply/src/gaply/styles/color/gaply_color.dart';
+import 'package:gaply/src/utils/gaply_perf.dart';
 
 import 'filter_presets.dart';
 import 'filter_style_modifier.dart';
@@ -18,6 +20,7 @@ class GaplyFilter extends GaplyStyle<GaplyFilter> with _GaplyFilterMixin, Filter
   final BlendMode blendMode;
 
   const GaplyFilter({
+    super.profiler,
     this.grayscale = 0.0,
     this.contrast = 1.0,
     this.brightness = 0.0,
@@ -29,28 +32,32 @@ class GaplyFilter extends GaplyStyle<GaplyFilter> with _GaplyFilterMixin, Filter
 
   static void register(String name, GaplyFilter style) => GaplyFilterPreset.register(name, style);
 
-  factory GaplyFilter.preset(String name) {
+  factory GaplyFilter.preset(String name, {GaplyProfiler? profiler}) {
     final style = GaplyFilterPreset.of(name);
     if (style == null) {
       throw ArgumentError(GaplyFilterPreset.instance.errorMessage("GaplyFilter", name));
     }
-    return style;
+    return style.copyWith(profiler: profiler);
   }
 
   @override
   GaplyFilter lerp(GaplyFilter? other, double t) {
     if (other == null) return this;
-    return GaplyFilter(
-      grayscale: lerpDouble(grayscale, other.grayscale, t) ?? grayscale,
-      contrast: lerpDouble(contrast, other.contrast, t) ?? contrast,
-      brightness: lerpDouble(brightness, other.brightness, t) ?? brightness,
-      blendColor: blendColor.lerp(other.blendColor, t),
-      blendMode: t < 0.5 ? blendMode : other.blendMode,
-    );
+
+    return profiler.trace(() {
+      return GaplyFilter(
+        grayscale: lerpDouble(grayscale, other.grayscale, t) ?? grayscale,
+        contrast: lerpDouble(contrast, other.contrast, t) ?? contrast,
+        brightness: lerpDouble(brightness, other.brightness, t) ?? brightness,
+        blendColor: blendColor.lerp(other.blendColor, t),
+        blendMode: t < 0.5 ? blendMode : other.blendMode,
+      );
+    }, tag: 'lerp');
   }
 
   @override
   GaplyFilter copyWith({
+    GaplyProfiler? profiler,
     double? grayscale,
     double? contrast,
     double? brightness,
@@ -58,6 +65,7 @@ class GaplyFilter extends GaplyStyle<GaplyFilter> with _GaplyFilterMixin, Filter
     BlendMode? blendMode,
   }) {
     return GaplyFilter(
+      profiler: profiler ?? this.profiler,
       grayscale: grayscale ?? this.grayscale,
       contrast: contrast ?? this.contrast,
       brightness: brightness ?? this.brightness,
@@ -74,10 +82,12 @@ class GaplyFilter extends GaplyStyle<GaplyFilter> with _GaplyFilterMixin, Filter
 }
 
 mixin _GaplyFilterMixin {
-  GaplyFilter get filterStyle => this as GaplyFilter;
+  GaplyFilter get _self => this as GaplyFilter;
+  GaplyFilter get filterStyle => _self;
 
   GaplyFilter copyWithFilter(GaplyFilter filter) {
-    return filterStyle.copyWith(
+    return _self.copyWith(
+      profiler: filter.profiler,
       grayscale: filter.grayscale,
       contrast: filter.contrast,
       brightness: filter.brightness,
@@ -87,48 +97,50 @@ mixin _GaplyFilterMixin {
   }
 
   Widget buildWidget({required BuildContext context, required Widget child}) {
-    if (!filterStyle.hasEffect) return child;
+    if (!_self.hasEffect) return child;
 
-    return _FilterWidget(style: filterStyle, child: child);
+    return _FilterWidget(style: _self, child: child);
   }
 
   ColorFilter? resolve(BuildContext context) {
-    if (!filterStyle.hasEffect) return null;
+    if (!_self.hasEffect) return null;
 
-    final resolvedColor = filterStyle.blendColor.resolve(context);
+    return _self.profiler.trace(() {
+      final resolvedColor = _self.blendColor.resolve(context);
 
-    if (resolvedColor != null) {
-      return ColorFilter.mode(resolvedColor, filterStyle.blendMode);
-    }
+      if (resolvedColor != null) {
+        return ColorFilter.mode(resolvedColor, _self.blendMode);
+      }
 
-    final double s = 1 - filterStyle.grayscale;
-    final double r = 0.2126 * filterStyle.grayscale;
-    final double g = 0.7152 * filterStyle.grayscale;
-    final double b = 0.0722 * filterStyle.grayscale;
-    final double c = filterStyle.contrast;
-    final double br = filterStyle.brightness * 255;
+      final double s = 1 - _self.grayscale;
+      final double r = 0.2126 * _self.grayscale;
+      final double g = 0.7152 * _self.grayscale;
+      final double b = 0.0722 * _self.grayscale;
+      final double c = _self.contrast;
+      final double br = _self.brightness * 255;
 
-    return ColorFilter.matrix(<double>[
-      (r + s) * c,
-      g * c,
-      b * c,
-      0,
-      br,
-      r * c,
-      (g + s) * c,
-      b * c,
-      0,
-      br,
-      r * c,
-      g * c,
-      (b + s) * c,
-      0,
-      br,
-      0,
-      0,
-      0,
-      1,
-      0,
-    ]);
+      return ColorFilter.matrix(<double>[
+        (r + s) * c,
+        g * c,
+        b * c,
+        0,
+        br,
+        r * c,
+        (g + s) * c,
+        b * c,
+        0,
+        br,
+        r * c,
+        g * c,
+        (b + s) * c,
+        0,
+        br,
+        0,
+        0,
+        0,
+        1,
+        0,
+      ]);
+    }, tag: 'resolve');
   }
 }

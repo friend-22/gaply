@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:gaply/src/gaply/core/gaply_style.dart';
 import 'package:gaply/src/gaply/styles/color/gaply_color.dart';
 import 'package:gaply/src/gaply/styles/color/color_defines.dart';
+import 'package:gaply/src/utils/gaply_perf.dart';
 
 import 'shadow_presets.dart';
 import 'shadow_style_modifier.dart';
@@ -23,6 +24,7 @@ class GaplyShadow extends GaplyStyle<GaplyShadow> with _GaplyShadowMixin, Shadow
   final BlurStyle blurStyle;
 
   const GaplyShadow({
+    super.profiler,
     this.spreadRadius = 0.0,
     required this.blurRadius,
     required this.color,
@@ -39,21 +41,22 @@ class GaplyShadow extends GaplyStyle<GaplyShadow> with _GaplyShadowMixin, Shadow
 
   static void register(String name, GaplyShadow style) => GaplyShadowPreset.register(name, style);
 
-  factory GaplyShadow.preset(String name, {GaplyColor? color}) {
+  factory GaplyShadow.preset(String name, {GaplyProfiler? profiler, GaplyColor? color}) {
     final style = GaplyShadowPreset.of(name);
     if (style == null) {
       throw ArgumentError(GaplyShadowPreset.instance.errorMessage("GaplyShadow", name));
     }
-    return color != null ? style.copyWith(color: color) : style;
+    return style.copyWith(profiler: profiler, color: color);
   }
 
-  factory GaplyShadow.elevation(double elevation, {GaplyColor? color}) {
+  factory GaplyShadow.elevation(double elevation, {GaplyProfiler? profiler, GaplyColor? color}) {
     if (elevation <= 0) return const GaplyShadow.none();
 
     final opacity = (_maxOpacity - (elevation / 100)).clamp(_minOpacity, _maxOpacity);
     final resolveOpacity = GaplyColorOpacity(opacity);
 
     return GaplyShadow(
+      profiler: profiler,
       offset: Offset(elevation, elevation),
       blurRadius: elevation * 0.5,
       spreadRadius: -elevation / 8,
@@ -63,6 +66,7 @@ class GaplyShadow extends GaplyStyle<GaplyShadow> with _GaplyShadowMixin, Shadow
 
   @override
   GaplyShadow copyWith({
+    GaplyProfiler? profiler,
     double? spreadRadius,
     double? blurRadius,
     GaplyColor? color,
@@ -70,6 +74,7 @@ class GaplyShadow extends GaplyStyle<GaplyShadow> with _GaplyShadowMixin, Shadow
     BlurStyle? blurStyle,
   }) {
     return GaplyShadow(
+      profiler: profiler ?? this.profiler,
       spreadRadius: spreadRadius ?? this.spreadRadius,
       blurRadius: blurRadius ?? this.blurRadius,
       color: color ?? this.color,
@@ -82,13 +87,16 @@ class GaplyShadow extends GaplyStyle<GaplyShadow> with _GaplyShadowMixin, Shadow
   GaplyShadow lerp(GaplyShadow? other, double t) {
     if (other == null) return this;
 
-    return GaplyShadow(
-      spreadRadius: lerpDouble(spreadRadius, other.spreadRadius, t) ?? spreadRadius,
-      blurRadius: lerpDouble(blurRadius, other.blurRadius, t) ?? blurRadius,
-      offset: Offset.lerp(offset, other.offset, t) ?? offset,
-      color: color.lerp(other.color, t),
-      blurStyle: t < 0.5 ? blurStyle : other.blurStyle,
-    );
+    return profiler.trace(() {
+      return GaplyShadow(
+        profiler: other.profiler,
+        spreadRadius: lerpDouble(spreadRadius, other.spreadRadius, t) ?? spreadRadius,
+        blurRadius: lerpDouble(blurRadius, other.blurRadius, t) ?? blurRadius,
+        offset: Offset.lerp(offset, other.offset, t) ?? offset,
+        color: color.lerp(other.color, t),
+        blurStyle: t < 0.5 ? blurStyle : other.blurStyle,
+      );
+    }, tag: 'lerp');
   }
 
   @override
@@ -99,10 +107,12 @@ class GaplyShadow extends GaplyStyle<GaplyShadow> with _GaplyShadowMixin, Shadow
 }
 
 mixin _GaplyShadowMixin {
+  GaplyShadow get _self => this as GaplyShadow;
   GaplyShadow get shadowStyle => this as GaplyShadow;
 
   GaplyShadow copyWithShadow(GaplyShadow shadow) {
-    return shadowStyle.copyWith(
+    return _self.copyWith(
+      profiler: shadow.profiler,
       spreadRadius: shadow.spreadRadius,
       blurRadius: shadow.blurRadius,
       offset: shadow.offset,
@@ -112,7 +122,9 @@ mixin _GaplyShadowMixin {
   }
 
   BoxShadow? resolve(BuildContext context) {
-    final resolvedColor = shadowStyle.color.resolve(context);
+    if (!_self.hasEffect) return null;
+
+    final resolvedColor = _self.profiler.trace(() => shadowStyle.color.resolve(context), tag: 'resolve');
     if (resolvedColor == null) return null;
 
     return BoxShadow(
