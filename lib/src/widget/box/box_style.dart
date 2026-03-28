@@ -67,9 +67,9 @@ class BoxStyle extends GaplyTweenStyle<BoxStyle>
 
   const BoxStyle.none() : this();
 
-  static void register(String name, BoxStyle style) => GaplyBoxPreset.register(name, style);
+  static void register(Object name, BoxStyle style) => GaplyBoxPreset.register(name, style);
 
-  factory BoxStyle.preset(String name, {GaplyProfiler? profiler}) {
+  factory BoxStyle.preset(Object name, {GaplyProfiler? profiler}) {
     final style = GaplyBoxPreset.of(name);
     if (style == null) {
       throw ArgumentError(GaplyBoxPreset.instance.errorMessage("BoxStyle", name));

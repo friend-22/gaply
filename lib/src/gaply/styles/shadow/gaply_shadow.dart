@@ -39,9 +39,9 @@ class GaplyShadow extends GaplyStyle<GaplyShadow> with _GaplyShadowMixin, Shadow
       offset = Offset.zero,
       blurStyle = BlurStyle.normal;
 
-  static void register(String name, GaplyShadow style) => GaplyShadowPreset.register(name, style);
+  static void register(Object name, GaplyShadow style) => GaplyShadowPreset.register(name, style);
 
-  factory GaplyShadow.preset(String name, {GaplyProfiler? profiler, GaplyColor? color}) {
+  factory GaplyShadow.preset(Object name, {GaplyProfiler? profiler, GaplyColor? color}) {
     final style = GaplyShadowPreset.of(name);
     if (style == null) {
       throw ArgumentError(GaplyShadowPreset.instance.errorMessage("GaplyShadow", name));

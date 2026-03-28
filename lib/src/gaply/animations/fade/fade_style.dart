@@ -60,9 +60,9 @@ class FadeStyle extends GaplyAnimStyle<FadeStyle>
   ///
   /// Available default presets: 'fadeIn', 'fadeOut'.
   /// Throws [ArgumentError] if the [name] is not registered.
-  static void register(String name, FadeStyle style) => GaplyFadePreset.register(name, style);
+  static void register(Object name, FadeStyle style) => GaplyFadePreset.register(name, style);
 
-  factory FadeStyle.preset(String name, {GaplyProfiler? profiler, VoidCallback? onComplete}) {
+  factory FadeStyle.preset(Object name, {GaplyProfiler? profiler, VoidCallback? onComplete}) {
     final style = GaplyFadePreset.of(name);
     if (style == null) {
       throw ArgumentError(GaplyFadePreset.instance.errorMessage("FadeStyle", name));

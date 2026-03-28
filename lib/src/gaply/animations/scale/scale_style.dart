@@ -50,10 +50,10 @@ class ScaleStyle extends GaplyAnimStyle<ScaleStyle>
         isScaled: false,
       );
 
-  static void register(String name, ScaleStyle style) => GaplyScalePreset.register(name, style);
+  static void register(Object name, ScaleStyle style) => GaplyScalePreset.register(name, style);
 
   factory ScaleStyle.preset(
-    String name, {
+    Object name, {
     GaplyProfiler? profiler,
     Alignment? alignment,
     bool? isScaled,

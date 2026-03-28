@@ -50,7 +50,7 @@ class GaplyRevealPreset with GaplyPreset<RevealStyle> {
     );
   }
 
-  static void register(String name, RevealStyle style) => instance.add(name, style);
+  static void register(Object name, RevealStyle style) => instance.add(name, style);
 
-  static RevealStyle? of(String name) => instance.get(name);
+  static RevealStyle? of(Object name) => instance.get(name);
 }

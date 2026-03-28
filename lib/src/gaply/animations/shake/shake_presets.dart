@@ -74,7 +74,7 @@ class GaplyShakePreset with GaplyPreset<ShakeStyle> {
     );
   }
 
-  static void register(String name, ShakeStyle style) => instance.add(name, style);
+  static void register(Object name, ShakeStyle style) => instance.add(name, style);
 
-  static ShakeStyle? of(String name) => instance.get(name);
+  static ShakeStyle? of(Object name) => instance.get(name);
 }

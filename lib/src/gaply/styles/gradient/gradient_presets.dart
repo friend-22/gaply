@@ -98,7 +98,7 @@ class GaplyGradientPreset with GaplyPreset<GaplyGradient> {
     );
   }
 
-  static void register(String name, GaplyGradient style) => instance.add(name, style);
+  static void register(Object name, GaplyGradient style) => instance.add(name, style);
 
-  static GaplyGradient? of(String name) => instance.get(name);
+  static GaplyGradient? of(Object name) => instance.get(name);
 }

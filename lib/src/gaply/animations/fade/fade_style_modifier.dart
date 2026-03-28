@@ -9,7 +9,7 @@ mixin FadeStyleModifier<T> {
 
   T fadeStyleSet(FadeStyle fade) => copyWithFade(fade);
 
-  T fadePreset(String name) => copyWithFade(FadeStyle.preset(name));
+  T fadePreset(Object name) => copyWithFade(FadeStyle.preset(name));
 
   T fadeIn() => copyWithFade(fadeStyle.copyWith(isVisible: true));
 

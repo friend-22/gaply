@@ -30,7 +30,7 @@ class GaplyFilterPreset with GaplyPreset<GaplyFilter> {
     );
   }
 
-  static void register(String name, GaplyFilter style) => instance.add(name, style);
+  static void register(Object name, GaplyFilter style) => instance.add(name, style);
 
-  static GaplyFilter? of(String name) => instance.get(name);
+  static GaplyFilter? of(Object name) => instance.get(name);
 }

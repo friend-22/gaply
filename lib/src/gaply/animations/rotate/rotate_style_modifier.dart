@@ -9,7 +9,7 @@ mixin RotateStyleModifier<T> {
 
   T rotateStyleSet(RotateStyle value) => copyWithRotate(value);
 
-  T rotatePreset(String name, {bool? isRotated}) =>
+  T rotatePreset(Object name, {bool? isRotated}) =>
       copyWithRotate(RotateStyle.preset(name, isRotated: isRotated));
 
   T rotateActive(bool active) => copyWithRotate(rotateStyle.copyWith(isRotated: active));

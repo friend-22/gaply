@@ -40,9 +40,9 @@ class GaplyLayout extends GaplyStyle<GaplyLayout> with _GaplyLayoutMixin, Layout
       width = null,
       height = null;
 
-  static void register(String name, GaplyLayout style) => GaplyLayoutPreset.register(name, style);
+  static void register(Object name, GaplyLayout style) => GaplyLayoutPreset.register(name, style);
 
-  factory GaplyLayout.preset(String name, {GaplyProfiler? profiler}) {
+  factory GaplyLayout.preset(Object name, {GaplyProfiler? profiler}) {
     final style = GaplyLayoutPreset.of(name);
     if (style == null) {
       throw ArgumentError(GaplyLayoutPreset.instance.errorMessage("GaplyLayout", name));

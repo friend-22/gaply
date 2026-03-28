@@ -57,9 +57,9 @@ class GaplyTextStyle extends GaplyTweenStyle<GaplyTextStyle>
 
   const GaplyTextStyle.none() : this();
 
-  static void register(String name, GaplyTextStyle style) => GaplyTextPreset.register(name, style);
+  static void register(Object name, GaplyTextStyle style) => GaplyTextPreset.register(name, style);
 
-  factory GaplyTextStyle.preset(String name, {GaplyProfiler? profiler}) {
+  factory GaplyTextStyle.preset(Object name, {GaplyProfiler? profiler}) {
     final style = GaplyTextPreset.of(name);
     if (style == null) {
       throw ArgumentError(GaplyTextPreset.instance.errorMessage("GaplyTextStyle", name));

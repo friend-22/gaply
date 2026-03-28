@@ -37,9 +37,9 @@ class GaplyShimmer extends GaplyStyle<GaplyShimmer>
       direction = ShimmerDirection.ltr,
       loop = 0;
 
-  static void register(String name, GaplyShimmer style) => GaplyShimmerPreset.register(name, style);
+  static void register(Object name, GaplyShimmer style) => GaplyShimmerPreset.register(name, style);
 
-  factory GaplyShimmer.preset(String name, {GaplyProfiler? profiler, int? loop}) {
+  factory GaplyShimmer.preset(Object name, {GaplyProfiler? profiler, int? loop}) {
     final style = GaplyShimmerPreset.of(name);
     if (style == null) {
       throw ArgumentError(GaplyShimmerPreset.instance.errorMessage("GaplyShimmer", name));

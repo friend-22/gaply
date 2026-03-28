@@ -45,10 +45,10 @@ class RevealStyle extends GaplyAnimStyle<RevealStyle>
 
   const RevealStyle.none() : this(duration: Duration.zero, direction: AxisDirection.up, isVisible: false);
 
-  static void register(String name, RevealStyle style) => GaplyRevealPreset.register(name, style);
+  static void register(Object name, RevealStyle style) => GaplyRevealPreset.register(name, style);
 
   factory RevealStyle.preset(
-    String name, {
+    Object name, {
     GaplyProfiler? profiler,
     bool? isVisible,
     bool? fixedSize,

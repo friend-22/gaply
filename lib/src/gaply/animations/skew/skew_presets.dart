@@ -22,7 +22,7 @@ class GaplySkewPreset with GaplyPreset<SkewStyle> {
     add('flipPre', SkewStyle.horizontal(0.5, curve: Curves.easeInCubic));
   }
 
-  static void register(String name, SkewStyle style) => instance.add(name, style);
+  static void register(Object name, SkewStyle style) => instance.add(name, style);
 
-  static SkewStyle? of(String name) => instance.get(name);
+  static SkewStyle? of(Object name) => instance.get(name);
 }

@@ -1,4 +1,3 @@
-
 import 'package:gaply/src/gaply/core/gaply_preset.dart';
 
 import 'text_style.dart';
@@ -12,7 +11,7 @@ class GaplyTextPreset with GaplyPreset<GaplyTextStyle> {
 
   void _initDefaultPresets() {}
 
-  static void register(String name, GaplyTextStyle style) => instance.add(name, style);
+  static void register(Object name, GaplyTextStyle style) => instance.add(name, style);
 
-  static GaplyTextStyle? of(String name) => instance.get(name);
+  static GaplyTextStyle? of(Object name) => instance.get(name);
 }

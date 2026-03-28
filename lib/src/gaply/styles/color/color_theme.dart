@@ -22,12 +22,12 @@ class GaplyColorTheme extends GaplyThemeData<GaplyColorTheme>
     required this.colors,
   }) : super(duration: duration ?? const Duration(milliseconds: 300), curve: curve ?? Curves.easeInOut);
 
-  static void register(String name, GaplyColorTheme style) => GaplyColorThemePreset.register(name, style);
+  static void register(Object name, GaplyColorTheme style) => GaplyColorThemePreset.register(name, style);
 
-  factory GaplyColorTheme.preset(String name, {GaplyProfiler? profiler}) {
+  factory GaplyColorTheme.preset(Object name, {GaplyProfiler? profiler}) {
     final style = GaplyColorThemePreset.of(name);
     if (style == null) {
-      throw ArgumentError(GaplyColorThemePreset.instance.errorMessage("GaplyColorTheme", name));
+      throw ArgumentError(GaplyColorThemePreset.instance.errorMessage("GaplyColorTheme", name.toString()));
     }
     return style.copyWith(profiler: profiler);
   }

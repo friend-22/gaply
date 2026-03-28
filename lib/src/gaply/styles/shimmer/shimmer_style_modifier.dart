@@ -9,7 +9,7 @@ mixin ShimmerStyleModifier<T> {
 
   T shimmerStyleSet(GaplyShimmer shimmer) => copyWithShimmer(shimmer);
 
-  T shimmerPreset(String name, {int? loop}) => copyWithShimmer(GaplyShimmer.preset(name, loop: loop));
+  T shimmerPreset(Object name, {int? loop}) => copyWithShimmer(GaplyShimmer.preset(name, loop: loop));
 
   T shimmerSpeed(double speed) => copyWithShimmer(shimmerStyle.withSpeed(speed));
 

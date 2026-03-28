@@ -20,9 +20,6 @@ class GaplyBoxPreset with GaplyPreset<BoxStyle> {
       const BoxStyle(
         layout: GaplyLayout(padding: EdgeInsets.all(16), borderRadius: BorderRadius.all(Radius.circular(12))),
         color: GaplyColor(token: GaplyColorToken.surface),
-        shadows: [
-          // GaplyShadow.preset('small')
-        ],
       ),
     );
 
@@ -39,7 +36,7 @@ class GaplyBoxPreset with GaplyPreset<BoxStyle> {
     );
   }
 
-  static void register(String name, BoxStyle style) => instance.add(name, style);
+  static void register(Object name, BoxStyle style) => instance.add(name, style);
 
-  static BoxStyle? of(String name) => instance.get(name);
+  static BoxStyle? of(Object name) => instance.get(name);
 }

@@ -22,9 +22,9 @@ class BlurStyle extends GaplyStyle<BlurStyle> with _BlurStyleMixin, BlurStyleMod
 
   const BlurStyle.none() : this(sigma: 0.0, color: const GaplyColor.none());
 
-  static void register(String name, BlurStyle style) => GaplyBlurPreset.register(name, style);
+  static void register(Object name, BlurStyle style) => GaplyBlurPreset.register(name, style);
 
-  factory BlurStyle.preset(String name, {GaplyProfiler? profiler, GaplyColor? color}) {
+  factory BlurStyle.preset(Object name, {GaplyProfiler? profiler, GaplyColor? color}) {
     final style = GaplyBlurPreset.of(name);
     if (style == null) {
       throw ArgumentError(GaplyBlurPreset.instance.errorMessage("BlurStyle", name));
@@ -48,7 +48,7 @@ class BlurStyle extends GaplyStyle<BlurStyle> with _BlurStyleMixin, BlurStyleMod
     return profiler.trace(
       () => BlurStyle(
         profiler: other.profiler,
-        sigma: lerpDouble(sigma, other.sigma, t) ?? sigma,
+        sigma: (lerpDouble(sigma, other.sigma, t) ?? sigma).clamp(0.0, double.infinity),
         color: color.lerp(other.color, t),
       ),
       tag: 'lerp',

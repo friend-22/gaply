@@ -7,7 +7,7 @@ mixin NoiseStyleModifier<T> {
 
   T noiseStyleSet(GaplyNoise noise) => copyWithNoise(noise);
 
-  T noisePreset(String name) => copyWithNoise(GaplyNoise.preset(name));
+  T noisePreset(Object name) => copyWithNoise(GaplyNoise.preset(name));
 
   T noiseIntensity(double value) => copyWithNoise(noiseStyle.copyWith(intensity: value));
 

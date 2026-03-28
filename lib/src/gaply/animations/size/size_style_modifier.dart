@@ -9,7 +9,7 @@ mixin SizeStyleModifier<T> {
 
   T sizeStyleSet(SizeStyle value) => copyWithSize(value);
 
-  T sizePreset(String name, {bool? isExpanded}) =>
+  T sizePreset(Object name, {bool? isExpanded}) =>
       copyWithSize(SizeStyle.preset(name, isExpanded: isExpanded));
 
   T expand() => copyWithSize(sizeStyle.copyWith(isExpanded: true));

@@ -11,7 +11,7 @@ class GaplyLayoutPreset with GaplyPreset<GaplyLayout> {
 
   void _initDefaultPresets() {}
 
-  static void register(String name, GaplyLayout style) => instance.add(name, style);
+  static void register(Object name, GaplyLayout style) => instance.add(name, style);
 
-  static GaplyLayout? of(String name) => instance.get(name);
+  static GaplyLayout? of(Object name) => instance.get(name);
 }

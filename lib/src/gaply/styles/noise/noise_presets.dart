@@ -21,7 +21,7 @@ class GaplyNoisePreset with GaplyPreset<GaplyNoise> {
     add('film', const GaplyNoise(intensity: 0.12, isColored: true, blendMode: BlendMode.softLight));
   }
 
-  static void register(String name, GaplyNoise style) => instance.add(name, style);
+  static void register(Object name, GaplyNoise style) => instance.add(name, style);
 
-  static GaplyNoise? of(String name) => instance.get(name);
+  static GaplyNoise? of(Object name) => instance.get(name);
 }

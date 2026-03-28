@@ -11,7 +11,7 @@ class GaplyFadePreset with GaplyPreset<FadeStyle> {
 
   void _initDefaultPresets() {}
 
-  static void register(String name, FadeStyle style) => instance.add(name, style);
+  static void register(Object name, FadeStyle style) => instance.add(name, style);
 
-  static FadeStyle? of(String name) => instance.get(name);
+  static FadeStyle? of(Object name) => instance.get(name);
 }

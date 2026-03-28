@@ -23,7 +23,7 @@ class GaplyBlurPreset with GaplyPreset<BlurStyle> {
     add('google', const BlurStyle(sigma: 25.0, color: blurLowColor));
   }
 
-  static void register(String name, BlurStyle style) => instance.add(name, style);
+  static void register(Object name, BlurStyle style) => instance.add(name, style);
 
-  static BlurStyle? of(String name) => instance.get(name);
+  static BlurStyle? of(Object name) => instance.get(name);
 }

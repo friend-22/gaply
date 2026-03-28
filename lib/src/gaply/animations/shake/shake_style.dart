@@ -91,10 +91,10 @@ class ShakeStyle extends GaplyAnimStyle<ShakeStyle>
   /// Available presets: 'mild', 'normal', 'severe', 'alert', 'nod', 'celebrate'
   ///
   /// Throws [ArgumentError] if the [name] is not registered.
-  static void register(String name, ShakeStyle style) => GaplyShakePreset.register(name, style);
+  static void register(Object name, ShakeStyle style) => GaplyShakePreset.register(name, style);
 
   factory ShakeStyle.preset(
-    String name, {
+    Object name, {
     GaplyProfiler? profiler,
     double? distance,
     double? count,

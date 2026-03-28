@@ -50,9 +50,9 @@ class GaplyColor extends GaplyStyle<GaplyColor> with _GaplyColorMixin, ColorStyl
 
   factory GaplyColor.resolve({
     GaplyProfiler? profiler,
-    required dynamic token,
-    dynamic shade,
-    dynamic opacity,
+    required Object token,
+    Object? shade,
+    Object? opacity,
     Color? customColor,
     bool autoInvert = true,
   }) {

@@ -9,7 +9,7 @@ class GaplyFlipPreset with GaplyPreset<FlipStyle> {
   }
   void _initDefaultPresets() {}
 
-  static void register(String name, FlipStyle style) => instance.add(name, style);
+  static void register(Object name, FlipStyle style) => instance.add(name, style);
 
-  static FlipStyle? of(String name) => instance.get(name);
+  static FlipStyle? of(Object name) => instance.get(name);
 }

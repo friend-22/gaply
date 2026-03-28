@@ -10,7 +10,7 @@ mixin ShadowStyleModifier<T> {
 
   T shadowStyleSet(GaplyShadow shadows) => copyWithShadow(shadows);
 
-  T shadowPreset(String name, {GaplyColor? color}) => copyWithShadow(GaplyShadow.preset(name, color: color));
+  T shadowPreset(Object name, {GaplyColor? color}) => copyWithShadow(GaplyShadow.preset(name, color: color));
 
   T shadowElevation(double value, {GaplyColor? color}) =>
       copyWithShadow(GaplyShadow.elevation(value, color: color));

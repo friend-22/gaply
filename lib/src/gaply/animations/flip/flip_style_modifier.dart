@@ -9,7 +9,7 @@ mixin FlipStyleModifier<T> {
 
   T flipSet(FlipStyle value) => copyWithFlip(value);
 
-  T flipPreset(String name) => copyWithFlip(FlipStyle.preset(name));
+  T flipPreset(Object name) => copyWithFlip(FlipStyle.preset(name));
 
   T flipToggle() => copyWithFlip(flipStyle.copyWith(isFlipped: !flipStyle.isFlipped));
 

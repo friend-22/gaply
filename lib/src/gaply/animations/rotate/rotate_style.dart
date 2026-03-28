@@ -44,10 +44,10 @@ class RotateStyle extends GaplyAnimStyle<RotateStyle>
 
   const RotateStyle.none() : this(duration: Duration.zero, begin: 0.0, end: 1.0, isRotated: false);
 
-  static void register(String name, RotateStyle style) => GaplyRotatePreset.register(name, style);
+  static void register(Object name, RotateStyle style) => GaplyRotatePreset.register(name, style);
 
   factory RotateStyle.preset(
-    String name, {
+    Object name, {
     GaplyProfiler? profiler,
     Alignment? alignment,
     bool? isRotated,

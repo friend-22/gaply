@@ -42,10 +42,10 @@ class TranslateStyle extends GaplyAnimStyle<TranslateStyle>
   const TranslateStyle.none()
     : this(duration: Duration.zero, curve: Curves.linear, end: Offset.zero, isMoved: false);
 
-  static void register(String name, TranslateStyle style) => GaplyTranslatePreset.register(name, style);
+  static void register(Object name, TranslateStyle style) => GaplyTranslatePreset.register(name, style);
 
   factory TranslateStyle.preset(
-    String name, {
+    Object name, {
     GaplyProfiler? profiler,
     bool? isMoved,
     VoidCallback? onComplete,

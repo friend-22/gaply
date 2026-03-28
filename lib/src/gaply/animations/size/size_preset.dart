@@ -9,7 +9,7 @@ class GaplySizePreset with GaplyPreset<SizeStyle> {
     _initDefaultPresets();
   }
 
-  void _addByDirection(String name, AxisDirection dir, {Duration? duration, Curve? curve}) {
+  void _addByDirection(Object name, AxisDirection dir, {Duration? duration, Curve? curve}) {
     final bool isVertical = dir == AxisDirection.up || dir == AxisDirection.down;
 
     final bool isReversed = dir == AxisDirection.up || dir == AxisDirection.left;
@@ -54,7 +54,7 @@ class GaplySizePreset with GaplyPreset<SizeStyle> {
     );
   }
 
-  static void register(String name, SizeStyle style) => instance.add(name, style);
+  static void register(Object name, SizeStyle style) => instance.add(name, style);
 
-  static SizeStyle? of(String name) => instance.get(name);
+  static SizeStyle? of(Object name) => instance.get(name);
 }

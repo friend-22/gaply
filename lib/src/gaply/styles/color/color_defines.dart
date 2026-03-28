@@ -19,7 +19,7 @@ class GaplyColorToken extends GaplyToken<String> {
   static const GaplyColorToken info = GaplyColorToken('info');
   static const GaplyColorToken shadow = GaplyColorToken('shadow');
 
-  static GaplyColorToken resolve(dynamic role) {
+  static GaplyColorToken resolve(Object? role) {
     if (role is GaplyColorToken) return role;
 
     if (role is Enum) {
@@ -61,7 +61,7 @@ class GaplyColorOpacity extends GaplyToken<double> {
   static const GaplyColorOpacity half = GaplyColorOpacity(0.5);
   static const GaplyColorOpacity solid = GaplyColorOpacity(1.0);
 
-  static GaplyColorOpacity resolve(dynamic value) {
+  static GaplyColorOpacity resolve(Object? value) {
     if (value is GaplyColorOpacity) return value;
     if (value is num) return GaplyColorOpacity(value.toDouble());
     if (value != null) {
@@ -96,7 +96,7 @@ class GaplyColorShade extends GaplyToken<double> {
 
   static const GaplyColorShade defaultShade = GaplyColorShade(0.5);
 
-  static GaplyColorShade resolve(dynamic value) {
+  static GaplyColorShade resolve(Object? value) {
     if (value is GaplyColorShade) return value;
     if (value is num) return GaplyColorShade(value.toDouble());
     if (value != null) {

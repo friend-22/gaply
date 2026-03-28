@@ -56,7 +56,7 @@ class GaplyColorThemePreset with GaplyPreset<GaplyColorTheme> {
     );
   }
 
-  static void register(String name, GaplyColorTheme style) => instance.add(name, style);
+  static void register(Object name, GaplyColorTheme style) => instance.add(name, style);
 
-  static GaplyColorTheme? of(String name) => instance.get(name);
+  static GaplyColorTheme? of(Object name) => instance.get(name);
 }

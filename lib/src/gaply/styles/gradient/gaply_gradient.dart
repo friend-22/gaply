@@ -35,9 +35,9 @@ class GaplyGradient extends GaplyStyle<GaplyGradient>
 
   const GaplyGradient.none() : this(type: GradientType.linear, colors: const [], stops: const []);
 
-  static void register(String name, GaplyGradient style) => GaplyGradientPreset.register(name, style);
+  static void register(Object name, GaplyGradient style) => GaplyGradientPreset.register(name, style);
 
-  factory GaplyGradient.preset(String name, {GaplyProfiler? profiler, GradientType? type}) {
+  factory GaplyGradient.preset(Object name, {GaplyProfiler? profiler, GradientType? type}) {
     final style = GaplyGradientPreset.of(name);
     if (style == null) {
       throw ArgumentError(GaplyGradientPreset.instance.errorMessage("GaplyGradient", name));

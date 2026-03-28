@@ -65,10 +65,10 @@ class FlipStyle extends GaplyAnimStyle<FlipStyle>
   ///
   /// Available default presets: 'vertical', 'horizontal'.
   /// Throws [ArgumentError] if the [name] is not registered.
-  static void register(String name, FlipStyle style) => GaplyFlipPreset.register(name, style);
+  static void register(Object name, FlipStyle style) => GaplyFlipPreset.register(name, style);
 
   factory FlipStyle.preset(
-    String name, {
+    Object name, {
     GaplyProfiler? profiler,
     Widget? backWidget,
     bool? isFlipped,

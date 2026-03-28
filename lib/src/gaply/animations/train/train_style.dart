@@ -42,10 +42,10 @@ class TrainStyle extends GaplyAnimStyle<TrainStyle>
 
   const TrainStyle.none() : this(duration: Duration.zero, direction: AxisDirection.down);
 
-  static void register(String name, TrainStyle style) => GaplyTrainPreset.register(name, style);
+  static void register(Object name, TrainStyle style) => GaplyTrainPreset.register(name, style);
 
   factory TrainStyle.preset(
-    String name, {
+    Object name, {
     GaplyProfiler? profiler,
     bool? useOpacity,
     VoidCallback? onComplete,

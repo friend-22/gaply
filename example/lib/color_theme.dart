@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:gaply/gaply.dart';
 
-class GaplyThemeDemo extends StatefulWidget {
-  const GaplyThemeDemo({super.key});
+class GaplyColorThemeTest extends StatefulWidget {
+  const GaplyColorThemeTest({super.key});
 
   @override
-  State<GaplyThemeDemo> createState() => _GaplyThemeDemoState();
+  State<GaplyColorThemeTest> createState() => _GaplyColorThemeTestState();
 }
 
-class _GaplyThemeDemoState extends State<GaplyThemeDemo> {
+class _GaplyColorThemeTestState extends State<GaplyColorThemeTest> {
   String _currentThemeName = 'light';
 
   void _toggleTheme() {

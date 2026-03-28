@@ -24,9 +24,9 @@ class GaplyMotion extends GaplyStyle<GaplyMotion>
 
   const GaplyMotion.none() : this(animations: const []);
 
-  static void register(String name, GaplyMotion style) => GaplyMotionPreset.register(name, style);
+  static void register(Object name, GaplyMotion style) => GaplyMotionPreset.register(name, style);
 
-  factory GaplyMotion.preset(String name, {GaplyProfiler? profiler, VoidCallback? onComplete}) {
+  factory GaplyMotion.preset(Object name, {GaplyProfiler? profiler, VoidCallback? onComplete}) {
     final style = GaplyMotionPreset.of(name);
     if (style == null) {
       throw ArgumentError(GaplyMotionPreset.instance.errorMessage("GaplyMotion", name));

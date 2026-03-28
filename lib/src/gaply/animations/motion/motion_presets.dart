@@ -87,7 +87,7 @@ class GaplyMotionPreset with GaplyPreset<GaplyMotion> {
     );
   }
 
-  static void register(String name, GaplyMotion style) => instance.add(name, style);
+  static void register(Object name, GaplyMotion style) => instance.add(name, style);
 
-  static GaplyMotion? of(String name) => instance.get(name);
+  static GaplyMotion? of(Object name) => instance.get(name);
 }

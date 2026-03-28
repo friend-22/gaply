@@ -86,7 +86,7 @@ class GaplyShimmerPreset with GaplyPreset<GaplyShimmer> {
     );
   }
 
-  static void register(String name, GaplyShimmer style) => instance.add(name, style);
+  static void register(Object name, GaplyShimmer style) => instance.add(name, style);
 
-  static GaplyShimmer? of(String name) => instance.get(name);
+  static GaplyShimmer? of(Object name) => instance.get(name);
 }

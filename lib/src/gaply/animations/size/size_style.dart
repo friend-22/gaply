@@ -43,10 +43,10 @@ class SizeStyle extends GaplyAnimStyle<SizeStyle>
 
   const SizeStyle.none() : this(duration: Duration.zero, axis: Axis.vertical, isExpanded: false);
 
-  static void register(String name, SizeStyle style) => GaplySizePreset.register(name, style);
+  static void register(Object name, SizeStyle style) => GaplySizePreset.register(name, style);
 
   factory SizeStyle.preset(
-    String name, {
+    Object name, {
     GaplyProfiler? profiler,
     double? axisAlignment,
     bool? isExpanded,

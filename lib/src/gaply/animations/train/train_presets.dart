@@ -39,7 +39,7 @@ class GaplyTrainPreset with GaplyPreset<TrainStyle> {
     );
   }
 
-  static void register(String name, TrainStyle style) => instance.add(name, style);
+  static void register(Object name, TrainStyle style) => instance.add(name, style);
 
-  static TrainStyle? of(String name) => instance.get(name);
+  static TrainStyle? of(Object name) => instance.get(name);
 }

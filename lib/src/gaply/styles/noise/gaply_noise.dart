@@ -28,9 +28,9 @@ class GaplyNoise extends GaplyStyle<GaplyNoise> with _GaplyNoiseMixin, NoiseStyl
 
   const GaplyNoise.none() : this();
 
-  static void register(String name, GaplyNoise style) => GaplyNoisePreset.register(name, style);
+  static void register(Object name, GaplyNoise style) => GaplyNoisePreset.register(name, style);
 
-  factory GaplyNoise.preset(String name, {GaplyProfiler? profiler}) {
+  factory GaplyNoise.preset(Object name, {GaplyProfiler? profiler}) {
     final style = GaplyNoisePreset.of(name);
     if (style == null) {
       throw ArgumentError(GaplyNoisePreset.instance.errorMessage("GaplyNoise", name));

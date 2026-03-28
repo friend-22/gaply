@@ -13,7 +13,7 @@ mixin ColorThemeModifier<T> {
 
   T colorThemeStyleSet(GaplyColorTheme theme) => copyWithColorTheme(theme);
 
-  T colorThemePreset(String name) => copyWithColorTheme(GaplyColorTheme.preset(name));
+  T colorThemePreset(Object name) => copyWithColorTheme(GaplyColorTheme.preset(name));
 
   T colorThemeUpdate(dynamic role, GaplyColor color) {
     final resolvedRole = GaplyColorToken.resolve(role);

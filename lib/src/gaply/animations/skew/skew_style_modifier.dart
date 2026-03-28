@@ -9,7 +9,7 @@ mixin SkewStyleModifier<T> {
 
   T skewStyleSet(SkewStyle value) => copyWithSkew(value);
 
-  T skewPreset(String name, {bool? isSkewed}) => copyWithSkew(SkewStyle.preset(name, isSkewed: isSkewed));
+  T skewPreset(Object name, {bool? isSkewed}) => copyWithSkew(SkewStyle.preset(name, isSkewed: isSkewed));
 
   T skewActive(bool active) => copyWithSkew(skewStyle.copyWith(isSkewed: active));
 

@@ -38,7 +38,7 @@ class GaplyRotatePreset with GaplyPreset<RotateStyle> {
     add('slight', const RotateStyle(begin: -2, end: 2, isRotated: true));
   }
 
-  static void register(String name, RotateStyle style) => instance.add(name, style);
+  static void register(Object name, RotateStyle style) => instance.add(name, style);
 
-  static RotateStyle? of(String name) => instance.get(name);
+  static RotateStyle? of(Object name) => instance.get(name);
 }

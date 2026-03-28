@@ -30,9 +30,9 @@ class GaplyFilter extends GaplyStyle<GaplyFilter> with _GaplyFilterMixin, Filter
 
   const GaplyFilter.none() : this();
 
-  static void register(String name, GaplyFilter style) => GaplyFilterPreset.register(name, style);
+  static void register(Object name, GaplyFilter style) => GaplyFilterPreset.register(name, style);
 
-  factory GaplyFilter.preset(String name, {GaplyProfiler? profiler}) {
+  factory GaplyFilter.preset(Object name, {GaplyProfiler? profiler}) {
     final style = GaplyFilterPreset.of(name);
     if (style == null) {
       throw ArgumentError(GaplyFilterPreset.instance.errorMessage("GaplyFilter", name));

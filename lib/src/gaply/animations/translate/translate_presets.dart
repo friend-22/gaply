@@ -56,7 +56,7 @@ class GaplyTranslatePreset with GaplyPreset<TranslateStyle> {
     );
   }
 
-  static void register(String name, TranslateStyle style) => instance.add(name, style);
+  static void register(Object name, TranslateStyle style) => instance.add(name, style);
 
-  static TranslateStyle? of(String name) => instance.get(name);
+  static TranslateStyle? of(Object name) => instance.get(name);
 }

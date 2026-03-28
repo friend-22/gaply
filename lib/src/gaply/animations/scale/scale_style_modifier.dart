@@ -8,7 +8,7 @@ mixin ScaleStyleModifier<T> {
 
   T scaleStyleSet(ScaleStyle value) => copyWithScale(value);
 
-  T scalePreset(String name, {bool? isScaled}) => copyWithScale(ScaleStyle.preset(name, isScaled: isScaled));
+  T scalePreset(Object name, {bool? isScaled}) => copyWithScale(ScaleStyle.preset(name, isScaled: isScaled));
 
   T scaleActive(bool active) => copyWithScale(scaleStyle.copyWith(isScaled: active));
 

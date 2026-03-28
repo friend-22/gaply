@@ -9,7 +9,7 @@ mixin MotionStyleModifier<T> {
 
   T motionStyleSet(GaplyMotion value) => copyWithMotion(value);
 
-  T motionPreset(String name) => copyWithMotion(GaplyMotion.preset(name));
+  T motionPreset(Object name) => copyWithMotion(GaplyMotion.preset(name));
 
   T motionAdd(GaplyAnimStyle anim) => copyWithMotion(motionStyle.addAnimation(anim));
 

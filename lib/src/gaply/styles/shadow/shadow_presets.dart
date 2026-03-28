@@ -34,7 +34,7 @@ class GaplyShadowPreset with GaplyPreset<GaplyShadow> {
     );
   }
 
-  static void register(String name, GaplyShadow style) => instance.add(name, style);
+  static void register(Object name, GaplyShadow style) => instance.add(name, style);
 
-  static GaplyShadow? of(String name) => instance.get(name);
+  static GaplyShadow? of(Object name) => instance.get(name);
 }

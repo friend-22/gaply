@@ -39,9 +39,9 @@ class SkewStyle extends GaplyAnimStyle<SkewStyle>
 
   const SkewStyle.none() : this(duration: Duration.zero, skew: Offset.zero, isSkewed: false);
 
-  static void register(String name, SkewStyle style) => GaplySkewPreset.register(name, style);
+  static void register(Object name, SkewStyle style) => GaplySkewPreset.register(name, style);
 
-  factory SkewStyle.preset(String name, {GaplyProfiler? profiler, bool? isSkewed, VoidCallback? onComplete}) {
+  factory SkewStyle.preset(Object name, {GaplyProfiler? profiler, bool? isSkewed, VoidCallback? onComplete}) {
     final style = GaplySkewPreset.of(name);
     if (style == null) {
       throw ArgumentError(GaplySkewPreset.instance.errorMessage("SkewStyle", name));

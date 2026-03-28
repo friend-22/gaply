@@ -56,7 +56,7 @@ class GaplyScalePreset with GaplyPreset<ScaleStyle> {
     );
   }
 
-  static void register(String name, ScaleStyle style) => instance.add(name, style);
+  static void register(Object name, ScaleStyle style) => instance.add(name, style);
 
-  static ScaleStyle? of(String name) => instance.get(name);
+  static ScaleStyle? of(Object name) => instance.get(name);
 }
