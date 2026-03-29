@@ -22,7 +22,7 @@ class BlurStyle extends GaplyStyle<BlurStyle> with _BlurStyleMixin, BlurStyleMod
 
   const BlurStyle.none() : this(sigma: 0.0, color: const GaplyColor.none());
 
-  static void register(Object name, BlurStyle style) => GaplyBlurPreset.register(name, style);
+  static void register(Object name, BlurStyle style) => GaplyBlurPreset.add(name, style);
 
   factory BlurStyle.preset(Object name, {GaplyProfiler? profiler, GaplyColor? color}) {
     final style = GaplyBlurPreset.of(name);

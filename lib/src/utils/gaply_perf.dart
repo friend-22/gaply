@@ -41,7 +41,6 @@ abstract class GaplyLogger {
 
   static void i(String message, {bool isForce = false}) {
     if (!kDebugMode && !isForce) return;
-
     _instance.log(message, isForce: isForce);
   }
 

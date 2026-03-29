@@ -12,21 +12,6 @@ import 'fade_style_modifier.dart';
 
 part 'fade_trigger.dart';
 
-/// A configuration style for fade (opacity) animations.
-///
-/// [FadeStyle] controls how a widget transitions between transparent and opaque.
-/// It integrates with the Gaply animation system to provide smooth [FadeTransition]s.
-///
-/// ### Example Usage:
-///
-/// ```dart
-/// final fadeStyle = FadeStyle(
-///   visible: true,
-///   duration: Duration(milliseconds: 500),
-///   curve: Curves.easeIn,
-///   delay: Duration(milliseconds: 200),
-/// );
-/// ```
 @immutable
 class FadeStyle extends GaplyAnimStyle<FadeStyle>
     with
@@ -34,10 +19,6 @@ class FadeStyle extends GaplyAnimStyle<FadeStyle>
         GaplyAnimMixin<FadeStyle>,
         _FadeStyleMixin,
         FadeStyleModifier<FadeStyle> {
-  /// Whether the widget should be visible (opaque) or hidden (transparent).
-  ///
-  /// - If `true`, the widget fades in to an opacity of 1.0.
-  /// - If `false`, the widget fades out to an opacity of 0.0.
   final bool isVisible;
 
   const FadeStyle({
@@ -56,16 +37,12 @@ class FadeStyle extends GaplyAnimStyle<FadeStyle>
 
   const FadeStyle.none() : this(duration: Duration.zero, isVisible: false);
 
-  /// Creates a [FadeStyle] from a pre-defined preset name.
-  ///
-  /// Available default presets: 'fadeIn', 'fadeOut'.
-  /// Throws [ArgumentError] if the [name] is not registered.
-  static void register(Object name, FadeStyle style) => GaplyFadePreset.register(name, style);
+  static void add(Object key, FadeStyle style) => GaplyFadePreset.add(key, style);
 
-  factory FadeStyle.preset(Object name, {GaplyProfiler? profiler, VoidCallback? onComplete}) {
-    final style = GaplyFadePreset.of(name);
+  factory FadeStyle.preset(Object key, {GaplyProfiler? profiler, VoidCallback? onComplete}) {
+    final style = GaplyFadePreset.of(key);
     if (style == null) {
-      throw ArgumentError(GaplyFadePreset.instance.errorMessage("FadeStyle", name));
+      throw ArgumentError(GaplyFadePreset.error("FadeStyle", key));
     }
     return style.copyWith(profiler: profiler, onComplete: onComplete);
   }

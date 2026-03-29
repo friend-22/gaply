@@ -1,26 +1,40 @@
 import 'gaply_style.dart';
 
-mixin GaplyPreset<T extends GaplyStyle> {
+enum GaplyPresetPolicy { flexible, strict, insensitive }
+
+abstract class GaplyPreset<T extends GaplyStyle> {
   final Map<Object, T> _presets = {};
 
-  Object _resolveKey(Object name) {
-    if (name is String) return name;
-    if (name is Enum) return "${name.runtimeType}.${name.name}";
-    throw ArgumentError("GaplyPreset key must be String or Enum. Received: ${name.runtimeType}");
+  GaplyPresetPolicy get presetPolicy;
+
+  Object _normalize(Object key) {
+    String result;
+
+    if (key is Enum) {
+      result = switch (presetPolicy) {
+        GaplyPresetPolicy.strict => "${key.runtimeType}.${key.name}",
+        _ => key.name,
+      };
+    } else if (key is Record) {
+      result = key.toString();
+    } else {
+      result = key.toString();
+    }
+
+    return presetPolicy == GaplyPresetPolicy.insensitive ? result.toLowerCase() : result;
   }
 
-  void add(Object name, T style) => _presets[_resolveKey(name)] = style;
-
-  T? get(Object name) => _presets[_resolveKey(name)];
-
-  List<Object> get allKeys => _presets.keys.toList();
+  bool presetHas(Object key) => _presets.containsKey(_normalize(key));
+  void presetAdd(Object key, T style) => _presets[_normalize(key)] = style;
+  T? presetGet(Object key) => _presets[_normalize(key)];
+  List<Object> get presetAllKeys => _presets.keys.toList();
 
   @override
-  String toString() => allKeys.join(", ");
+  String toString() => "Presets[${presetPolicy.name}]: ${presetAllKeys.join(', ')}";
 
-  String errorMessage(String category, Object name) {
-    final available = _presets.keys;
-    return "Unknown $category preset: '$name'. "
-        "Available presets: ${available.isEmpty ? "None" : available.join(", ")}";
+  String presetErrorMessage(String category, Object key) {
+    final normalizedKey = _normalize(key);
+    return "Unknown $category: '$normalizedKey'. "
+        "Available: ${presetAllKeys.isEmpty ? 'None' : presetAllKeys.join(', ')}";
   }
 }
