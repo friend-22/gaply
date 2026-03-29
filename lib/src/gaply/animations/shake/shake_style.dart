@@ -1,7 +1,7 @@
 import 'dart:ui';
 
 import 'package:flutter/widgets.dart';
-import 'package:gaply/src/utils/gaply_perf.dart';
+import 'package:gaply/src/utils/gaply_profiler.dart';
 import 'package:gaply/src/gaply/core/gaply_style.dart';
 import 'package:gaply/src/gaply/core/gaply_trigger.dart';
 

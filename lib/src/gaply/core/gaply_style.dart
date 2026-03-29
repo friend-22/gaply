@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/widgets.dart';
 
-import 'package:gaply/src/utils/gaply_perf.dart';
+import 'package:gaply/src/utils/gaply_profiler.dart';
 
 @immutable
 abstract class GaplyToken<T> extends Equatable {

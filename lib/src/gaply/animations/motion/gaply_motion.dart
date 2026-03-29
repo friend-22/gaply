@@ -2,11 +2,11 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
-import 'package:gaply/src/utils/gaply_perf.dart';
+import 'package:gaply/src/utils/gaply_profiler.dart';
 import 'package:gaply/src/gaply/core/gaply_style.dart';
 import 'motion_style_modifier.dart';
 
-import 'motion_presets.dart';
+import 'motion_preset.dart';
 
 abstract class GaplyAnim {
   GaplyAnim lerp(GaplyAnim? other, double t);
@@ -24,12 +24,12 @@ class GaplyMotion extends GaplyStyle<GaplyMotion>
 
   const GaplyMotion.none() : this(animations: const []);
 
-  static void register(Object name, GaplyMotion style) => GaplyMotionPreset.register(name, style);
+  static void register(Object key, GaplyMotion style) => GaplyMotionPreset.add(key, style);
 
-  factory GaplyMotion.preset(Object name, {GaplyProfiler? profiler, VoidCallback? onComplete}) {
-    final style = GaplyMotionPreset.of(name);
+  factory GaplyMotion.preset(Object key, {GaplyProfiler? profiler, VoidCallback? onComplete}) {
+    final style = GaplyMotionPreset.of(key);
     if (style == null) {
-      throw ArgumentError(GaplyMotionPreset.instance.errorMessage("GaplyMotion", name));
+      throw ArgumentError(GaplyMotionPreset.error("GaplyMotion", key));
     }
     return style.copyWith(profiler: profiler, onComplete: onComplete);
   }

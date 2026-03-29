@@ -1,17 +1,25 @@
 import 'package:flutter/animation.dart';
 
+import 'package:gaply/src/annotations.dart';
+import 'package:gaply/src/utils/gaply_logger.dart';
 import 'package:gaply/src/gaply/core/gaply_preset.dart';
 import 'package:gaply/src/gaply/animations/animations.dart';
 
-class GaplyMotionPreset with GaplyPreset<GaplyMotion> {
-  static final GaplyMotionPreset instance = GaplyMotionPreset._internal();
+part 'motion_preset.g.dart';
 
-  GaplyMotionPreset._internal() {
-    _initDefaultPresets();
+@gaplyPreset
+class MotionPreset extends GaplyPreset<GaplyMotion> {
+  static GaplyPresetPolicy policy = GaplyPresetPolicy.flexible;
+
+  @override
+  GaplyPresetPolicy get presetPolicy => policy;
+
+  MotionPreset._internal() {
+    _initDefaultPreset();
   }
 
-  void _initDefaultPresets() {
-    add(
+  void _initDefaultPreset() {
+    GaplyMotionPreset.add(
       'entrance',
       const GaplyMotion(
         animations: [
@@ -27,7 +35,7 @@ class GaplyMotionPreset with GaplyPreset<GaplyMotion> {
       ),
     );
 
-    add(
+    GaplyMotionPreset.add(
       'pop',
       const GaplyMotion(
         animations: [
@@ -49,7 +57,7 @@ class GaplyMotionPreset with GaplyPreset<GaplyMotion> {
       ),
     );
 
-    add(
+    GaplyMotionPreset.add(
       'attention',
       const GaplyMotion(
         animations: [
@@ -59,7 +67,7 @@ class GaplyMotionPreset with GaplyPreset<GaplyMotion> {
       ),
     );
 
-    add(
+    GaplyMotionPreset.add(
       'cardHover',
       const GaplyMotion(
         animations: [
@@ -74,7 +82,7 @@ class GaplyMotionPreset with GaplyPreset<GaplyMotion> {
       ),
     );
 
-    add(
+    GaplyMotionPreset.add(
       'introAndShake',
       GaplyMotion(
         animations: [FadeStyle(isVisible: true, duration: const Duration(milliseconds: 400))],
@@ -86,8 +94,4 @@ class GaplyMotionPreset with GaplyPreset<GaplyMotion> {
       ),
     );
   }
-
-  static void register(Object name, GaplyMotion style) => instance.add(name, style);
-
-  static GaplyMotion? of(Object name) => instance.get(name);
 }

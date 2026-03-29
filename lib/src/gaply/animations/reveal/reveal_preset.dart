@@ -1,32 +1,41 @@
 import 'package:flutter/material.dart';
+
 import 'package:gaply/src/gaply/core/gaply_preset.dart';
+import 'package:gaply/src/annotations.dart';
+import 'package:gaply/src/utils/gaply_logger.dart';
 
 import 'reveal_style.dart';
 
-class GaplyRevealPreset with GaplyPreset<RevealStyle> {
-  static final GaplyRevealPreset instance = GaplyRevealPreset._internal();
+part 'reveal_preset.g.dart';
 
-  GaplyRevealPreset._internal() {
-    _initDefaultPresets();
+@gaplyPreset
+class RevealPreset extends GaplyPreset<RevealStyle> {
+  static GaplyPresetPolicy policy = GaplyPresetPolicy.flexible;
+
+  @override
+  GaplyPresetPolicy get presetPolicy => policy;
+
+  RevealPreset._internal() {
+    _initDefaultPreset();
   }
 
-  void _initDefaultPresets() {
-    add(
+  void _initDefaultPreset() {
+    GaplyRevealPreset.add(
       'drop',
       const RevealStyle(direction: AxisDirection.down, isVisible: true, useFade: true, fixedSize: false),
     );
 
-    add(
+    GaplyRevealPreset.add(
       'rise',
       const RevealStyle(direction: AxisDirection.up, isVisible: true, useFade: true, fixedSize: false),
     );
 
-    add(
+    GaplyRevealPreset.add(
       'expandRight',
       const RevealStyle(direction: AxisDirection.right, isVisible: true, useFade: true, fixedSize: false),
     );
 
-    add(
+    GaplyRevealPreset.add(
       'fadeIn',
       const RevealStyle(
         direction: AxisDirection.down,
@@ -37,7 +46,7 @@ class GaplyRevealPreset with GaplyPreset<RevealStyle> {
       ),
     );
 
-    add(
+    GaplyRevealPreset.add(
       'bounce',
       const RevealStyle(
         direction: AxisDirection.up,
@@ -49,8 +58,4 @@ class GaplyRevealPreset with GaplyPreset<RevealStyle> {
       ),
     );
   }
-
-  static void register(Object name, RevealStyle style) => instance.add(name, style);
-
-  static RevealStyle? of(Object name) => instance.get(name);
 }

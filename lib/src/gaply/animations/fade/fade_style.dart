@@ -4,9 +4,9 @@ import 'package:flutter/material.dart';
 
 import 'package:gaply/src/gaply/core/gaply_style.dart';
 import 'package:gaply/src/gaply/core/gaply_trigger.dart';
-import 'package:gaply/src/utils/gaply_perf.dart';
+import 'package:gaply/src/utils/gaply_profiler.dart';
 
-import 'fade_presets.dart';
+import 'fade_preset.dart';
 import 'gaply_fade.dart';
 import 'fade_style_modifier.dart';
 

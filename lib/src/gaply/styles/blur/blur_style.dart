@@ -5,9 +5,9 @@ import 'package:flutter/material.dart';
 
 import 'package:gaply/src/gaply/core/gaply_style.dart';
 import 'package:gaply/src/gaply/styles/color/gaply_color.dart';
-import 'package:gaply/src/utils/gaply_perf.dart';
+import 'package:gaply/src/utils/gaply_profiler.dart';
 
-import 'blur_presets.dart';
+import 'blur_preset.dart';
 import 'blur_style_modifier.dart';
 
 part 'blur_widget.dart';
@@ -22,12 +22,12 @@ class BlurStyle extends GaplyStyle<BlurStyle> with _BlurStyleMixin, BlurStyleMod
 
   const BlurStyle.none() : this(sigma: 0.0, color: const GaplyColor.none());
 
-  static void register(Object name, BlurStyle style) => GaplyBlurPreset.add(name, style);
+  static void add(Object key, BlurStyle style) => GaplyBlurPreset.add(key, style);
 
-  factory BlurStyle.preset(Object name, {GaplyProfiler? profiler, GaplyColor? color}) {
-    final style = GaplyBlurPreset.of(name);
+  factory BlurStyle.preset(Object key, {GaplyProfiler? profiler, GaplyColor? color}) {
+    final style = GaplyBlurPreset.of(key);
     if (style == null) {
-      throw ArgumentError(GaplyBlurPreset.instance.errorMessage("BlurStyle", name));
+      throw ArgumentError(GaplyBlurPreset.error("BlurStyle", key));
     }
     return style.copyWith(profiler: profiler, color: color);
   }

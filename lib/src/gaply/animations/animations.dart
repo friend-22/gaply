@@ -1,27 +1,27 @@
 export 'fade/fade_ext.dart';
-export 'fade/fade_presets.dart';
+export 'fade/fade_preset.dart';
 export 'fade/fade_style.dart';
 export 'fade/gaply_fade.dart';
 export 'fade/fade_style_modifier.dart';
 
 export 'flip/flip_ext.dart';
-export 'flip/flip_presets.dart';
+export 'flip/flip_preset.dart';
 export 'flip/flip_style.dart';
 export 'flip/gaply_flip.dart';
 export 'flip/flip_style_modifier.dart';
 
-export 'motion/motion_presets.dart';
+export 'motion/motion_preset.dart';
 export 'motion/gaply_motion.dart';
 export 'motion/motion_style_modifier.dart';
 
 export 'reveal/gaply_reveal.dart';
 export 'reveal/reveal_ext.dart';
-export 'reveal/reveal_presets.dart';
+export 'reveal/reveal_preset.dart';
 export 'reveal/reveal_style.dart';
 export 'reveal/reveal_style_modifier.dart';
 
 export 'rotate/rotate_ext.dart';
-export 'rotate/rotate_presets.dart';
+export 'rotate/rotate_preset.dart';
 export 'rotate/rotate_style.dart';
 export 'rotate/gaply_rotate.dart';
 export 'rotate/rotate_style_modifier.dart';

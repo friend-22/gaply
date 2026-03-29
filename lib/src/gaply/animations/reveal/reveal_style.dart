@@ -2,14 +2,14 @@ import 'dart:ui';
 
 import 'package:flutter/widgets.dart';
 
-import 'package:gaply/src/utils/gaply_perf.dart';
+import 'package:gaply/src/utils/gaply_profiler.dart';
 import 'package:gaply/src/gaply/core/gaply_style.dart';
 import 'package:gaply/src/gaply/core/gaply_direction.dart';
 import 'package:gaply/src/gaply/animations/fade/fade_style.dart';
 import 'package:gaply/src/gaply/animations/size/size_style.dart';
 import 'package:gaply/src/gaply/animations/motion/gaply_motion.dart';
 
-import 'reveal_presets.dart';
+import 'reveal_preset.dart';
 import 'reveal_style_modifier.dart';
 
 @immutable
@@ -45,19 +45,19 @@ class RevealStyle extends GaplyAnimStyle<RevealStyle>
 
   const RevealStyle.none() : this(duration: Duration.zero, direction: AxisDirection.up, isVisible: false);
 
-  static void register(Object name, RevealStyle style) => GaplyRevealPreset.register(name, style);
+  static void register(Object key, RevealStyle style) => GaplyRevealPreset.add(key, style);
 
   factory RevealStyle.preset(
-    Object name, {
+    Object key, {
     GaplyProfiler? profiler,
     bool? isVisible,
     bool? fixedSize,
     bool? useFade,
     VoidCallback? onComplete,
   }) {
-    final style = GaplyRevealPreset.of(name);
+    final style = GaplyRevealPreset.of(key);
     if (style == null) {
-      throw ArgumentError(GaplyRevealPreset.instance.errorMessage("RevealStyle", name));
+      throw ArgumentError(GaplyRevealPreset.error("RevealStyle", key));
     }
     return style.copyWith(
       profiler: profiler,

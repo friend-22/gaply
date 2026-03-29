@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:gaply/src/gaply/core/gaply_style.dart';
-import 'package:gaply/src/utils/gaply_perf.dart';
+import 'package:gaply/src/utils/gaply_profiler.dart';
 
 import 'color_defines.dart';
 import 'color_theme_modifier.dart';

@@ -6,7 +6,7 @@ import 'package:shimmer/shimmer.dart';
 import 'package:gaply/src/gaply/core/gaply_style.dart';
 import 'package:gaply/src/gaply/styles/color/gaply_color.dart';
 import 'package:gaply/src/gaply/styles/shimmer/shimmer_presets.dart';
-import 'package:gaply/src/utils/gaply_perf.dart';
+import 'package:gaply/src/utils/gaply_profiler.dart';
 
 import 'shimmer_style_modifier.dart';
 

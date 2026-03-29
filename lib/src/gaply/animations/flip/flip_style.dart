@@ -6,29 +6,14 @@ import 'package:flutter/material.dart';
 
 import 'package:gaply/src/gaply/core/gaply_style.dart';
 import 'package:gaply/src/gaply/core/gaply_trigger.dart';
-import 'package:gaply/src/utils/gaply_perf.dart';
+import 'package:gaply/src/utils/gaply_profiler.dart';
 
 import 'gaply_flip.dart';
-import 'flip_presets.dart';
+import 'flip_preset.dart';
 import 'flip_style_modifier.dart';
 
 part 'flip_trigger.dart';
 
-/// A configuration style for 3D flip animations.
-///
-/// [FlipStyle] defines the physical properties of a flip, such as the axis
-/// of rotation, the total angle, and which side is currently visible.
-///
-/// ### Example Usage:
-///
-/// ```dart
-/// final flipStyle = FlipStyle(
-///   axis: Axis.horizontal,
-///   isFlipped: _isFlipped,
-///   duration: Duration(milliseconds: 600),
-///   backWidget: Center(child: Text('Back Side')),
-/// );
-/// ```
 @immutable
 class FlipStyle extends GaplyAnimStyle<FlipStyle>
     with
@@ -61,22 +46,18 @@ class FlipStyle extends GaplyAnimStyle<FlipStyle>
 
   const FlipStyle.none() : this(duration: Duration.zero, axis: Axis.horizontal, isFlipped: false);
 
-  /// Creates a [FlipStyle] from a pre-registered preset name.
-  ///
-  /// Available default presets: 'vertical', 'horizontal'.
-  /// Throws [ArgumentError] if the [name] is not registered.
-  static void register(Object name, FlipStyle style) => GaplyFlipPreset.register(name, style);
+  static void register(Object key, FlipStyle style) => GaplyFlipPreset.add(key, style);
 
   factory FlipStyle.preset(
-    Object name, {
+    Object key, {
     GaplyProfiler? profiler,
     Widget? backWidget,
     bool? isFlipped,
     VoidCallback? onComplete,
   }) {
-    final style = GaplyFlipPreset.of(name);
+    final style = GaplyFlipPreset.of(key);
     if (style == null) {
-      throw ArgumentError(GaplyFlipPreset.instance.errorMessage("FlipStyle", name));
+      throw ArgumentError(GaplyFlipPreset.error("FlipStyle", key));
     }
     return style.copyWith(
       profiler: profiler,

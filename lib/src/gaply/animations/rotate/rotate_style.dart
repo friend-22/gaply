@@ -1,12 +1,12 @@
 import 'dart:ui';
 
 import 'package:flutter/widgets.dart';
-import 'package:gaply/src/utils/gaply_perf.dart';
+import 'package:gaply/src/utils/gaply_profiler.dart';
 import 'package:gaply/src/gaply/core/gaply_trigger.dart';
 import 'package:gaply/src/gaply/core/gaply_style.dart';
 
 import 'gaply_rotate.dart';
-import 'rotate_presets.dart';
+import 'rotate_preset.dart';
 import 'rotate_style_modifier.dart';
 
 part 'rotate_trigger.dart';
@@ -44,18 +44,18 @@ class RotateStyle extends GaplyAnimStyle<RotateStyle>
 
   const RotateStyle.none() : this(duration: Duration.zero, begin: 0.0, end: 1.0, isRotated: false);
 
-  static void register(Object name, RotateStyle style) => GaplyRotatePreset.register(name, style);
+  static void register(Object key, RotateStyle style) => GaplyRotatePreset.add(key, style);
 
   factory RotateStyle.preset(
-    Object name, {
+    Object key, {
     GaplyProfiler? profiler,
     Alignment? alignment,
     bool? isRotated,
     VoidCallback? onComplete,
   }) {
-    final style = GaplyRotatePreset.of(name);
+    final style = GaplyRotatePreset.of(key);
     if (style == null) {
-      throw ArgumentError(GaplyRotatePreset.instance.errorMessage("RotateStyle", name));
+      throw ArgumentError(GaplyRotatePreset.error("RotateStyle", key));
     }
     return style.copyWith(
       profiler: profiler,

@@ -1,5 +1,5 @@
 export 'blur/blur_ext.dart';
-export 'blur/blur_presets.dart';
+export 'blur/blur_preset.dart';
 export 'blur/blur_style.dart';
 export 'blur/blur_style_modifier.dart';
 
