@@ -7,11 +7,11 @@ import 'package:gaply/src/utils/gaply_profiler.dart';
 import 'package:gaply/src/gaply/core/gaply_theme.dart';
 
 import 'color_defines.dart';
-import 'color_style_modifier.dart';
+import 'gaply_color_modifier.dart';
 import 'gaply_color_theme.dart';
 
 @immutable
-class GaplyColor extends GaplyStyle<GaplyColor> with _GaplyColorMixin, ColorStyleModifier<GaplyColor> {
+class GaplyColor extends GaplyStyle<GaplyColor> with _GaplyColorMixin, GaplyColorModifier<GaplyColor> {
   final GaplyColorToken token;
   final GaplyColorOpacity opacity;
   final GaplyColorShade shade;
@@ -233,7 +233,7 @@ class GaplyColor extends GaplyStyle<GaplyColor> with _GaplyColorMixin, ColorStyl
 
 mixin _GaplyColorMixin {
   GaplyColor get _self => this as GaplyColor;
-  GaplyColor get colorStyle => _self;
+  GaplyColor get gaplyColor => _self;
 
   GaplyColor copyWithColor(GaplyColor color) {
     return _self._copyWithInternal(

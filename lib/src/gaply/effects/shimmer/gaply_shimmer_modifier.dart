@@ -10,8 +10,8 @@ mixin GaplyShimmerModifier<T> {
 
   T shimmerStyle(GaplyShimmer shimmer) => copyWithShimmer(shimmer);
 
-  T shimmerOf(Object name, {GaplyProfiler? profiler, int? loop}) =>
-      copyWithShimmer(GaplyShimmer.of(name, profiler: profiler, loop: loop));
+  T shimmerOf(Object key, {GaplyProfiler? profiler, int? loop}) =>
+      copyWithShimmer(GaplyShimmer.of(key, profiler: profiler, loop: loop));
 
   T shimmerSpeed(double speed) => copyWithShimmer(gaplyShimmer.withSpeed(speed));
 

@@ -10,13 +10,13 @@ mixin GaplyScaleModifier<T> {
   T scaleStyle(GaplyScale value) => copyWithScale(value);
 
   T scaleOf(
-    Object name, {
+    Object key, {
     GaplyProfiler? profiler,
     Alignment? alignment,
     bool? isScaled,
     VoidCallback? onComplete,
   }) => copyWithScale(
-    GaplyScale.of(name, profiler: profiler, alignment: alignment, isScaled: isScaled, onComplete: onComplete),
+    GaplyScale.of(key, profiler: profiler, alignment: alignment, isScaled: isScaled, onComplete: onComplete),
   );
 
   T scaleActive(bool active) => copyWithScale(gaplyScale.copyWith(isScaled: active));

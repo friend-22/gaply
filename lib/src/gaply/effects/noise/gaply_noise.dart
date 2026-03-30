@@ -33,15 +33,15 @@ class GaplyNoise extends GaplyStyle<GaplyNoise> with _GaplyNoiseMixin, GaplyNois
 
   const GaplyNoise.none() : this();
 
-  // static void add(Object key, GaplyNoise style) => GaplyNoisePreset.add(key, style);
-  //
-  // factory GaplyNoise.preset(Object key, {GaplyProfiler? profiler}) {
-  //   final style = GaplyNoisePreset.of(key);
-  //   if (style == null) {
-  //     throw ArgumentError(GaplyNoisePreset.error("GaplyNoise", key));
-  //   }
-  //   return style.copyWith(profiler: profiler);
-  // }
+  static GaplyNoisePreset preset = GaplyNoisePreset._i;
+
+  factory GaplyNoise.of(Object key, {GaplyProfiler? profiler}) {
+    final style = preset.get(key);
+    if (style == null) {
+      throw ArgumentError(preset.error(key));
+    }
+    return style.copyWith(profiler: profiler);
+  }
 
   @override
   GaplyNoise copyWith({

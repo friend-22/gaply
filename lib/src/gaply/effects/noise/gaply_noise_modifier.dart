@@ -6,9 +6,9 @@ mixin GaplyNoiseModifier<T> {
 
   T copyWithNoise(GaplyNoise noise);
 
-  T noiseStyleSet(GaplyNoise noise) => copyWithNoise(noise);
+  T noiseStyle(GaplyNoise noise) => copyWithNoise(noise);
 
-  // T noisePreset(Object name) => copyWithNoise(GaplyNoise.preset(name));
+  T noiseOf(Object key, {GaplyProfiler? profiler}) => copyWithNoise(GaplyNoise.of(key, profiler: profiler));
 
   T noiseIntensity(double value) => copyWithNoise(gaplyNoise.copyWith(intensity: value));
 

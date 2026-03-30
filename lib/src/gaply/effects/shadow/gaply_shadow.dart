@@ -11,7 +11,7 @@ import 'package:gaply/src/utils/gaply_logger.dart';
 import 'package:gaply/src/gaply/effects/color/gaply_color.dart';
 import 'package:gaply/src/gaply/effects/color/color_defines.dart';
 
-import 'shadow_style_modifier.dart';
+import 'gaply_shadow_modifier.dart';
 
 part 'gaply_shadow.preset.g.dart';
 

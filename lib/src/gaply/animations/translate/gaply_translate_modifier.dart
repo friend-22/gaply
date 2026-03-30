@@ -9,10 +9,8 @@ mixin GaplyTranslateModifier<T> {
 
   T translateStyle(GaplyTranslate value) => copyWithTranslate(value);
 
-  T translateOf(Object name, {GaplyProfiler? profiler, bool? isMoved, VoidCallback? onComplete}) =>
-      copyWithTranslate(
-        GaplyTranslate.of(name, profiler: profiler, isMoved: isMoved, onComplete: onComplete),
-      );
+  T translateOf(Object key, {GaplyProfiler? profiler, bool? isMoved, VoidCallback? onComplete}) =>
+      copyWithTranslate(GaplyTranslate.of(key, profiler: profiler, isMoved: isMoved, onComplete: onComplete));
 
   T translateMove(bool move) => copyWithTranslate(gaplyTranslate.copyWith(isMoved: move));
 

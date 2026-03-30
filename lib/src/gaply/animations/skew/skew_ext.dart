@@ -7,7 +7,7 @@ import 'skew_widget.dart';
 ///
 /// [GaplySkew] applies a skew transformation to a widget.
 extension GaplySkewExtension on Widget {
-  /// Wraps this widget with a [SkewWidget] animation using the provided [style].
+  /// Wraps this widget with a [GaplySkewWidget] animation using the provided [style].
   ///
   /// ### Example:
   ///

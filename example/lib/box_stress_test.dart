@@ -24,8 +24,8 @@ class _GaplyBoxStressTestState extends State<GaplyBoxStressTest> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            GaplyBox(
-              style: BoxStyle(
+            GaplyBoxWidget(
+              gaplyBox: GaplyBox(
                 profiler: profiler,
                 duration: const Duration(milliseconds: 800),
                 curve: Curves.elasticOut,

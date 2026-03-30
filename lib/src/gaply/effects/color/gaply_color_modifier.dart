@@ -3,8 +3,8 @@ import 'dart:ui';
 import 'color_defines.dart';
 import 'gaply_color.dart';
 
-mixin ColorStyleModifier<T> {
-  GaplyColor get colorStyle;
+mixin GaplyColorModifier<T> {
+  GaplyColor get gaplyColor;
 
   T copyWithColor(GaplyColor color);
 
@@ -33,19 +33,19 @@ mixin ColorStyleModifier<T> {
     );
   }
 
-  T colorShadeToken(GaplyColorShade shade) => copyWithColor(colorStyle.copyWith(shade: shade));
+  T colorShadeToken(GaplyColorShade shade) => copyWithColor(gaplyColor.copyWith(shade: shade));
 
   T colorShade(double value) => colorShadeToken(GaplyColorShade(value));
 
-  T colorOpacityToken(GaplyColorOpacity opacity) => copyWithColor(colorStyle.copyWith(opacity: opacity));
+  T colorOpacityToken(GaplyColorOpacity opacity) => copyWithColor(gaplyColor.copyWith(opacity: opacity));
 
   T colorOpacity(double value) => colorOpacityToken(GaplyColorOpacity(value));
 
-  T colorAutoInvert(bool value) => copyWithColor(colorStyle.copyWith(autoInvert: value));
+  T colorAutoInvert(bool value) => copyWithColor(gaplyColor.copyWith(autoInvert: value));
 }
 
-mixin BorderColorStyleModifier<T> {
-  GaplyColor get borderColorStyle;
+mixin GaplyBorderColorModifier<T> {
+  GaplyColor get gaplyBorderColor;
 
   T copyWithBorderColor(GaplyColor color);
 
@@ -75,14 +75,14 @@ mixin BorderColorStyleModifier<T> {
   }
 
   T borderColorShadeToken(GaplyColorShade shade) =>
-      copyWithBorderColor(borderColorStyle.copyWith(shade: shade));
+      copyWithBorderColor(gaplyBorderColor.copyWith(shade: shade));
 
   T borderColorShade(double value) => borderColorShadeToken(GaplyColorShade(value));
 
   T borderColorOpacityToken(GaplyColorOpacity opacity) =>
-      copyWithBorderColor(borderColorStyle.copyWith(opacity: opacity));
+      copyWithBorderColor(gaplyBorderColor.copyWith(opacity: opacity));
 
   T borderColorOpacity(double value) => borderColorOpacityToken(GaplyColorOpacity(value));
 
-  T borderColorAutoInvert(bool value) => copyWithBorderColor(borderColorStyle.copyWith(autoInvert: value));
+  T borderColorAutoInvert(bool value) => copyWithBorderColor(gaplyBorderColor.copyWith(autoInvert: value));
 }
