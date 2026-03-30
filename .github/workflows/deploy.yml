@@ -1,8 +1,8 @@
 name: Deploy Flutter Demo
 
 on:
-  push:
-    branches: ["main"] # main 브랜치에 푸시될 때 실행
+  # push:
+  #   branches: ["main"] # main 브랜치에 푸시될 때 실행
   workflow_dispatch:   # 수동 실행 버튼 활성화
 
 # Pages 배포를 위한 필수 권한 설정
