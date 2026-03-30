@@ -1,20 +1,20 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'flip_style.dart';
+part of 'gaply_gradient.dart';
 
 // **************************************************************************
 // GaplyPresetGenerator
 // **************************************************************************
 
-class GaplyFlipPreset {
-  final Map<Object, GaplyFlipStyle> _presets = {};
+class GaplyGradientPreset {
+  final Map<Object, GaplyGradient> _presets = {};
   final GaplyKeyPolicy _policy = GaplyKeyPolicy.values[0];
 
-  GaplyFlipPreset._() {
+  GaplyGradientPreset._() {
     _initPresets(this);
   }
 
-  static final GaplyFlipPreset _i = GaplyFlipPreset._();
+  static final GaplyGradientPreset _i = GaplyGradientPreset._();
 
   Object _normalize(Object key) {
     if (key is Enum) {
@@ -31,22 +31,22 @@ class GaplyFlipPreset {
   }
 
   bool has(Object key) => _presets.containsKey(_normalize(key));
-  void add(Object key, GaplyFlipStyle style, {bool overwrite = false}) {
+  void add(Object key, GaplyGradient style, {bool overwrite = false}) {
     final normalized = _normalize(key);
     if (_presets.containsKey(normalized) && !overwrite) {
       GaplyLogger.i(
-          "[GaplyFlipStyle] Duplicate registration for key: '$normalized'. Overwritten.");
+          "[GaplyGradient] Duplicate registration for key: '$normalized'. Overwritten.");
     }
     _presets[_normalize(key)] = style;
   }
 
-  GaplyFlipStyle? get(Object key) => _presets[_normalize(key)];
+  GaplyGradient? get(Object key) => _presets[_normalize(key)];
 
   List<Object> get keys => _presets.keys.toList();
 
   String error(Object key) {
     final normalized = _normalize(key);
-    return "Unknown GaplyFlipPreset: '$normalized'. "
+    return "Unknown GaplyGradientPreset: '$normalized'. "
         "Available: ${_presets.keys.isEmpty ? 'None' : _presets.keys.join(', ')}";
   }
 }

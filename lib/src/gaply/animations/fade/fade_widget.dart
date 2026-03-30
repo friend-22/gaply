@@ -1,24 +1,24 @@
 import 'package:flutter/material.dart';
-import 'fade_style.dart';
+import 'gaply_fade.dart';
 
-/// A widget that applies a fade animation to its child based on [GaplyFadeStyle].
+/// A widget that applies a fade animation to its child based on [GaplyFade].
 ///
 /// It uses [FadeTransition] internally for high-performance opacity changes.
-class GaplyFade extends StatefulWidget {
+class GaplyFadeWidget extends StatefulWidget {
   /// The widget to apply the fade effect to.
   final Widget child;
 
   /// The configuration for the fade animation.
-  final GaplyFadeStyle style;
+  final GaplyFade style;
 
-  const GaplyFade({super.key, required this.child, required this.style});
+  const GaplyFadeWidget({super.key, required this.child, required this.style});
 
   @override
-  State<GaplyFade> createState() => GaplyFadeState();
+  State<GaplyFadeWidget> createState() => GaplyFadeWidgetState();
 }
 
-/// State for [GaplyFade] that manages the [AnimationController].
-class GaplyFadeState extends State<GaplyFade> with SingleTickerProviderStateMixin {
+/// State for [GaplyFadeWidget] that manages the [AnimationController].
+class GaplyFadeWidgetState extends State<GaplyFadeWidget> with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
   late final CurvedAnimation _opacity;
 
@@ -44,7 +44,7 @@ class GaplyFadeState extends State<GaplyFade> with SingleTickerProviderStateMixi
   }
 
   @override
-  void didUpdateWidget(GaplyFade oldWidget) {
+  void didUpdateWidget(GaplyFadeWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
 
     if (widget.style.duration != oldWidget.style.duration) {
@@ -67,7 +67,7 @@ class GaplyFadeState extends State<GaplyFade> with SingleTickerProviderStateMixi
   void reset() => _controller.reset();
 
   /// Internal execution logic to start the animation.
-  void _execute(GaplyFadeStyle style) {
+  void _execute(GaplyFade style) {
     if (!mounted) return;
 
     if (style.isVisible) {
@@ -77,7 +77,7 @@ class GaplyFadeState extends State<GaplyFade> with SingleTickerProviderStateMixi
     }
   }
 
-  void executeParams(GaplyFadeStyle style) {
+  void executeParams(GaplyFade style) {
     Future.delayed(style.delay, () {
       if (!mounted) return;
 

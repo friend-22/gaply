@@ -2,6 +2,11 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 
+import 'package:gaply/src/gaply/core/gaply_defines.dart';
+import 'package:gaply/src/annotations.dart';
+import 'package:gaply/src/utils/gaply_profiler.dart';
+import 'package:gaply/src/utils/gaply_logger.dart';
+
 import 'package:gaply/src/utils/gaply_profiler.dart';
 import 'package:gaply/src/gaply/core/gaply_style.dart';
 import 'package:gaply/src/gaply/core/gaply_trigger.dart';
@@ -11,8 +16,10 @@ import 'gaply_skew.dart';
 import 'skew_style_modifier.dart';
 
 part 'skew_trigger.dart';
+part 'gaply_skew.preset.g.dart';
 
 @immutable
+@GaplyPresetGen(initializer: '_initPresets')
 class SkewStyle extends GaplyAnimStyle<SkewStyle>
     with
         GaplyTweenMixin<SkewStyle>,

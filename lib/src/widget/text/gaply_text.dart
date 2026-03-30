@@ -11,7 +11,7 @@ class GaplyText extends StatelessWidget
         ColorStyleModifier<GaplyText>,
         BlurStyleModifier<GaplyText>,
         ShimmerStyleModifier<GaplyText>,
-        MotionStyleModifier<GaplyText>,
+        GaplyMotionModifier<GaplyText>,
         TextStyleModifier<GaplyText> {
   final GaplyTextStyle style;
   final String text;

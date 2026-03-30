@@ -2,6 +2,11 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 
+import 'package:gaply/src/gaply/core/gaply_defines.dart';
+import 'package:gaply/src/annotations.dart';
+import 'package:gaply/src/utils/gaply_profiler.dart';
+import 'package:gaply/src/utils/gaply_logger.dart';
+
 import 'package:gaply/src/gaply/core/gaply_style.dart';
 import 'package:gaply/src/gaply/styles/color/gaply_color.dart';
 import 'package:gaply/src/utils/gaply_profiler.dart';
@@ -10,8 +15,10 @@ import 'filter_preset.dart';
 import 'filter_style_modifier.dart';
 
 part 'filter_widget.dart';
+part 'gaply_filter.preset.g.dart';
 
 @immutable
+@GaplyPresetGen(initializer: '_initPresets')
 class GaplyFilter extends GaplyStyle<GaplyFilter> with _GaplyFilterMixin, FilterStyleModifier<GaplyFilter> {
   final double grayscale; // 0.0 ~ 1.0
   final double contrast; // 1.0 (기본) ~ 2.0

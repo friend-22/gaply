@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import 'reveal_style.dart';
+import 'gaply_reveal.dart';
 
 extension GaplyRevealExtension on Widget {
-  Widget withReveal(RevealStyle style) => style.buildWidget(child: this);
+  Widget withReveal(GaplyReveal style) => style.buildWidget(child: this);
 }

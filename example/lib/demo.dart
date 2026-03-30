@@ -28,7 +28,7 @@
 //
 //   List<Widget> _buildDemo1() {
 //     return [
-//       GaplyFadeStyle(
+//       GaplyFade(
 //         isVisible: _isVisible,
 //         duration: const Duration(milliseconds: 800),
 //         curve: Curves.easeOutCubic,

@@ -19,7 +19,7 @@ class GaplyTextStyle extends GaplyTweenStyle<GaplyTextStyle>
         ColorStyleModifier<GaplyTextStyle>,
         BlurStyleModifier<GaplyTextStyle>,
         ShimmerStyleModifier<GaplyTextStyle>,
-        MotionStyleModifier<GaplyTextStyle>,
+        GaplyMotionModifier<GaplyTextStyle>,
         TextStyleModifier<GaplyTextStyle> {
   final double? fontSize;
   final FontWeight? fontWeight;

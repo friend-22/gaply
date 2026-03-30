@@ -3,6 +3,11 @@ import 'dart:ui';
 import 'package:flutter/widgets.dart';
 import 'package:flutter/material.dart';
 
+import 'package:gaply/src/gaply/core/gaply_defines.dart';
+import 'package:gaply/src/annotations.dart';
+import 'package:gaply/src/utils/gaply_profiler.dart';
+import 'package:gaply/src/utils/gaply_logger.dart';
+
 import 'package:gaply/src/gaply/core/gaply_style.dart';
 import 'package:gaply/src/gaply/styles/color/gaply_color.dart';
 import 'package:gaply/src/utils/gaply_profiler.dart';
@@ -11,8 +16,10 @@ import 'blur_preset.dart';
 import 'blur_style_modifier.dart';
 
 part 'blur_widget.dart';
+part 'gaply_blur.preset.g.dart';
 
 @immutable
+@GaplyPresetGen(initializer: '_initPresets')
 class BlurStyle extends GaplyStyle<BlurStyle> with _BlurStyleMixin, BlurStyleModifier<BlurStyle> {
   final double sigma;
   final GaplyColor color;

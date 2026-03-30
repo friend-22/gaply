@@ -3,6 +3,11 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
 
+import 'package:gaply/src/gaply/core/gaply_defines.dart';
+import 'package:gaply/src/annotations.dart';
+import 'package:gaply/src/utils/gaply_profiler.dart';
+import 'package:gaply/src/utils/gaply_logger.dart';
+
 import 'package:gaply/src/gaply/core/gaply_style.dart';
 import 'package:gaply/src/gaply/styles/color/gaply_color.dart';
 import 'package:gaply/src/gaply/styles/shimmer/shimmer_preset.dart';
@@ -11,8 +16,10 @@ import 'package:gaply/src/utils/gaply_profiler.dart';
 import 'shimmer_style_modifier.dart';
 
 part 'shimmer_widget.dart';
+part 'gaply_shimmer.preset.g.dart';
 
 @immutable
+@GaplyPresetGen(initializer: '_initPresets')
 class GaplyShimmer extends GaplyStyle<GaplyShimmer>
     with _GaplyShimmerMixin, ShimmerStyleModifier<GaplyShimmer> {
   final Duration period;

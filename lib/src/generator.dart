@@ -11,9 +11,7 @@ class GaplyPresetGenerator extends GeneratorForAnnotation<GaplyPresetGen> {
     if (element is! ClassElement) return '';
 
     final className = element.name;
-    final presetClassName = className.endsWith('Style')
-        ? className.replaceFirst('Style', 'Preset')
-        : '${className}Preset';
+    final presetClassName = '${className}Preset';
 
     final initializerName = annotation.read('initializer').isNull
         ? null

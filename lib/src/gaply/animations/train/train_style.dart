@@ -2,6 +2,11 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 
+import 'package:gaply/src/gaply/core/gaply_defines.dart';
+import 'package:gaply/src/annotations.dart';
+import 'package:gaply/src/utils/gaply_profiler.dart';
+import 'package:gaply/src/utils/gaply_logger.dart';
+
 import 'package:gaply/src/utils/gaply_profiler.dart';
 import 'package:gaply/src/gaply/core/gaply_direction.dart';
 import 'package:gaply/src/gaply/core/gaply_style.dart';
@@ -12,8 +17,10 @@ import 'train_preset.dart';
 import 'train_style_modifier.dart';
 
 part 'train_trigger.dart';
+part 'gaply_train.preset.g.dart';
 
 @immutable
+@GaplyPresetGen(initializer: '_initPresets')
 class TrainStyle extends GaplyAnimStyle<TrainStyle>
     with
         GaplyTweenMixin<TrainStyle>,

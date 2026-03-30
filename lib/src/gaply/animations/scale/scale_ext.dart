@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import 'scale_style.dart';
+import 'gaply_scale.dart';
 
 extension GaplyScaleExtension on Widget {
-  Widget withScale(ScaleStyle style) => style.buildWidget(child: this);
+  Widget withScale(GaplyScale style) => style.buildWidget(child: this);
 }

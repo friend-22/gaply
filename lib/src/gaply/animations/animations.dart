@@ -1,34 +1,29 @@
 export 'fade/fade_ext.dart';
-export 'fade/fade_style.dart';
-export 'fade/fade_style_modifier.dart';
 export 'fade/fade_widget.dart';
+export 'fade/gaply_fade.dart';
+export 'fade/gaply_fade_modifier.dart';
 
 export 'flip/flip_ext.dart';
-export 'flip/flip_style.dart';
-export 'flip/flip_style_modifier.dart';
 export 'flip/flip_widget.dart';
+export 'flip/gaply_flip.dart';
+export 'flip/gaply_flip_modifier.dart';
 
-export 'motion/motion_preset.dart';
 export 'motion/gaply_motion.dart';
-export 'motion/motion_style_modifier.dart';
+export 'motion/gaply_motion_modifier.dart';
 
-export 'reveal/gaply_reveal.dart';
 export 'reveal/reveal_ext.dart';
-export 'reveal/reveal_preset.dart';
-export 'reveal/reveal_style.dart';
-export 'reveal/reveal_style_modifier.dart';
+export 'reveal/gaply_reveal.dart';
+export 'reveal/gaply_reveal_modifier.dart';
 
 export 'rotate/rotate_ext.dart';
-export 'rotate/rotate_preset.dart';
-export 'rotate/rotate_style.dart';
+export 'rotate/rotate_widget.dart';
 export 'rotate/gaply_rotate.dart';
-export 'rotate/rotate_style_modifier.dart';
+export 'rotate/gaply_rotate_modifier.dart';
 
 export 'scale/scale_ext.dart';
-export 'scale/scale_preset.dart';
-export 'scale/scale_style.dart';
-export 'scale/scale_style_modifier.dart';
+export 'scale/scale_widget.dart';
 export 'scale/gaply_scale.dart';
+export 'scale/gaply_scale_modifier.dart';
 
 export 'size/size_ext.dart';
 export 'size/size_preset.dart';

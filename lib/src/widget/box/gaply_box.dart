@@ -17,7 +17,7 @@ class GaplyBox extends StatelessWidget
         FilterStyleModifier<GaplyBox>,
         NoiseStyleModifier<GaplyBox>,
         ManyShadowStyleModifier<GaplyBox>,
-        MotionStyleModifier<GaplyBox>,
+        GaplyMotionModifier<GaplyBox>,
         BoxStyleModifier<GaplyBox> {
   final BoxStyle style;
   final Widget child;

@@ -11,22 +11,22 @@ import 'package:gaply/src/gaply/core/gaply_style.dart';
 import 'package:gaply/src/gaply/core/gaply_trigger.dart';
 
 import 'fade_widget.dart';
-import 'fade_style_modifier.dart';
+import 'gaply_fade_modifier.dart';
 
 part 'fade_trigger.dart';
-part 'fade_style.preset.g.dart';
+part 'gaply_fade.preset.g.dart';
 
 @immutable
 @GaplyPresetGen(initializer: '_initPresets')
-class GaplyFadeStyle extends GaplyAnimStyle<GaplyFadeStyle>
+class GaplyFade extends GaplyAnimStyle<GaplyFade>
     with
-        GaplyTweenMixin<GaplyFadeStyle>,
-        GaplyAnimMixin<GaplyFadeStyle>,
+        GaplyTweenMixin<GaplyFade>,
+        GaplyAnimMixin<GaplyFade>,
         _FadeStyleMixin,
-        FadeStyleModifier<GaplyFadeStyle> {
+        GaplyFadeModifier<GaplyFade> {
   final bool isVisible;
 
-  const GaplyFadeStyle({
+  const GaplyFade({
     super.profiler,
     Duration? duration,
     Curve? curve,
@@ -40,11 +40,11 @@ class GaplyFadeStyle extends GaplyAnimStyle<GaplyFadeStyle>
          delay: delay ?? Duration.zero,
        );
 
-  const GaplyFadeStyle.none() : this(duration: Duration.zero, isVisible: false);
+  const GaplyFade.none() : this(duration: Duration.zero, isVisible: false);
 
   static GaplyFadePreset preset = GaplyFadePreset._i;
 
-  factory GaplyFadeStyle.fromPreset(Object key, {GaplyProfiler? profiler, VoidCallback? onComplete}) {
+  factory GaplyFade.of(Object key, {GaplyProfiler? profiler, VoidCallback? onComplete}) {
     final style = preset.get(key);
     if (style == null) {
       throw ArgumentError(preset.error(key));
@@ -52,7 +52,7 @@ class GaplyFadeStyle extends GaplyAnimStyle<GaplyFadeStyle>
     return style.copyWith(profiler: profiler, onComplete: onComplete);
   }
 
-  const GaplyFadeStyle.fadeIn({
+  const GaplyFade.fadeIn({
     GaplyProfiler? profiler,
     Duration? duration,
     Duration? delay,
@@ -67,7 +67,7 @@ class GaplyFadeStyle extends GaplyAnimStyle<GaplyFadeStyle>
          isVisible: true,
        );
 
-  const GaplyFadeStyle.fadeOut({
+  const GaplyFade.fadeOut({
     GaplyProfiler? profiler,
     Duration? duration,
     Duration? delay,
@@ -83,7 +83,7 @@ class GaplyFadeStyle extends GaplyAnimStyle<GaplyFadeStyle>
        );
 
   @override
-  GaplyFadeStyle copyWith({
+  GaplyFade copyWith({
     GaplyProfiler? profiler,
     Duration? duration,
     Curve? curve,
@@ -92,7 +92,7 @@ class GaplyFadeStyle extends GaplyAnimStyle<GaplyFadeStyle>
     double? progress,
     bool? isVisible,
   }) {
-    return GaplyFadeStyle(
+    return GaplyFade(
       profiler: profiler ?? this.profiler,
       duration: duration ?? this.duration,
       curve: curve ?? this.curve,
@@ -104,11 +104,11 @@ class GaplyFadeStyle extends GaplyAnimStyle<GaplyFadeStyle>
   }
 
   @override
-  GaplyFadeStyle lerp(GaplyAnimStyle? other, double t) {
-    if (other is! GaplyFadeStyle) return this;
+  GaplyFade lerp(GaplyAnimStyle? other, double t) {
+    if (other is! GaplyFade) return this;
 
     return profiler.trace(() {
-      return GaplyFadeStyle(
+      return GaplyFade(
         profiler: other.profiler,
         duration: t < 0.5 ? duration : other.duration,
         curve: t < 0.5 ? curve : other.curve,
@@ -128,10 +128,10 @@ class GaplyFadeStyle extends GaplyAnimStyle<GaplyFadeStyle>
 }
 
 mixin _FadeStyleMixin {
-  GaplyFadeStyle get _self => this as GaplyFadeStyle;
-  GaplyFadeStyle get fadeStyle => _self;
+  GaplyFade get _self => this as GaplyFade;
+  GaplyFade get gaplyFade => _self;
 
-  GaplyFadeStyle copyWithFade(GaplyFadeStyle fade) {
+  GaplyFade copyWithFade(GaplyFade fade) {
     return _self.copyWith(
       profiler: fade.profiler,
       duration: fade.duration,

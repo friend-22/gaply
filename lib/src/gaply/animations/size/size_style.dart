@@ -2,6 +2,11 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 
+import 'package:gaply/src/gaply/core/gaply_defines.dart';
+import 'package:gaply/src/annotations.dart';
+import 'package:gaply/src/utils/gaply_profiler.dart';
+import 'package:gaply/src/utils/gaply_logger.dart';
+
 import 'package:gaply/src/utils/gaply_profiler.dart';
 import 'package:gaply/src/gaply/core/gaply_style.dart';
 import 'package:gaply/src/gaply/core/gaply_trigger.dart';
@@ -11,8 +16,10 @@ import 'size_preset.dart';
 import 'size_style_modifier.dart';
 
 part 'size_trigger.dart';
+part 'gaply_size.preset.g.dart';
 
 @immutable
+@GaplyPresetGen(initializer: '_initPresets')
 class SizeStyle extends GaplyAnimStyle<SizeStyle>
     with
         GaplyTweenMixin<SizeStyle>,

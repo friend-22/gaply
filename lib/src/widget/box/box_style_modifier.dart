@@ -16,7 +16,7 @@ mixin BoxStyleModifier<T>
         FilterStyleModifier<T>,
         NoiseStyleModifier<T>,
         ManyShadowStyleModifier<T>,
-        MotionStyleModifier<T> {
+        GaplyMotionModifier<T> {
   BoxStyle get boxStyle;
   T copyWithBox(BoxStyle box);
 
@@ -64,7 +64,7 @@ mixin BoxStyleModifier<T>
 
   //Motion Style
   @override
-  GaplyMotion get motionStyle => boxStyle.motion;
+  GaplyMotion get gaplyMotion => boxStyle.motion;
   @override
   T copyWithMotion(GaplyMotion motion) => copyWithBox(boxStyle.copyWith(motion: motion));
 

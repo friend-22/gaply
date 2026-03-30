@@ -2,33 +2,20 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
-import 'flip_style.dart';
+import 'gaply_flip.dart';
 
-/// A widget that performs a 3D flip transition between a front and back widget.
-///
-/// ### Example with GlobalKey:
-///
-/// ```dart
-/// final flipKey = GlobalKey<GaplyFlipState>();
-///
-/// GaplyFlip(
-///   key: flipKey,
-///   front: MyFrontWidget(),
-///   back: MyBackWidget(),
-///   style: GaplyFlipStyle(axis: Axis.vertical, isFlipped: false),
-/// );
-class GaplyFlip extends StatefulWidget {
+class GaplyFlipWidget extends StatefulWidget {
   final Widget front;
   final Widget back;
-  final GaplyFlipStyle style;
+  final GaplyFlip style;
 
-  const GaplyFlip({super.key, required this.front, required this.back, required this.style});
+  const GaplyFlipWidget({super.key, required this.front, required this.back, required this.style});
 
   @override
-  State<GaplyFlip> createState() => GaplyFlipState();
+  State<GaplyFlipWidget> createState() => GaplyFlipWidgetState();
 }
 
-class GaplyFlipState extends State<GaplyFlip> with SingleTickerProviderStateMixin {
+class GaplyFlipWidgetState extends State<GaplyFlipWidget> with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
   late final CurvedAnimation _curve;
 
@@ -54,7 +41,7 @@ class GaplyFlipState extends State<GaplyFlip> with SingleTickerProviderStateMixi
   }
 
   @override
-  void didUpdateWidget(GaplyFlip oldWidget) {
+  void didUpdateWidget(GaplyFlipWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
 
     if (widget.style.duration != oldWidget.style.duration) {
@@ -80,7 +67,7 @@ class GaplyFlipState extends State<GaplyFlip> with SingleTickerProviderStateMixi
   void toggle() => flip();
   void reset() => _controller.reset();
 
-  void _execute(GaplyFlipStyle style) {
+  void _execute(GaplyFlip style) {
     if (!mounted) return;
 
     if (style.isFlipped) {
@@ -90,7 +77,7 @@ class GaplyFlipState extends State<GaplyFlip> with SingleTickerProviderStateMixi
     }
   }
 
-  void executeParams(GaplyFlipStyle style) {
+  void executeParams(GaplyFlip style) {
     Future.delayed(style.delay, () {
       if (!mounted) return;
 

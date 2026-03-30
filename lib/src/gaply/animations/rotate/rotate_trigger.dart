@@ -1,8 +1,8 @@
-part of 'rotate_style.dart';
+part of 'gaply_rotate.dart';
 
 class _GaplyRotateTrigger extends StatefulWidget {
   final Widget child;
-  final RotateStyle style;
+  final GaplyRotate style;
   final Object? trigger;
 
   const _GaplyRotateTrigger({required this.child, required this.style, this.trigger});
@@ -12,12 +12,12 @@ class _GaplyRotateTrigger extends StatefulWidget {
 }
 
 class _GaplyScaleTriggerState extends State<_GaplyRotateTrigger>
-    with GaplyMotionTrigger<_GaplyRotateTrigger, RotateStyle, GaplyRotateState> {
+    with GaplyMotionTrigger<_GaplyRotateTrigger, GaplyRotate, GaplyRotateWidgetState> {
   @override
   Object? get trigger => widget.trigger;
 
   @override
-  RotateStyle get style => widget.style;
+  GaplyRotate get style => widget.style;
 
   @override
   void didUpdateWidget(_GaplyRotateTrigger oldWidget) {
@@ -27,12 +27,12 @@ class _GaplyScaleTriggerState extends State<_GaplyRotateTrigger>
   }
 
   @override
-  void execute(RotateStyle style) {
+  void execute(GaplyRotate style) {
     triggerKey.currentState?.executeParams(style);
   }
 
   @override
   Widget build(BuildContext context) {
-    return GaplyRotate(key: triggerKey, style: widget.style, child: widget.child);
+    return GaplyRotateWidget(key: triggerKey, style: widget.style, child: widget.child);
   }
 }

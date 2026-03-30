@@ -1,6 +1,11 @@
 import 'dart:math' as math;
 import 'dart:ui';
 
+import 'package:gaply/src/gaply/core/gaply_defines.dart';
+import 'package:gaply/src/annotations.dart';
+import 'package:gaply/src/utils/gaply_profiler.dart';
+import 'package:gaply/src/utils/gaply_logger.dart';
+
 import 'package:flutter/material.dart';
 import 'package:gaply/src/gaply/core/gaply_style.dart';
 import 'package:gaply/src/utils/gaply_profiler.dart';
@@ -9,9 +14,12 @@ import '../color/gaply_color.dart';
 import 'gradient_style_modifier.dart';
 import 'gradient_preset.dart';
 
+part 'gaply_gradient.preset.g.dart';
+
 enum GradientType { linear, radial, sweep }
 
 @immutable
+@GaplyPresetGen(initializer: '_initPresets')
 class GaplyGradient extends GaplyStyle<GaplyGradient>
     with _GaplyGradientMixin, GradientStyleModifier<GaplyGradient> {
   final GradientType type;

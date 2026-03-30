@@ -3,6 +3,12 @@ import 'dart:ui';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+
+import 'package:gaply/src/gaply/core/gaply_defines.dart';
+import 'package:gaply/src/annotations.dart';
+import 'package:gaply/src/utils/gaply_profiler.dart';
+import 'package:gaply/src/utils/gaply_logger.dart';
+
 import 'package:gaply/src/gaply/core/gaply_style.dart';
 import 'package:gaply/src/utils/gaply_profiler.dart';
 
@@ -10,8 +16,10 @@ import 'noise_preset.dart';
 import 'noise_style_modifier.dart';
 
 part 'noise_widget.dart';
+part 'gaply_noise.preset.g.dart';
 
 @immutable
+@GaplyPresetGen(initializer: '_initPresets')
 class GaplyNoise extends GaplyStyle<GaplyNoise> with _GaplyNoiseMixin, NoiseStyleModifier<GaplyNoise> {
   final double intensity;
   final double density;

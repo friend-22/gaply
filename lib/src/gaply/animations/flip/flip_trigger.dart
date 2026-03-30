@@ -1,9 +1,9 @@
-part of 'flip_style.dart';
+part of 'gaply_flip.dart';
 
 class _GaplyFlipTrigger extends StatefulWidget {
   final Widget front;
   final Widget back;
-  final GaplyFlipStyle style;
+  final GaplyFlip style;
   final Object? trigger;
 
   const _GaplyFlipTrigger({required this.front, required this.back, required this.style, this.trigger});
@@ -13,12 +13,12 @@ class _GaplyFlipTrigger extends StatefulWidget {
 }
 
 class _GaplyFlipTriggerState extends State<_GaplyFlipTrigger>
-    with GaplyMotionTrigger<_GaplyFlipTrigger, GaplyFlipStyle, GaplyFlipState> {
+    with GaplyMotionTrigger<_GaplyFlipTrigger, GaplyFlip, GaplyFlipWidgetState> {
   @override
   Object? get trigger => widget.trigger;
 
   @override
-  GaplyFlipStyle get style => widget.style;
+  GaplyFlip get style => widget.style;
 
   @override
   void didUpdateWidget(_GaplyFlipTrigger oldWidget) {
@@ -28,12 +28,12 @@ class _GaplyFlipTriggerState extends State<_GaplyFlipTrigger>
   }
 
   @override
-  void execute(GaplyFlipStyle style) {
+  void execute(GaplyFlip style) {
     triggerKey.currentState?.executeParams(style);
   }
 
   @override
   Widget build(BuildContext context) {
-    return GaplyFlip(key: triggerKey, style: widget.style, front: widget.front, back: widget.back);
+    return GaplyFlipWidget(key: triggerKey, style: widget.style, front: widget.front, back: widget.back);
   }
 }

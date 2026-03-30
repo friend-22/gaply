@@ -1,118 +1,268 @@
-import 'dart:math' as math;
+import 'dart:ui';
 
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 
-import 'rotate_style.dart';
+import 'package:gaply/src/gaply/core/gaply_defines.dart';
+import 'package:gaply/src/annotations.dart';
+import 'package:gaply/src/utils/gaply_profiler.dart';
+import 'package:gaply/src/utils/gaply_logger.dart';
 
-class GaplyRotate extends StatefulWidget {
-  final Widget child;
-  final RotateStyle style;
+import 'package:gaply/src/gaply/core/gaply_trigger.dart';
+import 'package:gaply/src/gaply/core/gaply_style.dart';
 
-  const GaplyRotate({super.key, required this.child, required this.style});
+import 'rotate_widget.dart';
+import 'gaply_rotate_modifier.dart';
+
+part 'rotate_trigger.dart';
+part 'gaply_rotate.preset.g.dart';
+
+@immutable
+@GaplyPresetGen(initializer: '_initPresets')
+class GaplyRotate extends GaplyAnimStyle<GaplyRotate>
+    with
+        GaplyTweenMixin<GaplyRotate>,
+        GaplyAnimMixin<GaplyRotate>,
+        _RotateStyleMixin,
+        GaplyRotateModifier<GaplyRotate> {
+  final double begin;
+  final double end;
+  final Alignment alignment;
+  final bool isRotated;
+  final bool useRadians;
+
+  const GaplyRotate({
+    super.profiler,
+    Duration? duration,
+    Curve? curve,
+    Duration? delay,
+    super.onComplete,
+    super.progress,
+    required this.begin,
+    required this.end,
+    required this.isRotated,
+    this.alignment = Alignment.center,
+    this.useRadians = false,
+  }) : super(
+         duration: duration ?? const Duration(milliseconds: 400),
+         curve: curve ?? Curves.easeInOut,
+         delay: delay ?? Duration.zero,
+       );
+
+  const GaplyRotate.none() : this(duration: Duration.zero, begin: 0.0, end: 1.0, isRotated: false);
+
+  static GaplyRotatePreset preset = GaplyRotatePreset._i;
+
+  factory GaplyRotate.of(
+    Object key, {
+    GaplyProfiler? profiler,
+    Alignment? alignment,
+    bool? isRotated,
+    VoidCallback? onComplete,
+  }) {
+    final style = preset.get(key);
+    if (style == null) {
+      throw ArgumentError(preset.error(key));
+    }
+    return style.copyWith(
+      profiler: profiler,
+      alignment: alignment,
+      isRotated: isRotated,
+      onComplete: onComplete,
+    );
+  }
+
+  const GaplyRotate.rotate90({
+    GaplyProfiler? profiler,
+    Duration? duration,
+    Duration? delay,
+    Curve? curve,
+    VoidCallback? onComplete,
+    bool isRotated = true,
+    bool useRadians = false,
+  }) : this(
+         profiler: profiler,
+         duration: duration,
+         curve: curve,
+         delay: delay,
+         onComplete: onComplete,
+         begin: 0,
+         end: 90,
+         alignment: Alignment.center,
+         isRotated: isRotated,
+         useRadians: useRadians,
+       );
+
+  const GaplyRotate.rotate180({
+    GaplyProfiler? profiler,
+    Duration? duration,
+    Duration? delay,
+    Curve? curve,
+    VoidCallback? onComplete,
+    bool isRotated = true,
+    bool useRadians = false,
+  }) : this(
+         profiler: profiler,
+         duration: duration,
+         curve: curve,
+         delay: delay,
+         onComplete: onComplete,
+         begin: 0,
+         end: 180,
+         alignment: Alignment.center,
+         isRotated: isRotated,
+         useRadians: useRadians,
+       );
+
+  const GaplyRotate.rotate270({
+    GaplyProfiler? profiler,
+    Duration? duration,
+    Duration? delay,
+    Curve? curve,
+    VoidCallback? onComplete,
+    bool isRotated = true,
+    bool useRadians = false,
+  }) : this(
+         profiler: profiler,
+         duration: duration,
+         curve: curve,
+         delay: delay,
+         onComplete: onComplete,
+         begin: 0,
+         end: 270,
+         alignment: Alignment.center,
+         isRotated: isRotated,
+         useRadians: useRadians,
+       );
+
+  const GaplyRotate.rotate360({
+    GaplyProfiler? profiler,
+    Duration? duration,
+    Duration? delay,
+    Curve? curve,
+    VoidCallback? onComplete,
+    bool isRotated = true,
+    bool useRadians = false,
+  }) : this(
+         profiler: profiler,
+         duration: duration,
+         curve: curve,
+         delay: delay,
+         onComplete: onComplete,
+         begin: 0,
+         end: 360,
+         alignment: Alignment.center,
+         isRotated: isRotated,
+         useRadians: useRadians,
+       );
 
   @override
-  State<GaplyRotate> createState() => GaplyRotateState();
+  GaplyRotate copyWith({
+    GaplyProfiler? profiler,
+    Duration? duration,
+    Curve? curve,
+    Duration? delay,
+    VoidCallback? onComplete,
+    double? progress,
+    double? begin,
+    double? end,
+    Alignment? alignment,
+    bool? isRotated,
+    bool? useRadians,
+  }) {
+    return GaplyRotate(
+      profiler: profiler ?? this.profiler,
+      duration: duration ?? this.duration,
+      curve: curve ?? this.curve,
+      delay: delay ?? this.delay,
+      onComplete: onComplete ?? this.onComplete,
+      progress: progress ?? this.progress,
+      begin: begin ?? this.begin,
+      end: end ?? this.end,
+      alignment: alignment ?? this.alignment,
+      isRotated: isRotated ?? this.isRotated,
+      useRadians: useRadians ?? this.useRadians,
+    );
+  }
+
+  @override
+  GaplyRotate lerp(GaplyAnimStyle? other, double t) {
+    if (other is! GaplyRotate) return this;
+
+    return profiler.trace(() {
+      return GaplyRotate(
+        profiler: other.profiler,
+        duration: t < 0.5 ? duration : other.duration,
+        curve: t < 0.5 ? curve : other.curve,
+        delay: t < 0.5 ? delay : other.delay,
+        onComplete: other.onComplete,
+        progress: lerpDouble(progress, other.progress, t) ?? other.progress,
+        begin: lerpDouble(begin, other.begin, t) ?? begin,
+        end: lerpDouble(end, other.end, t) ?? end,
+        alignment: Alignment.lerp(alignment, other.alignment, t) ?? alignment,
+        isRotated: t < 0.5 ? isRotated : other.isRotated,
+        useRadians: t < 0.5 ? useRadians : other.useRadians,
+      );
+    }, tag: 'lerp');
+  }
+
+  @override
+  List<Object?> get props => [...super.props, begin, end, alignment, isRotated, useRadians];
+
+  @override
+  bool get hasEffect => duration.inMilliseconds > 0;
 }
 
-class GaplyRotateState extends State<GaplyRotate> with SingleTickerProviderStateMixin {
-  late final AnimationController _controller;
-  late final CurvedAnimation _curve;
-  late final Animation<double> _turns;
+mixin _RotateStyleMixin {
+  GaplyRotate get _self => this as GaplyRotate;
+  GaplyRotate get gaplyRotate => _self;
 
-  @override
-  void initState() {
-    super.initState();
-
-    _controller = AnimationController(
-      vsync: this,
-      duration: widget.style.duration,
-      value: widget.style.isRotated ? 1.0 : 0.0,
+  GaplyRotate copyWithRotate(GaplyRotate rotate) {
+    return _self.copyWith(
+      profiler: rotate.profiler,
+      duration: rotate.duration,
+      curve: rotate.curve,
+      delay: rotate.delay,
+      onComplete: rotate.onComplete,
+      progress: rotate.progress,
+      begin: rotate.begin,
+      end: rotate.end,
+      alignment: rotate.alignment,
+      isRotated: rotate.isRotated,
+      useRadians: rotate.useRadians,
     );
-
-    _controller.addStatusListener((status) {
-      if (status == AnimationStatus.completed || status == AnimationStatus.dismissed) {
-        widget.style.onComplete?.call();
-      }
-    });
-
-    _curve = CurvedAnimation(parent: _controller, curve: widget.style.curve);
-
-    _updateAnimation();
-
-    _execute(widget.style);
   }
 
-  @override
-  void didUpdateWidget(GaplyRotate oldWidget) {
-    super.didUpdateWidget(oldWidget);
+  Widget buildWidget({required Widget child, Object? trigger}) {
+    if (!_self.hasEffect) return child;
 
-    if (widget.style.duration != oldWidget.style.duration) {
-      _controller.duration = widget.style.duration;
-    }
-
-    if (widget.style.curve != oldWidget.style.curve) {
-      _curve.curve = widget.style.curve;
-    }
-
-    if (widget.style.begin != oldWidget.style.begin ||
-        widget.style.end != oldWidget.style.end ||
-        widget.style.useRadians != oldWidget.style.useRadians) {
-      _updateAnimation();
-    }
-
-    if (widget.style.isRotated != oldWidget.style.isRotated) {
-      _execute(widget.style);
-    }
+    return _GaplyRotateTrigger(style: _self, trigger: trigger ?? DateTime.now(), child: child);
   }
+}
 
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
+void _initPresets(GaplyRotatePreset preset) {
+  preset.add(
+    'tiltRight',
+    const GaplyRotate(
+      begin: 0,
+      end: 5,
+      duration: Duration(milliseconds: 200),
+      curve: Curves.easeOutCubic,
+      isRotated: true,
+    ),
+  );
 
-  void _updateAnimation() {
-    double beginTurns;
-    double endTurns;
+  preset.add(
+    'tiltLeft',
+    const GaplyRotate(
+      begin: 0,
+      end: -5,
+      duration: Duration(milliseconds: 200),
+      curve: Curves.easeOutCubic,
+      isRotated: true,
+    ),
+  );
 
-    if (widget.style.useRadians) {
-      beginTurns = widget.style.begin / (2 * math.pi);
-      endTurns = widget.style.end / (2 * math.pi);
-    } else {
-      beginTurns = widget.style.begin / 360.0;
-      endTurns = widget.style.end / 360.0;
-    }
+  preset.add('flip', const GaplyRotate(begin: 0, end: 180, isRotated: true));
 
-    _turns = Tween<double>(begin: beginTurns, end: endTurns).animate(_curve);
-  }
-
-  void _execute(RotateStyle style) {
-    if (!mounted) return;
-
-    if (style.isRotated) {
-      _controller.forward();
-    } else {
-      _controller.reverse();
-    }
-  }
-
-  void executeParams(RotateStyle style) {
-    Future.delayed(style.delay, () {
-      if (!mounted) return;
-
-      _controller.duration = style.duration;
-      _curve.curve = style.curve;
-
-      _execute(style);
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (!widget.style.hasEffect) return widget.child;
-
-    return widget.style.profiler.trace(() {
-      return RotationTransition(turns: _turns, alignment: widget.style.alignment, child: widget.child);
-    }, tag: 'build');
-  }
+  preset.add('slight', const GaplyRotate(begin: -2, end: 2, isRotated: true));
 }

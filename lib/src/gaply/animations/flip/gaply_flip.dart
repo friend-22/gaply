@@ -13,25 +13,25 @@ import 'package:gaply/src/gaply/core/gaply_style.dart';
 import 'package:gaply/src/gaply/core/gaply_trigger.dart';
 
 import 'flip_widget.dart';
-import 'flip_style_modifier.dart';
+import 'gaply_flip_modifier.dart';
 
 part 'flip_trigger.dart';
-part 'flip_style.preset.g.dart';
+part 'gaply_flip.preset.g.dart';
 
 @immutable
 @GaplyPresetGen(initializer: '_initPresets')
-class GaplyFlipStyle extends GaplyAnimStyle<GaplyFlipStyle>
+class GaplyFlip extends GaplyAnimStyle<GaplyFlip>
     with
-        GaplyTweenMixin<GaplyFlipStyle>,
-        GaplyAnimMixin<GaplyFlipStyle>,
+        GaplyTweenMixin<GaplyFlip>,
+        GaplyAnimMixin<GaplyFlip>,
         _GaplyFlipMixin,
-        FlipStyleModifier<GaplyFlipStyle> {
+        GaplyFlipModifier<GaplyFlip> {
   final Axis axis;
   final double angleRange;
   final bool isFlipped;
   final Widget? backWidget;
 
-  const GaplyFlipStyle({
+  const GaplyFlip({
     super.profiler,
     Duration? duration,
     Curve? curve,
@@ -49,11 +49,11 @@ class GaplyFlipStyle extends GaplyAnimStyle<GaplyFlipStyle>
          delay: delay ?? Duration.zero,
        );
 
-  const GaplyFlipStyle.none() : this(duration: Duration.zero, axis: Axis.horizontal, isFlipped: false);
+  const GaplyFlip.none() : this(duration: Duration.zero, axis: Axis.horizontal, isFlipped: false);
 
   static GaplyFlipPreset preset = GaplyFlipPreset._i;
 
-  factory GaplyFlipStyle.fromPreset(
+  factory GaplyFlip.of(
     Object key, {
     GaplyProfiler? profiler,
     Widget? backWidget,
@@ -72,7 +72,7 @@ class GaplyFlipStyle extends GaplyAnimStyle<GaplyFlipStyle>
     );
   }
 
-  const GaplyFlipStyle.vertical(
+  const GaplyFlip.vertical(
     Widget backWidget, {
     GaplyProfiler? profiler,
     Duration? duration,
@@ -91,7 +91,7 @@ class GaplyFlipStyle extends GaplyAnimStyle<GaplyFlipStyle>
          isFlipped: isFlipped,
        );
 
-  const GaplyFlipStyle.horizontal(
+  const GaplyFlip.horizontal(
     Widget backWidget, {
     GaplyProfiler? profiler,
     Duration? duration,
@@ -111,7 +111,7 @@ class GaplyFlipStyle extends GaplyAnimStyle<GaplyFlipStyle>
        );
 
   @override
-  GaplyFlipStyle copyWith({
+  GaplyFlip copyWith({
     GaplyProfiler? profiler,
     Duration? duration,
     Curve? curve,
@@ -123,7 +123,7 @@ class GaplyFlipStyle extends GaplyAnimStyle<GaplyFlipStyle>
     bool? isFlipped,
     Widget? backWidget,
   }) {
-    return GaplyFlipStyle(
+    return GaplyFlip(
       profiler: profiler ?? this.profiler,
       duration: duration ?? this.duration,
       curve: curve ?? this.curve,
@@ -138,11 +138,11 @@ class GaplyFlipStyle extends GaplyAnimStyle<GaplyFlipStyle>
   }
 
   @override
-  GaplyFlipStyle lerp(GaplyAnimStyle? other, double t) {
-    if (other is! GaplyFlipStyle) return this;
+  GaplyFlip lerp(GaplyAnimStyle? other, double t) {
+    if (other is! GaplyFlip) return this;
 
     return profiler.trace(() {
-      return GaplyFlipStyle(
+      return GaplyFlip(
         profiler: other.profiler,
         duration: t < 0.5 ? duration : other.duration,
         curve: t < 0.5 ? curve : other.curve,
@@ -165,10 +165,10 @@ class GaplyFlipStyle extends GaplyAnimStyle<GaplyFlipStyle>
 }
 
 mixin _GaplyFlipMixin {
-  GaplyFlipStyle get _self => this as GaplyFlipStyle;
-  GaplyFlipStyle get flipStyle => _self;
+  GaplyFlip get _self => this as GaplyFlip;
+  GaplyFlip get gaplyFlip => _self;
 
-  GaplyFlipStyle copyWithFlip(GaplyFlipStyle flip) {
+  GaplyFlip copyWithFlip(GaplyFlip flip) {
     return _self.copyWith(
       profiler: flip.profiler,
       duration: flip.duration,

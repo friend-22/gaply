@@ -17,7 +17,7 @@ void main() async {
 
   //_setupGaplyThemes();
 
-  GaplyFadeStyle.preset.add('fadeIn', GaplyFadeStyle.fadeIn());
+  GaplyFade.preset.add('fadeIn', GaplyFade.fadeIn());
 
   runApp(const MaterialApp(home: GaplyBoxStressTest()));
 }

@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
 
+import 'package:gaply/src/gaply/core/gaply_defines.dart';
+import 'package:gaply/src/annotations.dart';
+import 'package:gaply/src/utils/gaply_profiler.dart';
+import 'package:gaply/src/utils/gaply_logger.dart';
+
 import 'package:gaply/src/gaply/core/gaply_style.dart';
 import 'package:gaply/src/utils/gaply_profiler.dart';
 
@@ -8,6 +13,10 @@ import 'color_theme_modifier.dart';
 import 'color_theme_preset.dart';
 import 'gaply_color.dart';
 
+part 'gaply_color_theme.preset.g.dart';
+
+@immutable
+@GaplyPresetGen(initializer: '_initPresets')
 class GaplyColorTheme extends GaplyThemeData<GaplyColorTheme>
     with GaplyTweenMixin<GaplyColorTheme>, _GaplyColorThemeMixin, ColorThemeModifier<GaplyColorTheme> {
   final Map<GaplyColorToken, GaplyColor> colors;

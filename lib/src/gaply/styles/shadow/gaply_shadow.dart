@@ -2,6 +2,11 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 
+import 'package:gaply/src/gaply/core/gaply_defines.dart';
+import 'package:gaply/src/annotations.dart';
+import 'package:gaply/src/utils/gaply_profiler.dart';
+import 'package:gaply/src/utils/gaply_logger.dart';
+
 import 'package:gaply/src/gaply/core/gaply_style.dart';
 import 'package:gaply/src/gaply/styles/color/gaply_color.dart';
 import 'package:gaply/src/gaply/styles/color/color_defines.dart';
@@ -10,7 +15,10 @@ import 'package:gaply/src/utils/gaply_profiler.dart';
 import 'shadow_preset.dart';
 import 'shadow_style_modifier.dart';
 
+part 'gaply_shadow.preset.g.dart';
+
 @immutable
+@GaplyPresetGen(initializer: '_initPresets')
 class GaplyShadow extends GaplyStyle<GaplyShadow> with _GaplyShadowMixin, ShadowStyleModifier<GaplyShadow> {
   // static const double _elevationOffsetScale = 1.5;
   // static const double _elevationBlurScale = 0.5;

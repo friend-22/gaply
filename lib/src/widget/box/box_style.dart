@@ -2,6 +2,11 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 
+import 'package:gaply/src/gaply/core/gaply_defines.dart';
+import 'package:gaply/src/annotations.dart';
+import 'package:gaply/src/utils/gaply_profiler.dart';
+import 'package:gaply/src/utils/gaply_logger.dart';
+
 import 'package:gaply/src/utils/gaply_profiler.dart';
 import 'package:gaply/src/gaply/core/core.dart';
 import 'package:gaply/src/gaply/styles/styles.dart';
@@ -11,7 +16,10 @@ import 'box_preset.dart';
 import 'gaply_box.dart';
 import 'box_style_modifier.dart';
 
+part 'gaply_box.preset.g.dart';
+
 @immutable
+@GaplyPresetGen(initializer: '_initPresets')
 class BoxStyle extends GaplyTweenStyle<BoxStyle>
     with
         GaplyTweenMixin<BoxStyle>,
@@ -25,7 +33,7 @@ class BoxStyle extends GaplyTweenStyle<BoxStyle>
         FilterStyleModifier<BoxStyle>,
         NoiseStyleModifier<BoxStyle>,
         ManyShadowStyleModifier<BoxStyle>,
-        MotionStyleModifier<BoxStyle>,
+        GaplyMotionModifier<BoxStyle>,
         BoxStyleModifier<BoxStyle> {
   // 1. Layout & Shape
   final GaplyLayout layout;

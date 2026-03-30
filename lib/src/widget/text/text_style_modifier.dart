@@ -6,7 +6,7 @@ import 'package:gaply/src/gaply/animations/animations.dart';
 import 'text_style.dart';
 
 mixin TextStyleModifier<T>
-    on ColorStyleModifier<T>, BlurStyleModifier<T>, ShimmerStyleModifier<T>, MotionStyleModifier<T> {
+    on ColorStyleModifier<T>, BlurStyleModifier<T>, ShimmerStyleModifier<T>, GaplyMotionModifier<T> {
   GaplyTextStyle get textStyle;
   T copyWithText(GaplyTextStyle text);
 
@@ -28,7 +28,7 @@ mixin TextStyleModifier<T>
   T copyWithShimmer(GaplyShimmer shimmer) => copyWithText(textStyle.copyWith(shimmer: shimmer));
 
   @override
-  GaplyMotion get motionStyle => textStyle.motion;
+  GaplyMotion get gaplyMotion => textStyle.motion;
   @override
   T copyWithMotion(GaplyMotion motion) => copyWithText(textStyle.copyWith(motion: motion));
 

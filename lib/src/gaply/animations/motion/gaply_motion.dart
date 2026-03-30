@@ -2,11 +2,16 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+import 'package:gaply/src/gaply/core/gaply_defines.dart';
+import 'package:gaply/src/annotations.dart';
 import 'package:gaply/src/utils/gaply_profiler.dart';
-import 'package:gaply/src/gaply/core/gaply_style.dart';
-import 'motion_style_modifier.dart';
+import 'package:gaply/src/utils/gaply_logger.dart';
 
-import 'motion_preset.dart';
+import 'package:gaply/src/gaply/core/gaply_style.dart';
+
+import 'gaply_motion_modifier.dart';
+
+part 'gaply_motion.preset.g.dart';
 
 abstract class GaplyAnim {
   GaplyAnim lerp(GaplyAnim? other, double t);
@@ -14,8 +19,9 @@ abstract class GaplyAnim {
 }
 
 @immutable
+@GaplyPresetGen(initializer: '_initPresets')
 class GaplyMotion extends GaplyStyle<GaplyMotion>
-    with GaplyMotionMixin, _GaplyMotionMixin, MotionStyleModifier<GaplyMotion> {
+    with GaplyMotionMixin, _GaplyMotionMixin, GaplyMotionModifier<GaplyMotion> {
   final List<GaplyAnimStyle> animations;
   final List<GaplyMotion> children;
   final VoidCallback? onComplete;
@@ -24,16 +30,15 @@ class GaplyMotion extends GaplyStyle<GaplyMotion>
 
   const GaplyMotion.none() : this(animations: const []);
 
-  // static void add(Object key, GaplyMotion style) => GaplyMotionPreset.add(key, style);
-  // static void addSafe(Object key, GaplyMotion style) => GaplyMotionPreset.addSafe(key, style);
-  //
-  // factory GaplyMotion.preset(Object key, {GaplyProfiler? profiler, VoidCallback? onComplete}) {
-  //   final style = GaplyMotionPreset.of(key);
-  //   if (style == null) {
-  //     throw ArgumentError(GaplyMotionPreset.error("GaplyMotion", key));
-  //   }
-  //   return style.copyWith(profiler: profiler, onComplete: onComplete);
-  // }
+  static GaplyMotionPreset preset = GaplyMotionPreset._i;
+
+  factory GaplyMotion.of(Object key, {GaplyProfiler? profiler, VoidCallback? onComplete}) {
+    final style = preset.get(key);
+    if (style == null) {
+      throw ArgumentError(preset.error(key));
+    }
+    return style.copyWith(profiler: profiler, onComplete: onComplete);
+  }
 
   GaplyMotion addAnimation(GaplyAnimStyle style) {
     return copyWith(animations: [...animations, style]);
@@ -125,7 +130,7 @@ class GaplyMotion extends GaplyStyle<GaplyMotion>
 
 mixin _GaplyMotionMixin on GaplyMotionMixin {
   GaplyMotion get _self => this as GaplyMotion;
-  GaplyMotion get motionStyle => _self;
+  GaplyMotion get gaplyMotion => _self;
 
   GaplyMotion copyWithMotion(GaplyMotion motion) {
     return _self.copyWith(
@@ -212,4 +217,80 @@ mixin GaplyMotionMixin {
     }
     return result;
   }
+}
+
+void _initPresets(GaplyMotionPreset preset) {
+  // preset.add(
+  //   'entrance',
+  //   const GaplyMotion(
+  //     animations: [
+  //       GaplyFade(isVisible: true, duration: Duration(milliseconds: 500)),
+  //       TranslateStyle(
+  //         begin: Offset(0, 10),
+  //         end: Offset.zero,
+  //         isMoved: true,
+  //         duration: Duration(milliseconds: 400),
+  //         curve: Curves.easeOutCubic,
+  //       ),
+  //     ],
+  //   ),
+  // );
+  // preset.add(
+  //   'pop',
+  //   const GaplyMotion(
+  //     animations: [
+  //       GaplyScale(
+  //         begin: 0.8,
+  //         end: 1.0,
+  //         isScaled: true,
+  //         duration: Duration(milliseconds: 500),
+  //         curve: Curves.elasticOut,
+  //       ),
+  //       GaplyRotate(
+  //         begin: -5,
+  //         end: 0,
+  //         isRotated: true,
+  //         duration: Duration(milliseconds: 600),
+  //         curve: Curves.elasticOut,
+  //       ),
+  //     ],
+  //   ),
+  // );
+  //
+  // preset.add(
+  //   'attention',
+  //   const GaplyMotion(
+  //     animations: [
+  //       GaplyScale(begin: 1.0, end: 1.05, isScaled: true, duration: Duration(milliseconds: 200)),
+  //       ShakeStyle(duration: Duration(milliseconds: 500), distance: 4.0, count: 3.0, curve: Curves.linear),
+  //     ],
+  //   ),
+  // );
+  //
+  // preset.add(
+  //   'cardHover',
+  //   const GaplyMotion(
+  //     animations: [
+  //       TranslateStyle(
+  //         begin: Offset.zero,
+  //         end: Offset(0, -6),
+  //         isMoved: true,
+  //         duration: Duration(milliseconds: 300),
+  //       ),
+  //       GaplyScale(begin: 1.0, end: 1.02, isScaled: true, duration: Duration(milliseconds: 300)),
+  //     ],
+  //   ),
+  // );
+  //
+  // preset.add(
+  //   'introAndShake',
+  //   GaplyMotion(
+  //     animations: [GaplyFade(isVisible: true, duration: const Duration(milliseconds: 400))],
+  //     children: [
+  //       const GaplyMotion(
+  //         animations: [ShakeStyle(distance: 2.0, count: 2.0, duration: Duration(milliseconds: 300))],
+  //       ),
+  //     ],
+  //   ),
+  // );
 }

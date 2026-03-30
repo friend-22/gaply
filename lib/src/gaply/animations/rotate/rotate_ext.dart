@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import 'rotate_style.dart';
+import 'gaply_rotate.dart';
 
 extension GaplyRotateExtension on Widget {
-  Widget withRotate(RotateStyle style) => style.buildWidget(child: this);
+  Widget withRotate(GaplyRotate style) => style.buildWidget(child: this);
 }
