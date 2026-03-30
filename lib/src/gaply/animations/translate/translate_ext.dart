@@ -1,20 +1,20 @@
 import 'package:flutter/widgets.dart';
 
-import 'translate_style.dart';
 import 'gaply_translate.dart';
+import 'translate_widget.dart';
 
 /// Extension to easily wrap any [Widget] with a translate animation.
 ///
-/// [TranslateStyle] animates the position of a widget by applying
+/// [GaplyTranslate] animates the position of a widget by applying
 /// an [Offset] translation.
 extension GaplyTranslateExtension on Widget {
-  /// Wraps this widget with a [GaplyTranslate] animation using the provided [style].
+  /// Wraps this widget with a [GaplyTranslateWidget] animation using the provided [style].
   ///
   /// ### Example:
   ///
   /// ```dart
   /// Text("Sliding Text").withTranslate(
-  ///   TranslateStyle(
+  ///   GaplyTranslate(
   ///     begin: Offset(100, 0),
   ///     end: Offset.zero,
   ///     isMoved: true,
@@ -22,5 +22,5 @@ extension GaplyTranslateExtension on Widget {
   ///   ),
   /// )
   /// ```
-  Widget withTranslate(TranslateStyle style) => style.buildWidget(child: this);
+  Widget withTranslate(GaplyTranslate style) => style.buildWidget(child: this);
 }

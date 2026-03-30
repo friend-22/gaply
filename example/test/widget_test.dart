@@ -16,12 +16,12 @@ void main() {
 
     final complexAnim = GaplyMotion(
       animations: [
-        ShakeStyle(duration: const Duration(milliseconds: 200)).copyWith(onComplete: () => logs.add('1완료')),
+        GaplyShake(duration: const Duration(milliseconds: 200)).copyWith(onComplete: () => logs.add('1완료')),
       ],
       children: [
         GaplyMotion(
           animations: [
-            ShakeStyle(
+            GaplyShake(
               duration: const Duration(milliseconds: 200),
             ).copyWith(onComplete: () => logs.add('2완료')),
           ],
@@ -71,12 +71,12 @@ void main() {
 //
 //     final complexAnim = GaplyMotion(
 //       styles: [
-//         ShakeStyle(duration: const Duration(milliseconds: 200)).copyWith(onComplete: () => logs.add('1완료')),
+//         GaplyShake(duration: const Duration(milliseconds: 200)).copyWith(onComplete: () => logs.add('1완료')),
 //       ],
 //       children: [
 //         GaplyMotion(
 //           styles: [
-//             ShakeStyle(
+//             GaplyShake(
 //               duration: const Duration(milliseconds: 200),
 //             ).copyWith(onComplete: () => logs.add('2완료')),
 //           ],

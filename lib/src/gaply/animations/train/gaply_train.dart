@@ -1,138 +1,244 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 
-import 'train_style.dart';
+import 'package:gaply/src/gaply/core/gaply_defines.dart';
+import 'package:gaply/src/annotations.dart';
+import 'package:gaply/src/utils/gaply_profiler.dart';
+import 'package:gaply/src/utils/gaply_logger.dart';
 
-class GaplyTrain<T> extends StatefulWidget {
-  final T currentItem;
-  final T? previousItem;
-  final Widget Function(T item) itemBuilder;
-  final TrainStyle style;
+import 'package:gaply/src/gaply/core/gaply_direction.dart';
+import 'package:gaply/src/gaply/core/gaply_style.dart';
+import 'package:gaply/src/gaply/core/gaply_trigger.dart';
+
+import 'train_widget.dart';
+import 'gaply_train_modifier.dart';
+
+part 'train_trigger.dart';
+part 'gaply_train.preset.g.dart';
+
+@immutable
+@GaplyPresetGen(initializer: '_initPresets')
+class GaplyTrain extends GaplyAnimStyle<GaplyTrain>
+    with
+        GaplyTweenMixin<GaplyTrain>,
+        GaplyAnimMixin<GaplyTrain>,
+        GaplyDirectionAnimMixin,
+        _TrainStyleMixin,
+        GaplyTrainModifier<GaplyTrain> {
+  @override
+  final AxisDirection direction;
+  final bool useOpacity;
 
   const GaplyTrain({
-    super.key,
-    required this.currentItem,
-    required this.previousItem,
-    required this.itemBuilder,
-    required this.style,
-  });
+    super.profiler,
+    Duration? duration,
+    Curve? curve,
+    Duration? delay,
+    super.onComplete,
+    super.progress,
+    required this.direction,
+    this.useOpacity = true,
+  }) : super(
+         duration: duration ?? const Duration(milliseconds: 500),
+         curve: curve ?? Curves.easeOutQuart,
+         delay: delay ?? Duration.zero,
+       );
 
-  @override
-  State<GaplyTrain<T>> createState() => GaplyTrainState<T>();
-}
+  const GaplyTrain.none() : this(duration: Duration.zero, direction: AxisDirection.down);
 
-class GaplyTrainState<T> extends State<GaplyTrain<T>> with SingleTickerProviderStateMixin {
-  late final AnimationController _controller;
-  late final CurvedAnimation _curve;
+  static GaplyTrainPreset preset = GaplyTrainPreset._i;
 
-  Axis get _axis => widget.style.axis;
-  bool get _isForward => switch (widget.style.direction) {
-    AxisDirection.left || AxisDirection.up => true,
-    AxisDirection.right || AxisDirection.down => false,
-  };
-  bool get _isHorizontal => widget.style.isHorizontal;
+  factory GaplyTrain.of(Object key, {GaplyProfiler? profiler, bool? useOpacity, VoidCallback? onComplete}) {
+    final style = preset.get(key);
+    if (style == null) {
+      throw ArgumentError(preset.error(key));
+    }
+    return style.copyWith(profiler: profiler, useOpacity: useOpacity, onComplete: onComplete);
+  }
 
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(vsync: this, duration: widget.style.duration);
+  const GaplyTrain.left({
+    GaplyProfiler? profiler,
+    Duration? duration,
+    Duration? delay,
+    Curve? curve,
+    VoidCallback? onComplete,
+    bool useOpacity = true,
+  }) : this(
+         profiler: profiler,
+         duration: duration,
+         curve: curve,
+         delay: delay,
+         onComplete: onComplete,
+         direction: AxisDirection.left,
+         useOpacity: useOpacity,
+       );
 
-    _controller.addStatusListener((status) {
-      if (status == AnimationStatus.completed || status == AnimationStatus.dismissed) {
-        widget.style.onComplete?.call();
-      }
-    });
+  const GaplyTrain.right({
+    GaplyProfiler? profiler,
+    Duration? duration,
+    Duration? delay,
+    Curve? curve,
+    VoidCallback? onComplete,
+    bool useOpacity = true,
+  }) : this(
+         profiler: profiler,
+         duration: duration,
+         curve: curve,
+         delay: delay,
+         onComplete: onComplete,
+         direction: AxisDirection.right,
+         useOpacity: useOpacity,
+       );
 
-    _curve = CurvedAnimation(parent: _controller, curve: widget.style.curve);
+  const GaplyTrain.up({
+    GaplyProfiler? profiler,
+    Duration? duration,
+    Duration? delay,
+    Curve? curve,
+    VoidCallback? onComplete,
+    bool useOpacity = true,
+  }) : this(
+         profiler: profiler,
+         duration: duration,
+         curve: curve,
+         delay: delay,
+         onComplete: onComplete,
+         direction: AxisDirection.up,
+         useOpacity: useOpacity,
+       );
+
+  const GaplyTrain.down({
+    GaplyProfiler? profiler,
+    Duration? duration,
+    Duration? delay,
+    Curve? curve,
+    VoidCallback? onComplete,
+    bool useOpacity = true,
+  }) : this(
+         profiler: profiler,
+         duration: duration,
+         curve: curve,
+         delay: delay,
+         onComplete: onComplete,
+         direction: AxisDirection.down,
+         useOpacity: useOpacity,
+       );
+
+  GaplyTrain get reversed {
+    return copyWith(direction: reversedDirection);
   }
 
   @override
-  void didUpdateWidget(GaplyTrain<T> oldWidget) {
-    super.didUpdateWidget(oldWidget);
-
-    if (widget.style.duration != oldWidget.style.duration) {
-      _controller.duration = widget.style.duration;
-    }
-
-    if (widget.style.curve != oldWidget.style.curve) {
-      _curve.curve = widget.style.curve;
-    }
-
-    if (widget.previousItem != oldWidget.previousItem && widget.previousItem != null) {
-      _controller.forward(from: 0);
-    }
-
-    if (widget.currentItem != oldWidget.currentItem) {
-      _controller.forward(from: 0);
-    }
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  void executeParams(TrainStyle style) {
-    Future.delayed(style.delay, () {
-      if (!mounted) return;
-
-      _controller.duration = style.duration;
-      _curve.curve = style.curve;
-
-      _controller.forward(from: 0);
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (widget.previousItem == null) {
-      return widget.itemBuilder(widget.currentItem);
-    }
-
-    final prev = widget.itemBuilder(widget.previousItem as T);
-    final curr = widget.itemBuilder(widget.currentItem);
-    final first = _isForward ? prev : curr;
-    final second = _isForward ? curr : prev;
-
-    return widget.style.profiler.trace(() {
-      return AnimatedBuilder(
-        animation: _curve,
-        builder: (context, _) {
-          return RepaintBoundary(
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                final size = _isHorizontal ? constraints.maxWidth : constraints.maxHeight;
-                final travel = _isForward ? -size * _curve.value : -size + (size * _curve.value);
-                final offset = _isHorizontal ? Offset(travel, 0) : Offset(0, travel);
-
-                final double firstOpacity = 1.0 - _curve.value;
-                final double secondOpacity = _curve.value;
-
-                return ClipRect(
-                  child: Transform.translate(
-                    offset: offset,
-                    child: Flex(
-                      direction: _axis,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        _buildTrainCar(first, firstOpacity, size),
-                        _buildTrainCar(second, secondOpacity, size),
-                      ],
-                    ),
-                  ),
-                );
-              },
-            ),
-          );
-        },
-      );
-    }, tag: 'build');
-  }
-
-  Widget _buildTrainCar(Widget child, double opacity, double size) {
-    return Opacity(
-      opacity: widget.style.useOpacity ? opacity.clamp(0.0, 1.0) : 1.0,
-      child: SizedBox(width: _isHorizontal ? size : null, height: !_isHorizontal ? size : null, child: child),
+  GaplyTrain copyWith({
+    GaplyProfiler? profiler,
+    Duration? duration,
+    Curve? curve,
+    Duration? delay,
+    VoidCallback? onComplete,
+    double? progress,
+    AxisDirection? direction,
+    bool? useOpacity,
+  }) {
+    return GaplyTrain(
+      profiler: profiler ?? this.profiler,
+      duration: duration ?? this.duration,
+      curve: curve ?? this.curve,
+      delay: delay ?? this.delay,
+      onComplete: onComplete ?? this.onComplete,
+      progress: progress ?? this.progress,
+      direction: direction ?? this.direction,
+      useOpacity: useOpacity ?? this.useOpacity,
     );
   }
+
+  @override
+  GaplyTrain lerp(GaplyAnimStyle? other, double t) {
+    if (other is! GaplyTrain) return this;
+
+    return profiler.trace(() {
+      return GaplyTrain(
+        profiler: other.profiler,
+        duration: t < 0.5 ? duration : other.duration,
+        curve: t < 0.5 ? curve : other.curve,
+        delay: t < 0.5 ? delay : other.delay,
+        onComplete: other.onComplete,
+        progress: lerpDouble(progress, other.progress, t) ?? other.progress,
+        direction: t < 0.5 ? direction : other.direction,
+        useOpacity: t < 0.5 ? useOpacity : other.useOpacity,
+      );
+    }, tag: 'lerp');
+  }
+
+  @override
+  List<Object?> get props => [...super.props, direction, useOpacity];
+
+  @override
+  bool get hasEffect => duration.inMilliseconds > 0;
+}
+
+mixin _TrainStyleMixin {
+  GaplyTrain get _self => this as GaplyTrain;
+  GaplyTrain get gaplyTrain => _self;
+
+  GaplyTrain copyWithTrain(GaplyTrain train) {
+    return _self.copyWith(
+      profiler: train.profiler,
+      duration: train.duration,
+      curve: train.curve,
+      delay: train.delay,
+      onComplete: train.onComplete,
+      progress: train.progress,
+      direction: train.direction,
+      useOpacity: train.useOpacity,
+    );
+  }
+
+  Widget buildWidget({required Widget child, Object? trigger}) {
+    return child;
+  }
+
+  Widget buildTrain<T>({
+    required T currentItem,
+    required T? previousItem,
+    required Widget Function(T) itemBuilder,
+    Object? trigger,
+  }) {
+    return _GaplyTrainTrigger<T>(
+      currentItem: currentItem,
+      previousItem: previousItem,
+      itemBuilder: itemBuilder,
+      trigger: DateTime.now(),
+      style: _self,
+    );
+  }
+}
+
+void _initPresets(GaplyTrainPreset preset) {
+  preset.add(
+    'express',
+    const GaplyTrain(
+      duration: Duration(milliseconds: 400),
+      curve: Curves.easeOutExpo,
+      direction: AxisDirection.right,
+    ),
+  );
+
+  preset.add(
+    'link',
+    const GaplyTrain(
+      duration: Duration(milliseconds: 600),
+      curve: Curves.easeInOutCubic,
+      direction: AxisDirection.left,
+    ),
+  );
+
+  preset.add(
+    'scenic',
+    const GaplyTrain(
+      duration: Duration(milliseconds: 1200),
+      curve: Curves.linearToEaseOut,
+      direction: AxisDirection.right,
+    ),
+  );
 }

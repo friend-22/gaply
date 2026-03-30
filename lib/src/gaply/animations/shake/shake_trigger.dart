@@ -1,8 +1,8 @@
-part of 'shake_style.dart';
+part of 'gaply_shake.dart';
 
 class _GaplyShakeTrigger extends StatefulWidget {
   final Widget child;
-  final ShakeStyle style;
+  final GaplyShake style;
   final Object? trigger;
 
   const _GaplyShakeTrigger({required this.child, required this.style, this.trigger});
@@ -12,12 +12,12 @@ class _GaplyShakeTrigger extends StatefulWidget {
 }
 
 class _GaplyShakeTriggerState extends State<_GaplyShakeTrigger>
-    with GaplyMotionTrigger<_GaplyShakeTrigger, ShakeStyle, GaplyShakeState> {
+    with GaplyMotionTrigger<_GaplyShakeTrigger, GaplyShake, GaplyShakeWidgetState> {
   @override
   Object? get trigger => widget.trigger;
 
   @override
-  ShakeStyle get style => widget.style;
+  GaplyShake get style => widget.style;
 
   @override
   void didUpdateWidget(_GaplyShakeTrigger oldWidget) {
@@ -27,12 +27,12 @@ class _GaplyShakeTriggerState extends State<_GaplyShakeTrigger>
   }
 
   @override
-  void execute(ShakeStyle style) {
+  void execute(GaplyShake style) {
     triggerKey.currentState?.executeParams(style);
   }
 
   @override
   Widget build(BuildContext context) {
-    return GaplyShake(key: triggerKey, style: widget.style, child: widget.child);
+    return GaplyShakeWidget(key: triggerKey, style: widget.style, child: widget.child);
   }
 }

@@ -1,122 +1,328 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 
-import 'size_style.dart';
+import 'package:gaply/src/gaply/core/gaply_defines.dart';
+import 'package:gaply/src/annotations.dart';
+import 'package:gaply/src/utils/gaply_profiler.dart';
+import 'package:gaply/src/utils/gaply_logger.dart';
 
-class GaplySize extends StatefulWidget {
-  final Widget child;
-  final SizeStyle style;
+import 'package:gaply/src/gaply/core/gaply_style.dart';
+import 'package:gaply/src/gaply/core/gaply_trigger.dart';
 
-  const GaplySize({super.key, required this.child, required this.style});
+import 'size_widget.dart';
+import 'gaply_size_modifier.dart';
+
+part 'size_trigger.dart';
+part 'gaply_size.preset.g.dart';
+
+@immutable
+@GaplyPresetGen(initializer: '_initPresets')
+class GaplySize extends GaplyAnimStyle<GaplySize>
+    with
+        GaplyTweenMixin<GaplySize>,
+        GaplyAnimMixin<GaplySize>,
+        _SizeStyleMixin,
+        GaplySizeModifier<GaplySize> {
+  final Axis axis;
+  final double axisAlignment;
+  final bool isExpanded;
+  final double minFactor;
+
+  const GaplySize({
+    super.profiler,
+    Duration? duration,
+    Curve? curve,
+    Duration? delay,
+    super.onComplete,
+    super.progress,
+    required this.axis,
+    required this.isExpanded,
+    this.minFactor = 0.0,
+    this.axisAlignment = -1.0,
+  }) : super(
+         duration: duration ?? const Duration(milliseconds: 400),
+         curve: curve ?? Curves.easeOutCubic,
+         delay: delay ?? Duration.zero,
+       );
+
+  const GaplySize.none() : this(duration: Duration.zero, axis: Axis.vertical, isExpanded: false);
+
+  static GaplySizePreset preset = GaplySizePreset._i;
+
+  factory GaplySize.of(
+    Object key, {
+    GaplyProfiler? profiler,
+    double? axisAlignment,
+    bool? isExpanded,
+    double? minFactor,
+    VoidCallback? onComplete,
+  }) {
+    final style = preset.get(key);
+    if (style == null) {
+      throw ArgumentError(preset.error(key));
+    }
+
+    return style.copyWith(
+      profiler: profiler,
+      axisAlignment: axisAlignment,
+      isExpanded: isExpanded,
+      minFactor: minFactor,
+      onComplete: onComplete,
+    );
+  }
+
+  const GaplySize.left({
+    GaplyProfiler? profiler,
+    Duration? duration,
+    Duration? delay,
+    Curve? curve,
+    VoidCallback? onComplete,
+    bool isExpanded = true,
+    double minFactor = 0.0,
+  }) : this(
+         profiler: profiler,
+         duration: duration,
+         curve: curve,
+         delay: delay,
+         onComplete: onComplete,
+         axis: Axis.horizontal,
+         axisAlignment: 1.0,
+         isExpanded: isExpanded,
+         minFactor: minFactor,
+       );
+
+  const GaplySize.right({
+    GaplyProfiler? profiler,
+    Duration? duration,
+    Duration? delay,
+    Curve? curve,
+    VoidCallback? onComplete,
+    bool isExpanded = true,
+    double minFactor = 0.0,
+  }) : this(
+         profiler: profiler,
+         duration: duration,
+         curve: curve,
+         delay: delay,
+         onComplete: onComplete,
+         axis: Axis.horizontal,
+         axisAlignment: -1.0,
+         isExpanded: isExpanded,
+         minFactor: minFactor,
+       );
+
+  const GaplySize.up({
+    GaplyProfiler? profiler,
+    Duration? duration,
+    Duration? delay,
+    Curve? curve,
+    VoidCallback? onComplete,
+    bool isExpanded = true,
+    double minFactor = 0.0,
+  }) : this(
+         profiler: profiler,
+         duration: duration,
+         curve: curve,
+         delay: delay,
+         onComplete: onComplete,
+         axis: Axis.vertical,
+         axisAlignment: 1.0,
+         isExpanded: isExpanded,
+         minFactor: minFactor,
+       );
+
+  const GaplySize.down({
+    GaplyProfiler? profiler,
+    Duration? duration,
+    Duration? delay,
+    Curve? curve,
+    VoidCallback? onComplete,
+    bool isExpanded = true,
+    double minFactor = 0.0,
+  }) : this(
+         profiler: profiler,
+         duration: duration,
+         curve: curve,
+         delay: delay,
+         onComplete: onComplete,
+         axis: Axis.vertical,
+         axisAlignment: -1.0,
+         isExpanded: isExpanded,
+         minFactor: minFactor,
+       );
+
+  const GaplySize.vertical({
+    GaplyProfiler? profiler,
+    Duration? duration,
+    Duration? delay,
+    Curve? curve,
+    VoidCallback? onComplete,
+    bool isExpanded = true,
+    double minFactor = 0.0,
+  }) : this(
+         profiler: profiler,
+         duration: duration,
+         curve: curve,
+         delay: delay,
+         onComplete: onComplete,
+         axis: Axis.vertical,
+         axisAlignment: 0.0,
+         isExpanded: isExpanded,
+         minFactor: minFactor,
+       );
+
+  const GaplySize.horizontal({
+    GaplyProfiler? profiler,
+    Duration? duration,
+    Duration? delay,
+    Curve? curve,
+    VoidCallback? onComplete,
+    bool isExpanded = true,
+    double minFactor = 0.0,
+  }) : this(
+         profiler: profiler,
+         duration: duration,
+         curve: curve,
+         delay: delay,
+         onComplete: onComplete,
+         axis: Axis.horizontal,
+         axisAlignment: 0.0,
+         isExpanded: isExpanded,
+         minFactor: minFactor,
+       );
 
   @override
-  State<GaplySize> createState() => GaplySizeState();
+  GaplySize copyWith({
+    GaplyProfiler? profiler,
+    Duration? duration,
+    Curve? curve,
+    Duration? delay,
+    VoidCallback? onComplete,
+    double? progress,
+    Axis? axis,
+    double? axisAlignment,
+    bool? isExpanded,
+    double? minFactor,
+  }) {
+    return GaplySize(
+      profiler: profiler ?? this.profiler,
+      duration: duration ?? this.duration,
+      curve: curve ?? this.curve,
+      delay: delay ?? this.delay,
+      onComplete: onComplete ?? this.onComplete,
+      progress: progress ?? this.progress,
+      axis: axis ?? this.axis,
+      axisAlignment: axisAlignment ?? this.axisAlignment,
+      isExpanded: isExpanded ?? this.isExpanded,
+      minFactor: minFactor ?? this.minFactor,
+    );
+  }
+
+  @override
+  GaplySize lerp(GaplyAnimStyle? other, double t) {
+    if (other is! GaplySize) return this;
+
+    return profiler.trace(() {
+      return GaplySize(
+        profiler: other.profiler,
+        duration: t < 0.5 ? duration : other.duration,
+        curve: t < 0.5 ? curve : other.curve,
+        delay: t < 0.5 ? delay : other.delay,
+        onComplete: other.onComplete,
+        progress: lerpDouble(progress, other.progress, t) ?? other.progress,
+        axis: t < 0.5 ? axis : other.axis,
+        axisAlignment: lerpDouble(axisAlignment, other.axisAlignment, t) ?? axisAlignment,
+        isExpanded: t < 0.5 ? isExpanded : other.isExpanded,
+        minFactor: lerpDouble(minFactor, other.minFactor, t) ?? minFactor,
+      );
+    }, tag: 'lerp');
+  }
+
+  @override
+  List<Object?> get props => [...super.props, axis, axisAlignment, isExpanded, minFactor];
+
+  @override
+  bool get hasEffect => duration.inMilliseconds > 0 || target < 1.0;
+
+  double get target => isExpanded ? 1.0 : minFactor;
 }
 
-class GaplySizeState extends State<GaplySize> with SingleTickerProviderStateMixin {
-  late final AnimationController _controller;
-  late final CurvedAnimation _curve;
-  late Animation<double> _sizeAnimation;
+mixin _SizeStyleMixin {
+  GaplySize get _self => this as GaplySize;
+  GaplySize get gaplySize => _self;
 
-  @override
-  void initState() {
-    super.initState();
-
-    _controller = AnimationController(
-      vsync: this,
-      duration: widget.style.duration,
-      value: widget.style.isExpanded ? 1.0 : 0.0,
+  GaplySize copyWithSize(GaplySize size) {
+    return _self.copyWith(
+      profiler: size.profiler,
+      duration: size.duration,
+      curve: size.curve,
+      delay: size.delay,
+      onComplete: size.onComplete,
+      progress: size.progress,
+      axis: size.axis,
+      axisAlignment: size.axisAlignment,
+      isExpanded: size.isExpanded,
+      minFactor: size.minFactor,
     );
-
-    _controller.addStatusListener((status) {
-      if (status == AnimationStatus.completed || status == AnimationStatus.dismissed) {
-        widget.style.onComplete?.call();
-      }
-    });
-
-    _curve = CurvedAnimation(parent: _controller, curve: widget.style.curve);
-    _updateAnimation();
-    _execute(widget.style);
   }
 
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
+  Widget buildWidget({required Widget child, Object? trigger}) {
+    if (!_self.hasEffect) return child;
+
+    return _GaplySizeTrigger(style: _self, trigger: trigger ?? DateTime.now(), child: child);
   }
+}
 
-  @override
-  void didUpdateWidget(covariant GaplySize oldWidget) {
-    super.didUpdateWidget(oldWidget);
+void _addByDirection(
+  GaplySizePreset preset,
+  Object key,
+  AxisDirection dir, {
+  Duration? duration,
+  Curve? curve,
+}) {
+  final bool isVertical = dir == AxisDirection.up || dir == AxisDirection.down;
 
-    if (widget.style.duration != oldWidget.style.duration) {
-      _controller.duration = widget.style.duration;
-    }
+  final bool isReversed = dir == AxisDirection.up || dir == AxisDirection.left;
+  final double alignment = isReversed ? 1.0 : -1.0;
 
-    if (widget.style.curve != oldWidget.style.curve) {
-      _curve.curve = widget.style.curve;
-    }
+  preset.add(
+    key,
+    GaplySize(
+      duration: duration ?? const Duration(milliseconds: 400),
+      curve: curve ?? Curves.easeOutCubic,
+      axis: isVertical ? Axis.vertical : Axis.horizontal,
+      axisAlignment: alignment,
+      isExpanded: true,
+    ),
+  );
+}
 
-    if (widget.style.minFactor != oldWidget.style.minFactor) {
-      _updateAnimation();
-    }
+void _initPresets(GaplySizePreset preset) {
+  _addByDirection(
+    preset,
+    'popIn',
+    AxisDirection.up,
+    duration: const Duration(milliseconds: 600),
+    curve: Curves.elasticOut,
+  );
 
-    if (widget.style.isExpanded != oldWidget.style.isExpanded) {
-      _execute(widget.style);
-    }
-  }
+  _addByDirection(
+    preset,
+    'softUp',
+    AxisDirection.up,
+    duration: const Duration(milliseconds: 400),
+    curve: Curves.easeOutQuad,
+  );
 
-  void toggle() => _controller.isCompleted ? hide() : show();
-  void show() => _controller.forward();
-  void hide() => _controller.reverse();
-
-  void _updateAnimation() {
-    _sizeAnimation = Tween<double>(begin: widget.style.minFactor, end: 1.0).animate(_curve);
-  }
-
-  void _execute(SizeStyle style) {
-    if (!mounted) return;
-
-    if (style.isExpanded) {
-      _controller.forward();
-    } else {
-      _controller.reverse();
-    }
-  }
-
-  void executeParams(SizeStyle style) {
-    Future.delayed(style.delay, () {
-      if (!mounted) return;
-
-      _controller.duration = style.duration;
-      _curve.curve = style.curve;
-
-      _execute(style);
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (!widget.style.hasEffect) return widget.child;
-
-    return widget.style.profiler.trace(() {
-      return AnimatedBuilder(
-        animation: _sizeAnimation,
-        builder: (context, child) {
-          if (_controller.isDismissed && widget.style.minFactor == 0) {
-            return const SizedBox.shrink();
-          }
-
-          return ClipRect(
-            child: SizeTransition(
-              sizeFactor: _sizeAnimation,
-              axis: widget.style.axis,
-              axisAlignment: widget.style.axisAlignment,
-              child: child,
-            ),
-          );
-        },
-        child: widget.child,
-      );
-    }, tag: 'build');
-  }
+  preset.add(
+    'exitRight',
+    GaplySize(
+      duration: Duration(milliseconds: 300),
+      curve: Curves.easeInCubic,
+      axis: Axis.horizontal,
+      axisAlignment: -1.0,
+      isExpanded: false,
+    ),
+  );
 }

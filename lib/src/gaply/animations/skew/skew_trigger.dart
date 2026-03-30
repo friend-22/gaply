@@ -1,8 +1,8 @@
-part of 'skew_style.dart';
+part of 'gaply_skew.dart';
 
 class _GaplySkewTrigger extends StatefulWidget {
   final Widget child;
-  final SkewStyle style;
+  final GaplySkew style;
   final Object? trigger;
 
   const _GaplySkewTrigger({required this.child, required this.style, this.trigger});
@@ -12,12 +12,12 @@ class _GaplySkewTrigger extends StatefulWidget {
 }
 
 class _GaplySkewTriggerState extends State<_GaplySkewTrigger>
-    with GaplyMotionTrigger<_GaplySkewTrigger, SkewStyle, GaplySkewState> {
+    with GaplyMotionTrigger<_GaplySkewTrigger, GaplySkew, GaplySkewWidgetState> {
   @override
   Object? get trigger => widget.trigger;
 
   @override
-  SkewStyle get style => widget.style;
+  GaplySkew get style => widget.style;
 
   @override
   void didUpdateWidget(_GaplySkewTrigger oldWidget) {
@@ -27,12 +27,12 @@ class _GaplySkewTriggerState extends State<_GaplySkewTrigger>
   }
 
   @override
-  void execute(SkewStyle style) {
+  void execute(GaplySkew style) {
     triggerKey.currentState?.executeParams(style);
   }
 
   @override
   Widget build(BuildContext context) {
-    return GaplySkew(key: triggerKey, style: widget.style, child: widget.child);
+    return GaplySkewWidget(key: triggerKey, style: widget.style, child: widget.child);
   }
 }

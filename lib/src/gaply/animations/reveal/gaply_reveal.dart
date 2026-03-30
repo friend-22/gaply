@@ -10,7 +10,7 @@ import 'package:gaply/src/utils/gaply_logger.dart';
 import 'package:gaply/src/gaply/core/gaply_style.dart';
 import 'package:gaply/src/gaply/core/gaply_direction.dart';
 import 'package:gaply/src/gaply/animations/fade/gaply_fade.dart';
-import 'package:gaply/src/gaply/animations/size/size_style.dart';
+import 'package:gaply/src/gaply/animations/size/gaply_size.dart';
 import 'package:gaply/src/gaply/animations/motion/gaply_motion.dart';
 
 import 'gaply_reveal_modifier.dart';
@@ -253,7 +253,7 @@ mixin _RevealStyleMixin {
     delay: _self.delay,
   );
 
-  SizeStyle get _size => SizeStyle(
+  GaplySize get _size => GaplySize(
     duration: _self.duration,
     curve: _self.curve,
     axis: _self.axis,

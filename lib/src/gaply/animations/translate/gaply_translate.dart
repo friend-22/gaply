@@ -1,107 +1,180 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 
-import 'translate_style.dart';
+import 'package:gaply/src/gaply/core/gaply_defines.dart';
+import 'package:gaply/src/annotations.dart';
+import 'package:gaply/src/utils/gaply_profiler.dart';
+import 'package:gaply/src/utils/gaply_logger.dart';
 
-class GaplyTranslate extends StatefulWidget {
-  final Widget child;
-  final TranslateStyle style;
+import 'package:gaply/src/gaply/core/gaply_style.dart';
+import 'package:gaply/src/gaply/core/gaply_trigger.dart';
 
-  const GaplyTranslate({super.key, required this.child, required this.style});
+import 'gaply_translate_modifier.dart';
+import 'translate_widget.dart';
+
+part 'translate_trigger.dart';
+part 'gaply_translate.preset.g.dart';
+
+@immutable
+@GaplyPresetGen(initializer: '_initPresets')
+class GaplyTranslate extends GaplyAnimStyle<GaplyTranslate>
+    with
+        GaplyTweenMixin<GaplyTranslate>,
+        GaplyAnimMixin<GaplyTranslate>,
+        _GaplyTranslateMixin,
+        GaplyTranslateModifier<GaplyTranslate> {
+  final Offset begin;
+  final Offset end;
+  final bool isMoved;
+
+  const GaplyTranslate({
+    super.profiler,
+    Duration? duration,
+    Curve? curve,
+    Duration? delay,
+    super.onComplete,
+    super.progress,
+    required this.end,
+    required this.isMoved,
+    this.begin = Offset.zero,
+  }) : super(
+         duration: duration ?? const Duration(milliseconds: 500),
+         curve: curve ?? Curves.easeInOut,
+         delay: delay ?? Duration.zero,
+       );
+
+  const GaplyTranslate.none()
+    : this(duration: Duration.zero, curve: Curves.linear, end: Offset.zero, isMoved: false);
+
+  static GaplyTranslatePreset preset = GaplyTranslatePreset._i;
+
+  factory GaplyTranslate.of(Object key, {GaplyProfiler? profiler, bool? isMoved, VoidCallback? onComplete}) {
+    final style = preset.get(key);
+    if (style == null) {
+      throw ArgumentError(preset.error(key));
+    }
+    return style.copyWith(profiler: profiler, isMoved: isMoved, onComplete: onComplete);
+  }
 
   @override
-  State<GaplyTranslate> createState() => GaplyTranslateState();
+  GaplyTranslate copyWith({
+    GaplyProfiler? profiler,
+    Duration? duration,
+    Curve? curve,
+    Duration? delay,
+    VoidCallback? onComplete,
+    double? progress,
+    Offset? begin,
+    Offset? end,
+    bool? isMoved,
+  }) {
+    return GaplyTranslate(
+      profiler: profiler ?? this.profiler,
+      duration: duration ?? this.duration,
+      curve: curve ?? this.curve,
+      delay: delay ?? this.delay,
+      onComplete: onComplete ?? this.onComplete,
+      progress: progress ?? this.progress,
+      begin: begin ?? this.begin,
+      end: end ?? this.end,
+      isMoved: isMoved ?? this.isMoved,
+    );
+  }
+
+  @override
+  GaplyTranslate lerp(GaplyAnimStyle? other, double t) {
+    if (other is! GaplyTranslate) return this;
+
+    return profiler.trace(() {
+      return GaplyTranslate(
+        profiler: other.profiler,
+        duration: t < 0.5 ? duration : other.duration,
+        curve: t < 0.5 ? curve : other.curve,
+        delay: t < 0.5 ? delay : other.delay,
+        onComplete: other.onComplete,
+        progress: lerpDouble(progress, other.progress, t) ?? other.progress,
+        begin: Offset.lerp(begin, other.begin, t)!,
+        end: Offset.lerp(end, other.end, t)!,
+        isMoved: t < 0.5 ? isMoved : other.isMoved,
+      );
+    }, tag: 'lerp');
+  }
+
+  @override
+  List<Object?> get props => [...super.props, begin, end, isMoved];
+
+  @override
+  bool get hasEffect => duration.inMilliseconds > 0 || isMoved;
 }
 
-class GaplyTranslateState extends State<GaplyTranslate> with SingleTickerProviderStateMixin {
-  late final AnimationController _controller;
-  late final CurvedAnimation _curve;
-  late Animation<Offset> _offsetAnimation;
+mixin _GaplyTranslateMixin {
+  GaplyTranslate get _self => this as GaplyTranslate;
+  GaplyTranslate get gaplyTranslate => _self;
 
-  @override
-  void initState() {
-    super.initState();
-
-    _controller = AnimationController(
-      vsync: this,
-      duration: widget.style.duration,
-      value: widget.style.isMoved ? 1.0 : 0.0,
+  GaplyTranslate copyWithTranslate(GaplyTranslate translate) {
+    return _self.copyWith(
+      profiler: translate.profiler,
+      duration: translate.duration,
+      curve: translate.curve,
+      delay: translate.delay,
+      onComplete: translate.onComplete,
+      progress: translate.progress,
+      begin: translate.begin,
+      end: translate.end,
+      isMoved: translate.isMoved,
     );
-
-    _controller.addStatusListener((status) {
-      if (status == AnimationStatus.completed || status == AnimationStatus.dismissed) {
-        widget.style.onComplete?.call();
-      }
-    });
-
-    _curve = CurvedAnimation(parent: _controller, curve: widget.style.curve);
-    _updateAnimation();
-    _execute(widget.style);
   }
 
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
+  Widget buildWidget({required Widget child, Object? trigger}) {
+    if (!_self.hasEffect) return child;
+
+    return _GaplyTranslateTrigger(style: _self, trigger: trigger ?? DateTime.now(), child: child);
   }
+}
 
-  @override
-  void didUpdateWidget(covariant GaplyTranslate oldWidget) {
-    super.didUpdateWidget(oldWidget);
+void _initPresets(GaplyTranslatePreset preset) {
+  preset.add(
+    'push',
+    const GaplyTranslate(
+      begin: Offset.zero,
+      end: Offset(0, 2),
+      duration: Duration(milliseconds: 100),
+      curve: Curves.easeOutQuad,
+      isMoved: true,
+    ),
+  );
 
-    if (widget.style.duration != oldWidget.style.duration) {
-      _controller.duration = widget.style.duration;
-    }
+  preset.add(
+    'float',
+    const GaplyTranslate(
+      begin: Offset.zero,
+      end: Offset(0, -4),
+      duration: Duration(milliseconds: 300),
+      curve: Curves.easeOutCubic,
+      isMoved: true,
+    ),
+  );
 
-    if (widget.style.curve != oldWidget.style.curve) {
-      _curve.curve = widget.style.curve;
-    }
+  preset.add(
+    'nudge',
+    const GaplyTranslate(
+      begin: Offset.zero,
+      end: Offset(6, 0),
+      duration: Duration(milliseconds: 250),
+      curve: Curves.easeOutBack,
+      isMoved: true,
+    ),
+  );
 
-    if (widget.style.begin != oldWidget.style.begin || widget.style.end != oldWidget.style.end) {
-      _updateAnimation();
-    }
-
-    if (widget.style.isMoved != oldWidget.style.isMoved) {
-      _execute(widget.style);
-    }
-  }
-
-  void _updateAnimation() {
-    _offsetAnimation = Tween<Offset>(begin: widget.style.begin, end: widget.style.end).animate(_curve);
-  }
-
-  void _execute(TranslateStyle style) {
-    if (!mounted) return;
-
-    if (style.isMoved) {
-      _controller.forward();
-    } else {
-      _controller.reverse();
-    }
-  }
-
-  void executeParams(TranslateStyle style) {
-    Future.delayed(style.delay, () {
-      if (!mounted) return;
-
-      _controller.duration = style.duration;
-      _curve.curve = style.curve;
-
-      _execute(style);
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (!widget.style.hasEffect) return widget.child;
-
-    return widget.style.profiler.trace(() {
-      return AnimatedBuilder(
-        animation: _offsetAnimation,
-        builder: (context, child) {
-          return Transform.translate(offset: _offsetAnimation.value, child: child);
-        },
-        child: widget.child,
-      );
-    }, tag: 'build');
-  }
+  preset.add(
+    'rise',
+    const GaplyTranslate(
+      begin: Offset(0, 10),
+      end: Offset.zero,
+      duration: Duration(milliseconds: 400),
+      curve: Curves.decelerate,
+      isMoved: true,
+    ),
+  );
 }

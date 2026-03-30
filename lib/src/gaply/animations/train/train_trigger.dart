@@ -1,10 +1,10 @@
-part of 'train_style.dart';
+part of 'gaply_train.dart';
 
 class _GaplyTrainTrigger<T> extends StatefulWidget {
   final T currentItem;
   final T? previousItem;
   final Widget Function(T item) itemBuilder;
-  final TrainStyle style;
+  final GaplyTrain style;
   final Object? trigger;
 
   const _GaplyTrainTrigger({
@@ -21,12 +21,12 @@ class _GaplyTrainTrigger<T> extends StatefulWidget {
 }
 
 class _GaplyTrainTriggerState<T> extends State<_GaplyTrainTrigger<T>>
-    with GaplyMotionTrigger<_GaplyTrainTrigger<T>, TrainStyle, GaplyTrainState<T>> {
+    with GaplyMotionTrigger<_GaplyTrainTrigger<T>, GaplyTrain, GaplyTrainWidgetState<T>> {
   @override
   Object? get trigger => widget.trigger;
 
   @override
-  TrainStyle get style => widget.style;
+  GaplyTrain get style => widget.style;
 
   @override
   void didUpdateWidget(_GaplyTrainTrigger<T> oldWidget) {
@@ -36,13 +36,13 @@ class _GaplyTrainTriggerState<T> extends State<_GaplyTrainTrigger<T>>
   }
 
   @override
-  void execute(TrainStyle style) {
+  void execute(GaplyTrain style) {
     triggerKey.currentState?.executeParams(style);
   }
 
   @override
   Widget build(BuildContext context) {
-    return GaplyTrain<T>(
+    return GaplyTrainWidget<T>(
       key: triggerKey,
       style: widget.style,
       currentItem: widget.currentItem,

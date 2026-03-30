@@ -1,8 +1,8 @@
-part of 'size_style.dart';
+part of 'gaply_size.dart';
 
 class _GaplySizeTrigger extends StatefulWidget {
   final Widget child;
-  final SizeStyle style;
+  final GaplySize style;
   final Object? trigger;
 
   const _GaplySizeTrigger({required this.child, required this.style, this.trigger});
@@ -12,12 +12,12 @@ class _GaplySizeTrigger extends StatefulWidget {
 }
 
 class _GaplySizeTriggerState extends State<_GaplySizeTrigger>
-    with GaplyMotionTrigger<_GaplySizeTrigger, SizeStyle, GaplySizeState> {
+    with GaplyMotionTrigger<_GaplySizeTrigger, GaplySize, GaplySizeWidgetState> {
   @override
   Object? get trigger => widget.trigger;
 
   @override
-  SizeStyle get style => widget.style;
+  GaplySize get style => widget.style;
 
   @override
   void didUpdateWidget(_GaplySizeTrigger oldWidget) {
@@ -27,12 +27,12 @@ class _GaplySizeTriggerState extends State<_GaplySizeTrigger>
   }
 
   @override
-  void execute(SizeStyle style) {
+  void execute(GaplySize style) {
     triggerKey.currentState?.executeParams(style);
   }
 
   @override
   Widget build(BuildContext context) {
-    return GaplySize(key: triggerKey, style: widget.style, child: widget.child);
+    return GaplySizeWidget(key: triggerKey, style: widget.style, child: widget.child);
   }
 }

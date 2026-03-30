@@ -1,112 +1,176 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 
-import 'skew_style.dart';
+import 'package:gaply/src/gaply/core/gaply_defines.dart';
+import 'package:gaply/src/annotations.dart';
+import 'package:gaply/src/utils/gaply_profiler.dart';
+import 'package:gaply/src/utils/gaply_logger.dart';
 
-class GaplySkew extends StatefulWidget {
-  final Widget child;
-  final SkewStyle style;
+import 'package:gaply/src/gaply/core/gaply_style.dart';
+import 'package:gaply/src/gaply/core/gaply_trigger.dart';
 
-  const GaplySkew({super.key, required this.child, required this.style});
+import 'skew_widget.dart';
+import 'gaply_skew_modifier.dart';
+
+part 'skew_trigger.dart';
+part 'gaply_skew.preset.g.dart';
+
+@immutable
+@GaplyPresetGen(initializer: '_initPresets')
+class GaplySkew extends GaplyAnimStyle<GaplySkew>
+    with
+        GaplyTweenMixin<GaplySkew>,
+        GaplyAnimMixin<GaplySkew>,
+        _SkewStyleMixin,
+        GaplySkewModifier<GaplySkew> {
+  final Offset skew;
+  final bool isSkewed;
+
+  const GaplySkew({
+    super.profiler,
+    Duration? duration,
+    Curve? curve,
+    Duration? delay,
+    super.onComplete,
+    super.progress,
+    required this.skew,
+    required this.isSkewed,
+  }) : super(
+         duration: duration ?? const Duration(milliseconds: 400),
+         curve: curve ?? Curves.easeOutCubic,
+         delay: delay ?? Duration.zero,
+       );
+
+  const GaplySkew.none() : this(duration: Duration.zero, skew: Offset.zero, isSkewed: false);
+
+  static GaplySkewPreset preset = GaplySkewPreset._i;
+
+  factory GaplySkew.of(Object key, {GaplyProfiler? profiler, bool? isSkewed, VoidCallback? onComplete}) {
+    final style = preset.get(key);
+    if (style == null) {
+      throw ArgumentError(preset.error(key));
+    }
+    return style.copyWith(profiler: profiler, isSkewed: isSkewed, onComplete: onComplete);
+  }
+
+  GaplySkew.horizontal(
+    double amount, {
+    GaplyProfiler? profiler,
+    Duration? duration,
+    Curve? curve,
+    Duration? delay,
+    VoidCallback? onComplete,
+    bool isSkewed = true,
+  }) : this(
+         profiler: profiler,
+         duration: duration,
+         curve: curve,
+         delay: delay,
+         onComplete: onComplete,
+         skew: Offset(amount, 0),
+         isSkewed: isSkewed,
+       );
+
+  GaplySkew.vertical(
+    double amount, {
+    GaplyProfiler? profiler,
+    Duration? duration,
+    Curve? curve,
+    Duration? delay,
+    VoidCallback? onComplete,
+    bool isSkewed = true,
+  }) : this(
+         profiler: profiler,
+         duration: duration,
+         curve: curve,
+         delay: delay,
+         onComplete: onComplete,
+         skew: Offset(0, amount),
+         isSkewed: isSkewed,
+       );
 
   @override
-  State<GaplySkew> createState() => GaplySkewState();
+  GaplySkew copyWith({
+    GaplyProfiler? profiler,
+    Duration? duration,
+    Curve? curve,
+    Duration? delay,
+    VoidCallback? onComplete,
+    double? progress,
+    Offset? skew,
+    bool? isSkewed,
+  }) {
+    return GaplySkew(
+      profiler: profiler ?? this.profiler,
+      duration: duration ?? this.duration,
+      curve: curve ?? this.curve,
+      delay: delay ?? this.delay,
+      onComplete: onComplete ?? this.onComplete,
+      progress: progress ?? this.progress,
+      skew: skew ?? this.skew,
+      isSkewed: isSkewed ?? this.isSkewed,
+    );
+  }
+
+  @override
+  GaplySkew lerp(GaplyAnimStyle? other, double t) {
+    if (other is! GaplySkew) return this;
+
+    return profiler.trace(() {
+      return GaplySkew(
+        profiler: other.profiler,
+        duration: t < 0.5 ? duration : other.duration,
+        curve: t < 0.5 ? curve : other.curve,
+        delay: t < 0.5 ? delay : other.delay,
+        onComplete: other.onComplete,
+        progress: lerpDouble(progress, other.progress, t) ?? other.progress,
+        skew: Offset.lerp(skew, other.skew, t)!,
+        isSkewed: t < 0.5 ? isSkewed : other.isSkewed,
+      );
+    }, tag: 'lerp');
+  }
+
+  @override
+  List<Object?> get props => [...super.props, skew, isSkewed];
+
+  @override
+  bool get hasEffect => duration.inMilliseconds > 0 || isSkewed;
 }
 
-class GaplySkewState extends State<GaplySkew> with SingleTickerProviderStateMixin {
-  late final AnimationController _controller;
-  late final CurvedAnimation _curve;
-  late Animation<Offset> _skewAnimation;
+mixin _SkewStyleMixin {
+  GaplySkew get _self => this as GaplySkew;
+  GaplySkew get gaplySkew => _self;
 
-  @override
-  void initState() {
-    super.initState();
-
-    _controller = AnimationController(
-      vsync: this,
-      duration: widget.style.duration,
-      value: widget.style.isSkewed ? 1.0 : 0.0,
+  GaplySkew copyWithSkew(GaplySkew skew) {
+    return _self.copyWith(
+      profiler: skew.profiler,
+      duration: skew.duration,
+      curve: skew.curve,
+      delay: skew.delay,
+      onComplete: skew.onComplete,
+      progress: skew.progress,
+      skew: skew.skew,
+      isSkewed: skew.isSkewed,
     );
-
-    _controller.addStatusListener((status) {
-      if (status == AnimationStatus.completed || status == AnimationStatus.dismissed) {
-        widget.style.onComplete?.call();
-      }
-    });
-
-    _curve = CurvedAnimation(parent: _controller, curve: widget.style.curve);
-    _updateAnimation();
-    _execute(widget.style);
   }
 
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
+  Widget buildWidget({required Widget child, Object? trigger}) {
+    if (!_self.hasEffect) return child;
+
+    return _GaplySkewTrigger(style: _self, trigger: trigger ?? DateTime.now(), child: child);
   }
+}
 
-  @override
-  void didUpdateWidget(covariant GaplySkew oldWidget) {
-    super.didUpdateWidget(oldWidget);
+void _initPresets(GaplySkewPreset preset) {
+  preset.add('tiltRight', GaplySkew.horizontal(0.1));
 
-    if (widget.style.duration != oldWidget.style.duration) {
-      _controller.duration = widget.style.duration;
-    }
+  preset.add('tiltUp', GaplySkew.vertical(-0.1));
 
-    if (widget.style.curve != oldWidget.style.curve) {
-      _curve.curve = widget.style.curve;
-    }
+  preset.add(
+    'bounceSkew',
+    GaplySkew.horizontal(0.2, duration: Duration(milliseconds: 600), curve: Curves.elasticOut),
+  );
 
-    if (widget.style.skew != oldWidget.style.skew) {
-      _updateAnimation();
-    }
-
-    if (widget.style.isSkewed != oldWidget.style.isSkewed) {
-      _execute(widget.style);
-    }
-  }
-
-  void _updateAnimation() {
-    _skewAnimation = Tween<Offset>(begin: Offset.zero, end: widget.style.skew).animate(_curve);
-  }
-
-  void _execute(SkewStyle style) {
-    if (!mounted) return;
-
-    if (style.isSkewed) {
-      _controller.forward();
-    } else {
-      _controller.reverse();
-    }
-  }
-
-  void executeParams(SkewStyle style) {
-    Future.delayed(style.delay, () {
-      if (!mounted) return;
-
-      _controller.duration = style.duration;
-      _curve.curve = style.curve;
-
-      _execute(style);
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (!widget.style.hasEffect) return widget.child;
-
-    return widget.style.profiler.trace(() {
-      return AnimatedBuilder(
-        animation: _skewAnimation,
-        builder: (context, child) {
-          final skewValue = _skewAnimation.value;
-          return Transform(
-            transform: Matrix4.skew(skewValue.dx, skewValue.dy),
-            alignment: Alignment.center,
-            child: child,
-          );
-        },
-        child: widget.child,
-      );
-    }, tag: 'build');
-  }
+  preset.add('flipPre', GaplySkew.horizontal(0.5, curve: Curves.easeInCubic));
 }

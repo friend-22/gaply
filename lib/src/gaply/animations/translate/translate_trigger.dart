@@ -1,8 +1,8 @@
-part of 'translate_style.dart';
+part of 'gaply_translate.dart';
 
 class _GaplyTranslateTrigger extends StatefulWidget {
   final Widget child;
-  final TranslateStyle style;
+  final GaplyTranslate style;
   final Object? trigger;
 
   const _GaplyTranslateTrigger({required this.child, required this.style, this.trigger});
@@ -12,12 +12,12 @@ class _GaplyTranslateTrigger extends StatefulWidget {
 }
 
 class _GaplyTranslateTriggerState extends State<_GaplyTranslateTrigger>
-    with GaplyMotionTrigger<_GaplyTranslateTrigger, TranslateStyle, GaplyTranslateState> {
+    with GaplyMotionTrigger<_GaplyTranslateTrigger, GaplyTranslate, GaplyTranslateWidgetState> {
   @override
   Object? get trigger => widget.trigger;
 
   @override
-  TranslateStyle get style => widget.style;
+  GaplyTranslate get style => widget.style;
 
   @override
   void didUpdateWidget(_GaplyTranslateTrigger oldWidget) {
@@ -27,12 +27,12 @@ class _GaplyTranslateTriggerState extends State<_GaplyTranslateTrigger>
   }
 
   @override
-  void execute(TranslateStyle style) {
+  void execute(GaplyTranslate style) {
     triggerKey.currentState?.executeParams(style);
   }
 
   @override
   Widget build(BuildContext context) {
-    return GaplyTranslate(key: triggerKey, style: widget.style, child: widget.child);
+    return GaplyTranslateWidget(key: triggerKey, style: widget.style, child: widget.child);
   }
 }

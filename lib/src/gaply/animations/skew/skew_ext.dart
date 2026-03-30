@@ -1,20 +1,20 @@
 import 'package:flutter/widgets.dart';
 
-import 'skew_style.dart';
 import 'gaply_skew.dart';
+import 'skew_widget.dart';
 
 /// Extension to easily wrap any [Widget] with a skew animation.
 ///
-/// [SkewStyle] applies a skew transformation to a widget.
+/// [GaplySkew] applies a skew transformation to a widget.
 extension GaplySkewExtension on Widget {
-  /// Wraps this widget with a [GaplySkew] animation using the provided [style].
+  /// Wraps this widget with a [SkewWidget] animation using the provided [style].
   ///
   /// ### Example:
   ///
   /// ```dart
   /// Text("Skewed Text").withSkew(
-  ///   SkewStyle.horizontal(0.2, duration: Duration(milliseconds: 500)),
+  ///   GaplySkew.horizontal(0.2, duration: Duration(milliseconds: 500)),
   /// )
   /// ```
-  Widget withSlide(SkewStyle style) => style.buildWidget(child: this);
+  Widget withSlide(GaplySkew style) => style.buildWidget(child: this);
 }

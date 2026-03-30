@@ -26,25 +26,21 @@ export 'scale/gaply_scale.dart';
 export 'scale/gaply_scale_modifier.dart';
 
 export 'size/size_ext.dart';
-export 'size/size_preset.dart';
-export 'size/size_style.dart';
-export 'size/size_style_modifier.dart';
+export 'size/size_widget.dart';
 export 'size/gaply_size.dart';
+export 'size/gaply_size_modifier.dart';
 
 export 'shake/shake_ext.dart';
-export 'shake/shake_preset.dart';
-export 'shake/shake_style.dart';
-export 'shake/shake_style_modifier.dart';
+export 'shake/shake_widget.dart';
 export 'shake/gaply_shake.dart';
+export 'shake/gaply_shake_modifier.dart';
 
-export 'train/gaply_train.dart';
+export 'train/train_widget.dart';
 export 'train/train_ext.dart';
-export 'train/train_preset.dart';
-export 'train/train_style.dart';
-export 'train/train_style_modifier.dart';
+export 'train/gaply_train.dart';
+export 'train/gaply_train_modifier.dart';
 
-export 'translate/gaply_translate.dart';
+export 'translate/translate_widget.dart';
 export 'translate/translate_ext.dart';
-export 'translate/translate_preset.dart';
-export 'translate/translate_style.dart';
-export 'translate/translate_style_modifier.dart';
+export 'translate/gaply_translate.dart';
+export 'translate/gaply_translate_modifier.dart';

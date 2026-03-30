@@ -225,7 +225,7 @@ void _initPresets(GaplyMotionPreset preset) {
   //   const GaplyMotion(
   //     animations: [
   //       GaplyFade(isVisible: true, duration: Duration(milliseconds: 500)),
-  //       TranslateStyle(
+  //       GaplyTranslate(
   //         begin: Offset(0, 10),
   //         end: Offset.zero,
   //         isMoved: true,
@@ -262,7 +262,7 @@ void _initPresets(GaplyMotionPreset preset) {
   //   const GaplyMotion(
   //     animations: [
   //       GaplyScale(begin: 1.0, end: 1.05, isScaled: true, duration: Duration(milliseconds: 200)),
-  //       ShakeStyle(duration: Duration(milliseconds: 500), distance: 4.0, count: 3.0, curve: Curves.linear),
+  //       GaplyShake(duration: Duration(milliseconds: 500), distance: 4.0, count: 3.0, curve: Curves.linear),
   //     ],
   //   ),
   // );
@@ -271,7 +271,7 @@ void _initPresets(GaplyMotionPreset preset) {
   //   'cardHover',
   //   const GaplyMotion(
   //     animations: [
-  //       TranslateStyle(
+  //       GaplyTranslate(
   //         begin: Offset.zero,
   //         end: Offset(0, -6),
   //         isMoved: true,
@@ -288,7 +288,7 @@ void _initPresets(GaplyMotionPreset preset) {
   //     animations: [GaplyFade(isVisible: true, duration: const Duration(milliseconds: 400))],
   //     children: [
   //       const GaplyMotion(
-  //         animations: [ShakeStyle(distance: 2.0, count: 2.0, duration: Duration(milliseconds: 300))],
+  //         animations: [GaplyShake(distance: 2.0, count: 2.0, duration: Duration(milliseconds: 300))],
   //       ),
   //     ],
   //   ),
