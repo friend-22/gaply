@@ -24,15 +24,16 @@ class GaplyMotion extends GaplyStyle<GaplyMotion>
 
   const GaplyMotion.none() : this(animations: const []);
 
-  static void register(Object key, GaplyMotion style) => GaplyMotionPreset.add(key, style);
-
-  factory GaplyMotion.preset(Object key, {GaplyProfiler? profiler, VoidCallback? onComplete}) {
-    final style = GaplyMotionPreset.of(key);
-    if (style == null) {
-      throw ArgumentError(GaplyMotionPreset.error("GaplyMotion", key));
-    }
-    return style.copyWith(profiler: profiler, onComplete: onComplete);
-  }
+  // static void add(Object key, GaplyMotion style) => GaplyMotionPreset.add(key, style);
+  // static void addSafe(Object key, GaplyMotion style) => GaplyMotionPreset.addSafe(key, style);
+  //
+  // factory GaplyMotion.preset(Object key, {GaplyProfiler? profiler, VoidCallback? onComplete}) {
+  //   final style = GaplyMotionPreset.of(key);
+  //   if (style == null) {
+  //     throw ArgumentError(GaplyMotionPreset.error("GaplyMotion", key));
+  //   }
+  //   return style.copyWith(profiler: profiler, onComplete: onComplete);
+  // }
 
   GaplyMotion addAnimation(GaplyAnimStyle style) {
     return copyWith(animations: [...animations, style]);

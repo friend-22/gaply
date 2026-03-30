@@ -1,42 +1,70 @@
+// ignore_for_file: depend_on_referenced_packages
+
 import 'package:analyzer/dart/element/element.dart';
 import 'package:build/build.dart';
 import 'package:source_gen/source_gen.dart';
 import 'annotations.dart';
 
-class GaplyPresetGenerator extends GeneratorForAnnotation<GaplyPresetGenerate> {
+class GaplyPresetGenerator extends GeneratorForAnnotation<GaplyPresetGen> {
   @override
   String generateForAnnotatedElement(Element element, ConstantReader annotation, BuildStep buildStep) {
     if (element is! ClassElement) return '';
 
     final className = element.name;
-    final typeParam =
-        element.supertype?.typeArguments.first.getDisplayString(withNullability: false) ?? 'dynamic';
+    final presetClassName = className.endsWith('Style')
+        ? className.replaceFirst('Style', 'Preset')
+        : '${className}Preset';
+
+    final initializerName = annotation.read('initializer').isNull
+        ? null
+        : annotation.read('initializer').stringValue;
+
+    final policyIndex = annotation.read('policy').objectValue.getField('index')?.toIntValue() ?? 0;
 
     return '''
-extension Gaply$className on $className {
-  static final $className _instance = $className._internal();
-  static $className get i => _instance;
+class $presetClassName {
+  final Map<Object, $className> _presets = {};
+  final GaplyKeyPolicy _policy = GaplyKeyPolicy.values[$policyIndex];
   
-  static void add(Object key, $typeParam style) => _instance.presetAdd(key, style);
-  
-  static $typeParam? of(Object key) => _instance.presetGet(key);
-  
-  static List<Object> get keys => _instance.presetAllKeys;
-  
-  static bool has(Object key) => _instance.presetHas(key);
-  
-  static void addSafe(Object key, $typeParam style) {
-    if (_instance.presetHas(key)) {
-       GaplyLogger.i("[Gaply$className] Duplicate registration for key: '\$key'. Overwritten.");
-    }
-    _instance.presetAdd(key, style);
+  $presetClassName._() {
+    ${initializerName != null ? '$initializerName(this);' : ''}
   }
   
-  static String error(String category, Object key) => 
-      _instance.presetErrorMessage(category, key);
+  static final $presetClassName _i = $presetClassName._();
+
+  Object _normalize(Object key) {
+    if (key is Enum) {
+      return _policy == GaplyKeyPolicy.strict 
+          ? "\${key.runtimeType}.\${key.name}" 
+          : key.name;
+    }
+    if (key is Record) return key.toString();
+    
+    final result = key.toString();
+    return _policy == GaplyKeyPolicy.insensitive ? result.toLowerCase() : result;
+  }
+
+  bool has(Object key) => _presets.containsKey(_normalize(key));
+  void add(Object key, $className style, {bool overwrite = false}) {
+    final normalized = _normalize(key);
+    if (_presets.containsKey(normalized) && !overwrite) {
+      GaplyLogger.i("[$className] Duplicate registration for key: '\$normalized'. Overwritten.");
+    }
+    _presets[_normalize(key)] = style;
+  }
+  
+  $className? get(Object key) => _presets[_normalize(key)];
+  
+  List<Object> get keys => _presets.keys.toList();
+
+  String error(Object key) {
+    final normalized = _normalize(key);
+    return "Unknown $presetClassName: '\$normalized'. "
+      "Available: \${_presets.keys.isEmpty ? 'None' : _presets.keys.join(', ')}";
+  }
 }
 ''';
   }
 }
 
-Builder gaplyBuilder(BuilderOptions options) => SharedPartBuilder([GaplyPresetGenerator()], 'gaply');
+Builder gaplyPresetBuilder(BuilderOptions options) => PartBuilder([GaplyPresetGenerator()], '.preset.g.dart');

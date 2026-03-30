@@ -6,7 +6,7 @@ import 'package:gaply/src/utils/gaply_profiler.dart';
 import 'package:gaply/src/gaply/core/gaply_style.dart';
 import 'package:gaply/src/gaply/core/gaply_trigger.dart';
 
-import 'translate_presets.dart';
+import 'translate_preset.dart';
 import 'translate_style_modifier.dart';
 import 'gaply_translate.dart';
 
@@ -41,21 +41,21 @@ class TranslateStyle extends GaplyAnimStyle<TranslateStyle>
 
   const TranslateStyle.none()
     : this(duration: Duration.zero, curve: Curves.linear, end: Offset.zero, isMoved: false);
-
-  static void register(Object name, TranslateStyle style) => GaplyTranslatePreset.register(name, style);
-
-  factory TranslateStyle.preset(
-    Object name, {
-    GaplyProfiler? profiler,
-    bool? isMoved,
-    VoidCallback? onComplete,
-  }) {
-    final style = GaplyTranslatePreset.of(name);
-    if (style == null) {
-      throw ArgumentError(GaplyTranslatePreset.instance.errorMessage("TranslateStyle", name));
-    }
-    return style.copyWith(profiler: profiler, isMoved: isMoved, onComplete: onComplete);
-  }
+  //
+  // static void register(Object key, TranslateStyle style) => GaplyTranslatePreset.add(key, style);
+  //
+  // factory TranslateStyle.preset(
+  //   Object key, {
+  //   GaplyProfiler? profiler,
+  //   bool? isMoved,
+  //   VoidCallback? onComplete,
+  // }) {
+  //   final style = GaplyTranslatePreset.of(key);
+  //   if (style == null) {
+  //     throw ArgumentError(GaplyTranslatePreset.error("TranslateStyle", key));
+  //   }
+  //   return style.copyWith(profiler: profiler, isMoved: isMoved, onComplete: onComplete);
+  // }
 
   @override
   TranslateStyle copyWith({

@@ -6,7 +6,7 @@ import 'package:gaply/src/utils/gaply_profiler.dart';
 import 'package:gaply/src/gaply/core/gaply_style.dart';
 import 'package:gaply/src/gaply/core/gaply_trigger.dart';
 
-import 'skew_presets.dart';
+import 'skew_preset.dart';
 import 'gaply_skew.dart';
 import 'skew_style_modifier.dart';
 
@@ -39,15 +39,15 @@ class SkewStyle extends GaplyAnimStyle<SkewStyle>
 
   const SkewStyle.none() : this(duration: Duration.zero, skew: Offset.zero, isSkewed: false);
 
-  static void register(Object name, SkewStyle style) => GaplySkewPreset.register(name, style);
-
-  factory SkewStyle.preset(Object name, {GaplyProfiler? profiler, bool? isSkewed, VoidCallback? onComplete}) {
-    final style = GaplySkewPreset.of(name);
-    if (style == null) {
-      throw ArgumentError(GaplySkewPreset.instance.errorMessage("SkewStyle", name));
-    }
-    return style.copyWith(profiler: profiler, isSkewed: isSkewed, onComplete: onComplete);
-  }
+  // static void register(Object key, SkewStyle style) => GaplySkewPreset.add(key, style);
+  //
+  // factory SkewStyle.preset(Object key, {GaplyProfiler? profiler, bool? isSkewed, VoidCallback? onComplete}) {
+  //   final style = GaplySkewPreset.of(key);
+  //   if (style == null) {
+  //     throw ArgumentError(GaplySkewPreset.error("SkewStyle", key));
+  //   }
+  //   return style.copyWith(profiler: profiler, isSkewed: isSkewed, onComplete: onComplete);
+  // }
 
   SkewStyle.horizontal(
     double amount, {

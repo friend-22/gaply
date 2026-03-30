@@ -9,8 +9,8 @@ mixin TranslateStyleModifier<T> {
 
   T translateStyleSet(TranslateStyle value) => copyWithTranslate(value);
 
-  T translatePreset(Object name, {bool? isMoved}) =>
-      copyWithTranslate(TranslateStyle.preset(name, isMoved: isMoved));
+  // T translatePreset(Object name, {bool? isMoved}) =>
+  //     copyWithTranslate(TranslateStyle.preset(name, isMoved: isMoved));
 
   T translateMove(bool move) => copyWithTranslate(translateStyle.copyWith(isMoved: move));
 

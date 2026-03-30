@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
 import 'flip_style.dart';
-import 'gaply_flip.dart';
+import 'flip_widget.dart';
 
-extension GaplyFlipX on FlipStyle {}
+extension GaplyFlipX on GaplyFlipStyle {}
 
 extension GaplyFlipExtension on Widget {
   /// Wraps the widget with a [GaplyFlip] animation.
@@ -12,7 +12,7 @@ extension GaplyFlipExtension on Widget {
   ///
   /// ```dart
   /// Image.asset('assets/card_front.png').withFlip(
-  ///   FlipStyle(
+  ///   GaplyFlipStyle(
   ///     axis: Axis.horizontal,
   ///     isFlipped: _isCardFlipped,
   ///     duration: const Duration(milliseconds: 500),
@@ -20,7 +20,7 @@ extension GaplyFlipExtension on Widget {
   ///   back: Image.asset('assets/card_back.png'),
   /// )
   /// ```
-  Widget withFlip(FlipStyle style, {Widget? back}) {
+  Widget withFlip(GaplyFlipStyle style, {Widget? back}) {
     if (back == null) {
       return style.buildWidget(child: this);
     }

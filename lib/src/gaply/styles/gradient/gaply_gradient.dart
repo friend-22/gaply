@@ -7,7 +7,7 @@ import 'package:gaply/src/utils/gaply_profiler.dart';
 
 import '../color/gaply_color.dart';
 import 'gradient_style_modifier.dart';
-import 'gradient_presets.dart';
+import 'gradient_preset.dart';
 
 enum GradientType { linear, radial, sweep }
 
@@ -35,15 +35,15 @@ class GaplyGradient extends GaplyStyle<GaplyGradient>
 
   const GaplyGradient.none() : this(type: GradientType.linear, colors: const [], stops: const []);
 
-  static void register(Object name, GaplyGradient style) => GaplyGradientPreset.register(name, style);
-
-  factory GaplyGradient.preset(Object name, {GaplyProfiler? profiler, GradientType? type}) {
-    final style = GaplyGradientPreset.of(name);
-    if (style == null) {
-      throw ArgumentError(GaplyGradientPreset.instance.errorMessage("GaplyGradient", name));
-    }
-    return style.copyWith(profiler: profiler, type: type);
-  }
+  // static void register(Object key, GaplyGradient style) => GaplyGradientPreset.add(key, style);
+  //
+  // factory GaplyGradient.preset(Object key, {GaplyProfiler? profiler, GradientType? type}) {
+  //   final style = GaplyGradientPreset.of(key);
+  //   if (style == null) {
+  //     throw ArgumentError(GaplyGradientPreset.error("GaplyGradient", key));
+  //   }
+  //   return style.copyWith(profiler: profiler, type: type);
+  // }
 
   @override
   GaplyGradient copyWith({

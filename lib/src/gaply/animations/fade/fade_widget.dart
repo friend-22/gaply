@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'fade_style.dart';
 
-/// A widget that applies a fade animation to its child based on [FadeStyle].
+/// A widget that applies a fade animation to its child based on [GaplyFadeStyle].
 ///
 /// It uses [FadeTransition] internally for high-performance opacity changes.
 class GaplyFade extends StatefulWidget {
@@ -9,7 +9,7 @@ class GaplyFade extends StatefulWidget {
   final Widget child;
 
   /// The configuration for the fade animation.
-  final FadeStyle style;
+  final GaplyFadeStyle style;
 
   const GaplyFade({super.key, required this.child, required this.style});
 
@@ -67,7 +67,7 @@ class GaplyFadeState extends State<GaplyFade> with SingleTickerProviderStateMixi
   void reset() => _controller.reset();
 
   /// Internal execution logic to start the animation.
-  void _execute(FadeStyle style) {
+  void _execute(GaplyFadeStyle style) {
     if (!mounted) return;
 
     if (style.isVisible) {
@@ -77,7 +77,7 @@ class GaplyFadeState extends State<GaplyFade> with SingleTickerProviderStateMixi
     }
   }
 
-  void executeParams(FadeStyle style) {
+  void executeParams(GaplyFadeStyle style) {
     Future.delayed(style.delay, () {
       if (!mounted) return;
 

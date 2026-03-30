@@ -50,8 +50,8 @@ class GaplyProfiler {
     this.filter = GaplyProfilerFilter.warning,
   }) : enabled = true;
 
-  const GaplyProfiler.perfect({required String label})
-    : this(label: label, enabled: true, thresholdUs: budgetPerfect, filter: GaplyProfilerFilter.all);
+  const GaplyProfiler.perfect({required String label, GaplyProfilerFilter filter = GaplyProfilerFilter.all})
+    : this(label: label, enabled: true, thresholdUs: budgetPerfect, filter: filter);
 
   static void clearAllStats() => _statsMap.clear();
 

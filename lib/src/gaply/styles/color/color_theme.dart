@@ -5,7 +5,7 @@ import 'package:gaply/src/utils/gaply_profiler.dart';
 
 import 'color_defines.dart';
 import 'color_theme_modifier.dart';
-import 'color_theme_presets.dart';
+import 'color_theme_preset.dart';
 import 'gaply_color.dart';
 
 class GaplyColorTheme extends GaplyThemeData<GaplyColorTheme>
@@ -22,15 +22,15 @@ class GaplyColorTheme extends GaplyThemeData<GaplyColorTheme>
     required this.colors,
   }) : super(duration: duration ?? const Duration(milliseconds: 300), curve: curve ?? Curves.easeInOut);
 
-  static void register(Object name, GaplyColorTheme style) => GaplyColorThemePreset.register(name, style);
-
-  factory GaplyColorTheme.preset(Object name, {GaplyProfiler? profiler}) {
-    final style = GaplyColorThemePreset.of(name);
-    if (style == null) {
-      throw ArgumentError(GaplyColorThemePreset.instance.errorMessage("GaplyColorTheme", name.toString()));
-    }
-    return style.copyWith(profiler: profiler);
-  }
+  // static void register(Object key, GaplyColorTheme style) => GaplyColorThemePreset.add(key, style);
+  //
+  // factory GaplyColorTheme.preset(Object key, {GaplyProfiler? profiler}) {
+  //   final style = GaplyColorThemePreset.of(key);
+  //   if (style == null) {
+  //     throw ArgumentError(GaplyColorThemePreset.error("GaplyColorTheme", key));
+  //   }
+  //   return style.copyWith(profiler: profiler);
+  // }
 
   @override
   GaplyColorTheme copyWith({

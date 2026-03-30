@@ -7,7 +7,7 @@ import 'package:gaply/src/gaply/core/core.dart';
 import 'package:gaply/src/gaply/styles/styles.dart';
 import 'package:gaply/src/gaply/animations/animations.dart';
 
-import 'text_presets.dart';
+import 'text_preset.dart';
 import 'text_style_modifier.dart';
 import 'gaply_text.dart';
 
@@ -57,15 +57,15 @@ class GaplyTextStyle extends GaplyTweenStyle<GaplyTextStyle>
 
   const GaplyTextStyle.none() : this();
 
-  static void register(Object name, GaplyTextStyle style) => GaplyTextPreset.register(name, style);
-
-  factory GaplyTextStyle.preset(Object name, {GaplyProfiler? profiler}) {
-    final style = GaplyTextPreset.of(name);
-    if (style == null) {
-      throw ArgumentError(GaplyTextPreset.instance.errorMessage("GaplyTextStyle", name));
-    }
-    return style.copyWith(profiler: profiler);
-  }
+  // static void register(Object key, GaplyTextStyle style) => GaplyTextPreset.add(key, style);
+  //
+  // factory GaplyTextStyle.preset(Object key, {GaplyProfiler? profiler}) {
+  //   final style = GaplyTextPreset.of(key);
+  //   if (style == null) {
+  //     throw ArgumentError(GaplyTextPreset.error("GaplyTextStyle", key));
+  //   }
+  //   return style.copyWith(profiler: profiler);
+  // }
 
   @override
   GaplyTextStyle lerp(GaplyTextStyle? other, double t) {

@@ -15,41 +15,43 @@ void main() async {
 
   GaplyLogger.init([GaplyConsoleLogger(), GaplyFileLogger(logPath, mode: FileMode.write)]);
 
-  _setupGaplyThemes();
+  //_setupGaplyThemes();
+
+  GaplyFadeStyle.preset.add('fadeIn', GaplyFadeStyle.fadeIn());
 
   runApp(const MaterialApp(home: GaplyBoxStressTest()));
 }
 
-void _setupGaplyThemes() {
-  final lightTheme = GaplyColorTheme(
-    profiler: GaplyProfiler.tracePerfect(label: 'lightTheme'),
-    duration: Duration(milliseconds: 1000),
-    brightness: Brightness.light,
-    colors: {
-      GaplyColorToken.primary: const GaplyColor(
-        profiler: GaplyProfiler.tracePerfect(label: 'PrimaryColor', filter: GaplyProfilerFilter.slowBad),
-        token: GaplyColorToken.primary,
-        customColor: Colors.blue,
-      ),
-      GaplyColorToken.background: const GaplyColor(
-        token: GaplyColorToken.background,
-        customColor: Colors.white,
-      ),
-    },
-  );
-  GaplyColorTheme.register('light', lightTheme);
-
-  final darkTheme = GaplyColorTheme(
-    profiler: GaplyProfiler.tracePerfect(label: 'darkTheme'),
-    brightness: Brightness.dark,
-    duration: Duration(milliseconds: 1000),
-    colors: {
-      GaplyColorToken.primary: const GaplyColor(token: GaplyColorToken.primary, customColor: Colors.cyan),
-      GaplyColorToken.background: const GaplyColor(
-        token: GaplyColorToken.background,
-        customColor: Color(0xFF121212),
-      ),
-    },
-  );
-  GaplyColorTheme.register('dark', darkTheme);
-}
+// void _setupGaplyThemes() {
+//   final lightTheme = GaplyColorTheme(
+//     profiler: GaplyProfiler.perfect(label: 'lightTheme'),
+//     duration: Duration(milliseconds: 1000),
+//     brightness: Brightness.light,
+//     colors: {
+//       GaplyColorToken.primary: const GaplyColor(
+//         profiler: GaplyProfiler.perfect(label: 'PrimaryColor', filter: GaplyProfilerFilter.warning),
+//         token: GaplyColorToken.primary,
+//         customColor: Colors.blue,
+//       ),
+//       GaplyColorToken.background: const GaplyColor(
+//         token: GaplyColorToken.background,
+//         customColor: Colors.white,
+//       ),
+//     },
+//   );
+//   GaplyColorTheme.register('light', lightTheme);
+//
+//   final darkTheme = GaplyColorTheme(
+//     profiler: GaplyProfiler.perfect(label: 'darkTheme'),
+//     brightness: Brightness.dark,
+//     duration: Duration(milliseconds: 1000),
+//     colors: {
+//       GaplyColorToken.primary: const GaplyColor(token: GaplyColorToken.primary, customColor: Colors.cyan),
+//       GaplyColorToken.background: const GaplyColor(
+//         token: GaplyColorToken.background,
+//         customColor: Color(0xFF121212),
+//       ),
+//     },
+//   );
+//   GaplyColorTheme.register('dark', darkTheme);
+// }

@@ -4,29 +4,34 @@ import 'dart:ui';
 import 'package:flutter/widgets.dart';
 import 'package:flutter/material.dart';
 
+import 'package:gaply/src/gaply/core/gaply_defines.dart';
+import 'package:gaply/src/annotations.dart';
+import 'package:gaply/src/utils/gaply_profiler.dart';
+import 'package:gaply/src/utils/gaply_logger.dart';
+
 import 'package:gaply/src/gaply/core/gaply_style.dart';
 import 'package:gaply/src/gaply/core/gaply_trigger.dart';
-import 'package:gaply/src/utils/gaply_profiler.dart';
 
-import 'gaply_flip.dart';
-import 'flip_preset.dart';
+import 'flip_widget.dart';
 import 'flip_style_modifier.dart';
 
 part 'flip_trigger.dart';
+part 'flip_style.preset.g.dart';
 
 @immutable
-class FlipStyle extends GaplyAnimStyle<FlipStyle>
+@GaplyPresetGen(initializer: '_initPresets')
+class GaplyFlipStyle extends GaplyAnimStyle<GaplyFlipStyle>
     with
-        GaplyTweenMixin<FlipStyle>,
-        GaplyAnimMixin<FlipStyle>,
+        GaplyTweenMixin<GaplyFlipStyle>,
+        GaplyAnimMixin<GaplyFlipStyle>,
         _GaplyFlipMixin,
-        FlipStyleModifier<FlipStyle> {
+        FlipStyleModifier<GaplyFlipStyle> {
   final Axis axis;
   final double angleRange;
   final bool isFlipped;
   final Widget? backWidget;
 
-  const FlipStyle({
+  const GaplyFlipStyle({
     super.profiler,
     Duration? duration,
     Curve? curve,
@@ -44,20 +49,20 @@ class FlipStyle extends GaplyAnimStyle<FlipStyle>
          delay: delay ?? Duration.zero,
        );
 
-  const FlipStyle.none() : this(duration: Duration.zero, axis: Axis.horizontal, isFlipped: false);
+  const GaplyFlipStyle.none() : this(duration: Duration.zero, axis: Axis.horizontal, isFlipped: false);
 
-  static void register(Object key, FlipStyle style) => GaplyFlipPreset.add(key, style);
+  static GaplyFlipPreset preset = GaplyFlipPreset._i;
 
-  factory FlipStyle.preset(
+  factory GaplyFlipStyle.fromPreset(
     Object key, {
     GaplyProfiler? profiler,
     Widget? backWidget,
     bool? isFlipped,
     VoidCallback? onComplete,
   }) {
-    final style = GaplyFlipPreset.of(key);
+    final style = preset.get(key);
     if (style == null) {
-      throw ArgumentError(GaplyFlipPreset.error("FlipStyle", key));
+      throw ArgumentError(preset.error(key));
     }
     return style.copyWith(
       profiler: profiler,
@@ -67,7 +72,7 @@ class FlipStyle extends GaplyAnimStyle<FlipStyle>
     );
   }
 
-  const FlipStyle.vertical(
+  const GaplyFlipStyle.vertical(
     Widget backWidget, {
     GaplyProfiler? profiler,
     Duration? duration,
@@ -86,7 +91,7 @@ class FlipStyle extends GaplyAnimStyle<FlipStyle>
          isFlipped: isFlipped,
        );
 
-  const FlipStyle.horizontal(
+  const GaplyFlipStyle.horizontal(
     Widget backWidget, {
     GaplyProfiler? profiler,
     Duration? duration,
@@ -106,7 +111,7 @@ class FlipStyle extends GaplyAnimStyle<FlipStyle>
        );
 
   @override
-  FlipStyle copyWith({
+  GaplyFlipStyle copyWith({
     GaplyProfiler? profiler,
     Duration? duration,
     Curve? curve,
@@ -118,7 +123,7 @@ class FlipStyle extends GaplyAnimStyle<FlipStyle>
     bool? isFlipped,
     Widget? backWidget,
   }) {
-    return FlipStyle(
+    return GaplyFlipStyle(
       profiler: profiler ?? this.profiler,
       duration: duration ?? this.duration,
       curve: curve ?? this.curve,
@@ -133,11 +138,11 @@ class FlipStyle extends GaplyAnimStyle<FlipStyle>
   }
 
   @override
-  FlipStyle lerp(GaplyAnimStyle? other, double t) {
-    if (other is! FlipStyle) return this;
+  GaplyFlipStyle lerp(GaplyAnimStyle? other, double t) {
+    if (other is! GaplyFlipStyle) return this;
 
     return profiler.trace(() {
-      return FlipStyle(
+      return GaplyFlipStyle(
         profiler: other.profiler,
         duration: t < 0.5 ? duration : other.duration,
         curve: t < 0.5 ? curve : other.curve,
@@ -160,10 +165,10 @@ class FlipStyle extends GaplyAnimStyle<FlipStyle>
 }
 
 mixin _GaplyFlipMixin {
-  FlipStyle get _self => this as FlipStyle;
-  FlipStyle get flipStyle => _self;
+  GaplyFlipStyle get _self => this as GaplyFlipStyle;
+  GaplyFlipStyle get flipStyle => _self;
 
-  FlipStyle copyWithFlip(FlipStyle flip) {
+  GaplyFlipStyle copyWithFlip(GaplyFlipStyle flip) {
     return _self.copyWith(
       profiler: flip.profiler,
       duration: flip.duration,
@@ -189,3 +194,5 @@ mixin _GaplyFlipMixin {
     );
   }
 }
+
+void _initPresets(GaplyFlipPreset preset) {}

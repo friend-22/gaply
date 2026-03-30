@@ -19,7 +19,7 @@ mixin BlurStyleModifier<T> {
   T blurColor(Color custom, {GaplyColorOpacity opacity = GaplyColorOpacity.full}) =>
       blurColorStyle(GaplyColor.fromColor(custom, opacity: opacity));
 
-  T blurPreset(Object name) => copyWithBlur(BlurStyle.preset(name));
+  // T blurPreset(Object name) => copyWithBlur(BlurStyle.preset(name));
 
   T blurIntensity(double factor) => copyWithBlur(blurStyle.copyWith(sigma: blurStyle.sigma * factor));
 

@@ -7,7 +7,7 @@ import 'package:gaply/src/gaply/styles/color/gaply_color.dart';
 import 'package:gaply/src/gaply/styles/color/color_defines.dart';
 import 'package:gaply/src/utils/gaply_profiler.dart';
 
-import 'shadow_presets.dart';
+import 'shadow_preset.dart';
 import 'shadow_style_modifier.dart';
 
 @immutable
@@ -39,15 +39,15 @@ class GaplyShadow extends GaplyStyle<GaplyShadow> with _GaplyShadowMixin, Shadow
       offset = Offset.zero,
       blurStyle = BlurStyle.normal;
 
-  static void register(Object name, GaplyShadow style) => GaplyShadowPreset.register(name, style);
-
-  factory GaplyShadow.preset(Object name, {GaplyProfiler? profiler, GaplyColor? color}) {
-    final style = GaplyShadowPreset.of(name);
-    if (style == null) {
-      throw ArgumentError(GaplyShadowPreset.instance.errorMessage("GaplyShadow", name));
-    }
-    return style.copyWith(profiler: profiler, color: color);
-  }
+  // static void register(Object key, GaplyShadow style) => GaplyShadowPreset.add(key, style);
+  //
+  // factory GaplyShadow.preset(Object key, {GaplyProfiler? profiler, GaplyColor? color}) {
+  //   final style = GaplyShadowPreset.of(key);
+  //   if (style == null) {
+  //     throw ArgumentError(GaplyShadowPreset.error("GaplyShadow", key));
+  //   }
+  //   return style.copyWith(profiler: profiler, color: color);
+  // }
 
   factory GaplyShadow.elevation(double elevation, {GaplyProfiler? profiler, GaplyColor? color}) {
     if (elevation <= 0) return const GaplyShadow.none();

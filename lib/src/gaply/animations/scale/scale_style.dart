@@ -6,7 +6,7 @@ import 'package:gaply/src/gaply/core/gaply_style.dart';
 import 'package:gaply/src/gaply/core/gaply_trigger.dart';
 
 import 'gaply_scale.dart';
-import 'scale_presets.dart';
+import 'scale_preset.dart';
 import 'scale_style_modifier.dart';
 
 part 'scale_trigger.dart';
@@ -50,26 +50,27 @@ class ScaleStyle extends GaplyAnimStyle<ScaleStyle>
         isScaled: false,
       );
 
-  static void register(Object name, ScaleStyle style) => GaplyScalePreset.register(name, style);
-
-  factory ScaleStyle.preset(
-    Object name, {
-    GaplyProfiler? profiler,
-    Alignment? alignment,
-    bool? isScaled,
-    VoidCallback? onComplete,
-  }) {
-    final style = GaplyScalePreset.of(name);
-    if (style == null) {
-      throw ArgumentError(GaplyScalePreset.instance.errorMessage("ScaleStyle", name));
-    }
-    return style.copyWith(
-      profiler: profiler,
-      alignment: alignment,
-      isScaled: isScaled,
-      onComplete: onComplete,
-    );
-  }
+  // static void add(Object key, ScaleStyle style) => GaplyScalePreset.add(key, style);
+  // static void addSafe(Object key, ScaleStyle style) => GaplyScalePreset.addSafe(key, style);
+  //
+  // factory ScaleStyle.preset(
+  //   Object key, {
+  //   GaplyProfiler? profiler,
+  //   Alignment? alignment,
+  //   bool? isScaled,
+  //   VoidCallback? onComplete,
+  // }) {
+  //   final style = GaplyScalePreset.of(key);
+  //   if (style == null) {
+  //     throw ArgumentError(GaplyScalePreset.error("ScaleStyle", key));
+  //   }
+  //   return style.copyWith(
+  //     profiler: profiler,
+  //     alignment: alignment,
+  //     isScaled: isScaled,
+  //     onComplete: onComplete,
+  //   );
+  // }
 
   @override
   ScaleStyle copyWith({

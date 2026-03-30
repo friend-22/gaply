@@ -7,7 +7,7 @@ import 'package:gaply/src/gaply/core/core.dart';
 import 'package:gaply/src/gaply/styles/styles.dart';
 import 'package:gaply/src/gaply/animations/animations.dart';
 
-import 'box_presets.dart';
+import 'box_preset.dart';
 import 'gaply_box.dart';
 import 'box_style_modifier.dart';
 
@@ -67,15 +67,15 @@ class BoxStyle extends GaplyTweenStyle<BoxStyle>
 
   const BoxStyle.none() : this();
 
-  static void register(Object name, BoxStyle style) => GaplyBoxPreset.register(name, style);
-
-  factory BoxStyle.preset(Object name, {GaplyProfiler? profiler}) {
-    final style = GaplyBoxPreset.of(name);
-    if (style == null) {
-      throw ArgumentError(GaplyBoxPreset.instance.errorMessage("BoxStyle", name));
-    }
-    return style.copyWith(profiler: profiler);
-  }
+  // static void register(Object key, BoxStyle style) => GaplyBoxPreset.add(key, style);
+  //
+  // factory BoxStyle.preset(Object key, {GaplyProfiler? profiler}) {
+  //   final style = GaplyBoxPreset.of(key);
+  //   if (style == null) {
+  //     throw ArgumentError(GaplyBoxPreset.error("BoxStyle", key));
+  //   }
+  //   return style.copyWith(profiler: profiler);
+  // }
 
   @override
   BoxStyle copyWith({

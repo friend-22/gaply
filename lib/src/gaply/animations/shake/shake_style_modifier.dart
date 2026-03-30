@@ -9,7 +9,7 @@ mixin ShakeStyleModifier<T> {
 
   T shakeStyleSet(ShakeStyle value) => copyWithShake(value);
 
-  T shakePreset(Object name) => copyWithShake(ShakeStyle.preset(name));
+  // T shakePreset(Object name) => copyWithShake(ShakeStyle.preset(name));
 
   T shakeDistance(double distance) => copyWithShake(shakeStyle.copyWith(distance: distance));
 

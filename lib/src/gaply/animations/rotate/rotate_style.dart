@@ -44,26 +44,27 @@ class RotateStyle extends GaplyAnimStyle<RotateStyle>
 
   const RotateStyle.none() : this(duration: Duration.zero, begin: 0.0, end: 1.0, isRotated: false);
 
-  static void register(Object key, RotateStyle style) => GaplyRotatePreset.add(key, style);
-
-  factory RotateStyle.preset(
-    Object key, {
-    GaplyProfiler? profiler,
-    Alignment? alignment,
-    bool? isRotated,
-    VoidCallback? onComplete,
-  }) {
-    final style = GaplyRotatePreset.of(key);
-    if (style == null) {
-      throw ArgumentError(GaplyRotatePreset.error("RotateStyle", key));
-    }
-    return style.copyWith(
-      profiler: profiler,
-      alignment: alignment,
-      isRotated: isRotated,
-      onComplete: onComplete,
-    );
-  }
+  // static void add(Object key, RotateStyle style) => GaplyRotatePreset.add(key, style);
+  // static void addSafe(Object key, RotateStyle style) => GaplyRotatePreset.addSafe(key, style);
+  //
+  // factory RotateStyle.preset(
+  //   Object key, {
+  //   GaplyProfiler? profiler,
+  //   Alignment? alignment,
+  //   bool? isRotated,
+  //   VoidCallback? onComplete,
+  // }) {
+  //   final style = GaplyRotatePreset.of(key);
+  //   if (style == null) {
+  //     throw ArgumentError(GaplyRotatePreset.error("RotateStyle", key));
+  //   }
+  //   return style.copyWith(
+  //     profiler: profiler,
+  //     alignment: alignment,
+  //     isRotated: isRotated,
+  //     onComplete: onComplete,
+  //   );
+  // }
 
   const RotateStyle.rotate90({
     GaplyProfiler? profiler,

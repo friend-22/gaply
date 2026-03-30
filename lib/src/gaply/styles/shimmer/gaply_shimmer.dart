@@ -5,7 +5,7 @@ import 'package:shimmer/shimmer.dart';
 
 import 'package:gaply/src/gaply/core/gaply_style.dart';
 import 'package:gaply/src/gaply/styles/color/gaply_color.dart';
-import 'package:gaply/src/gaply/styles/shimmer/shimmer_presets.dart';
+import 'package:gaply/src/gaply/styles/shimmer/shimmer_preset.dart';
 import 'package:gaply/src/utils/gaply_profiler.dart';
 
 import 'shimmer_style_modifier.dart';
@@ -37,15 +37,15 @@ class GaplyShimmer extends GaplyStyle<GaplyShimmer>
       direction = ShimmerDirection.ltr,
       loop = 0;
 
-  static void register(Object name, GaplyShimmer style) => GaplyShimmerPreset.register(name, style);
-
-  factory GaplyShimmer.preset(Object name, {GaplyProfiler? profiler, int? loop}) {
-    final style = GaplyShimmerPreset.of(name);
-    if (style == null) {
-      throw ArgumentError(GaplyShimmerPreset.instance.errorMessage("GaplyShimmer", name));
-    }
-    return style.copyWith(profiler: profiler, loop: loop);
-  }
+  // static void register(Object key, GaplyShimmer style) => GaplyShimmerPreset.add(key, style);
+  //
+  // factory GaplyShimmer.preset(Object key, {GaplyProfiler? profiler, int? loop}) {
+  //   final style = GaplyShimmerPreset.of(key);
+  //   if (style == null) {
+  //     throw ArgumentError(GaplyShimmerPreset.error("GaplyShimmer", key));
+  //   }
+  //   return style.copyWith(profiler: profiler, loop: loop);
+  // }
 
   GaplyShimmer withSpeed(double speed, {GaplyProfiler? profiler}) {
     final resolvePeriod = period.inMilliseconds * speed;

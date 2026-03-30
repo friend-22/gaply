@@ -10,7 +10,7 @@ mixin FilterStyleModifier<T> {
 
   T filterStyleSet(GaplyFilter filter) => copyWithFilter(filter);
 
-  T filterPreset(Object name) => copyWithFilter(GaplyFilter.preset(name));
+  // T filterPreset(Object name) => copyWithFilter(GaplyFilter.preset(name));
 
   T filterGrayscale(double value) => copyWithFilter(filterStyle.copyWith(grayscale: value));
 

@@ -4,7 +4,7 @@ import 'package:flutter/widgets.dart';
 import 'package:gaply/src/gaply/core/gaply_style.dart';
 import 'package:gaply/src/utils/gaply_profiler.dart';
 
-import 'layout_presets.dart';
+import 'layout_preset.dart';
 import 'layout_style_modifier.dart';
 
 @immutable
@@ -40,15 +40,15 @@ class GaplyLayout extends GaplyStyle<GaplyLayout> with _GaplyLayoutMixin, Layout
       width = null,
       height = null;
 
-  static void register(Object name, GaplyLayout style) => GaplyLayoutPreset.register(name, style);
-
-  factory GaplyLayout.preset(Object name, {GaplyProfiler? profiler}) {
-    final style = GaplyLayoutPreset.of(name);
-    if (style == null) {
-      throw ArgumentError(GaplyLayoutPreset.instance.errorMessage("GaplyLayout", name));
-    }
-    return style.copyWith(profiler: profiler);
-  }
+  // static void register(Object key, GaplyLayout style) => GaplyLayoutPreset.add(key, style);
+  //
+  // factory GaplyLayout.preset(Object key, {GaplyProfiler? profiler}) {
+  //   final style = GaplyLayoutPreset.of(key);
+  //   if (style == null) {
+  //     throw ArgumentError(GaplyLayoutPreset.error("GaplyLayout", key));
+  //   }
+  //   return style.copyWith(profiler: profiler);
+  // }
 
   @override
   GaplyLayout copyWith({

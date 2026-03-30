@@ -2,7 +2,7 @@ part of 'fade_style.dart';
 
 class _GaplyFadeTrigger extends StatefulWidget {
   final Widget child;
-  final FadeStyle style;
+  final GaplyFadeStyle style;
   final Object? trigger;
 
   const _GaplyFadeTrigger({required this.child, required this.style, this.trigger});
@@ -12,12 +12,12 @@ class _GaplyFadeTrigger extends StatefulWidget {
 }
 
 class _GaplyFadeTriggerState extends State<_GaplyFadeTrigger>
-    with GaplyMotionTrigger<_GaplyFadeTrigger, FadeStyle, GaplyFadeState> {
+    with GaplyMotionTrigger<_GaplyFadeTrigger, GaplyFadeStyle, GaplyFadeState> {
   @override
   Object? get trigger => widget.trigger;
 
   @override
-  FadeStyle get style => widget.style;
+  GaplyFadeStyle get style => widget.style;
 
   @override
   void didUpdateWidget(_GaplyFadeTrigger oldWidget) {
@@ -27,7 +27,7 @@ class _GaplyFadeTriggerState extends State<_GaplyFadeTrigger>
   }
 
   @override
-  void execute(FadeStyle style) {
+  void execute(GaplyFadeStyle style) {
     triggerKey.currentState?.executeParams(style);
   }
 

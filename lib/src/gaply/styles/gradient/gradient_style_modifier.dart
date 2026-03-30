@@ -9,7 +9,7 @@ mixin GradientStyleModifier<T> {
 
   T gradientStyleSet(GaplyGradient gradient) => copyWithGradient(gradient);
 
-  T gradientPreset(Object name) => copyWithGradient(GaplyGradient.preset(name));
+  // T gradientPreset(Object name) => copyWithGradient(GaplyGradient.preset(name));
 
   T gradientType(GradientType type) => copyWithGradient(gradientStyle.copyWith(type: type));
 

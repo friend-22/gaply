@@ -6,7 +6,7 @@ import 'package:gaply/src/gaply/core/gaply_style.dart';
 import 'package:gaply/src/gaply/styles/color/gaply_color.dart';
 import 'package:gaply/src/utils/gaply_profiler.dart';
 
-import 'filter_presets.dart';
+import 'filter_preset.dart';
 import 'filter_style_modifier.dart';
 
 part 'filter_widget.dart';
@@ -30,15 +30,15 @@ class GaplyFilter extends GaplyStyle<GaplyFilter> with _GaplyFilterMixin, Filter
 
   const GaplyFilter.none() : this();
 
-  static void register(Object name, GaplyFilter style) => GaplyFilterPreset.register(name, style);
-
-  factory GaplyFilter.preset(Object name, {GaplyProfiler? profiler}) {
-    final style = GaplyFilterPreset.of(name);
-    if (style == null) {
-      throw ArgumentError(GaplyFilterPreset.instance.errorMessage("GaplyFilter", name));
-    }
-    return style.copyWith(profiler: profiler);
-  }
+  // static void register(Object key, GaplyFilter style) => GaplyFilterPreset.add(key, style);
+  //
+  // factory GaplyFilter.preset(Object key, {GaplyProfiler? profiler}) {
+  //   final style = GaplyFilterPreset.of(key);
+  //   if (style == null) {
+  //     throw ArgumentError(GaplyFilterPreset.error("GaplyFilter", key));
+  //   }
+  //   return style.copyWith(profiler: profiler);
+  // }
 
   @override
   GaplyFilter lerp(GaplyFilter? other, double t) {

@@ -9,8 +9,8 @@ mixin RevealStyleModifier<T> {
 
   T revealStyleSet(RevealStyle value) => copyWithReveal(value);
 
-  T revealPreset(Object name, {bool? isVisible}) =>
-      copyWithReveal(RevealStyle.preset(name, isVisible: isVisible));
+  // T revealPreset(Object name, {bool? isVisible}) =>
+  //     copyWithReveal(RevealStyle.preset(name, isVisible: isVisible));
 
   T revealVisible(bool visible) => copyWithReveal(revealStyle.copyWith(isVisible: visible));
 

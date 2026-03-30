@@ -43,29 +43,29 @@ class SizeStyle extends GaplyAnimStyle<SizeStyle>
 
   const SizeStyle.none() : this(duration: Duration.zero, axis: Axis.vertical, isExpanded: false);
 
-  static void register(Object name, SizeStyle style) => GaplySizePreset.register(name, style);
-
-  factory SizeStyle.preset(
-    Object name, {
-    GaplyProfiler? profiler,
-    double? axisAlignment,
-    bool? isExpanded,
-    double? minFactor,
-    VoidCallback? onComplete,
-  }) {
-    final style = GaplySizePreset.of(name);
-    if (style == null) {
-      throw ArgumentError(GaplySizePreset.instance.errorMessage("SizeStyle", name));
-    }
-
-    return style.copyWith(
-      profiler: profiler,
-      axisAlignment: axisAlignment,
-      isExpanded: isExpanded,
-      minFactor: minFactor,
-      onComplete: onComplete,
-    );
-  }
+  // static void register(Object key, SizeStyle style) => GaplySizePreset.add(key, style);
+  //
+  // factory SizeStyle.preset(
+  //   Object key, {
+  //   GaplyProfiler? profiler,
+  //   double? axisAlignment,
+  //   bool? isExpanded,
+  //   double? minFactor,
+  //   VoidCallback? onComplete,
+  // }) {
+  //   final style = GaplySizePreset.of(key);
+  //   if (style == null) {
+  //     throw ArgumentError(GaplySizePreset.error("SizeStyle", key));
+  //   }
+  //
+  //   return style.copyWith(
+  //     profiler: profiler,
+  //     axisAlignment: axisAlignment,
+  //     isExpanded: isExpanded,
+  //     minFactor: minFactor,
+  //     onComplete: onComplete,
+  //   );
+  // }
 
   const SizeStyle.left({
     GaplyProfiler? profiler,

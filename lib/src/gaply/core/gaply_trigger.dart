@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:gaply/src/utils/gaply_profiler.dart';
+
+import 'package:gaply/src/utils/gaply_logger.dart';
+
 import 'gaply_style.dart';
 
 /// Mixin that handles animation triggering based on style or trigger changes.

@@ -44,16 +44,14 @@ class _GaplyFadeDemoState extends State<GaplyFadeDemo> {
               runSpacing: 20,
               children: [
                 // 기본 Fade In
-                _demoBox("Default Fade", const Text("Hello").withFade(FadeStyle(isVisible: _isVisible))),
+                _demoBox("Default Fade", const Text("Hello").withFade(GaplyFadeStyle(isVisible: _isVisible))),
 
                 // 느린 등장 (Slow)
                 _demoBox(
                   "Slow (1.5s)",
-                  const Icon(
-                    Icons.favorite,
-                    color: Colors.red,
-                    size: 40,
-                  ).withFade(FadeStyle(isVisible: _isVisible, duration: const Duration(milliseconds: 1500))),
+                  const Icon(Icons.favorite, color: Colors.red, size: 40).withFade(
+                    GaplyFadeStyle(isVisible: _isVisible, duration: const Duration(milliseconds: 1500)),
+                  ),
                 ),
 
                 // 커브 적용 (EaseInBack)
@@ -61,7 +59,7 @@ class _GaplyFadeDemoState extends State<GaplyFadeDemo> {
                   "EaseIn Curve",
                   const FlutterLogo(
                     size: 40,
-                  ).withFade(FadeStyle(isVisible: _isVisible, curve: Curves.easeInQuint)),
+                  ).withFade(GaplyFadeStyle(isVisible: _isVisible, curve: Curves.easeInQuint)),
                 ),
 
                 // 트리거 활용 (누를 때마다 깜빡임)
@@ -70,7 +68,7 @@ class _GaplyFadeDemoState extends State<GaplyFadeDemo> {
                   const Text(
                     "Reset Me!",
                     style: TextStyle(fontWeight: FontWeight.bold),
-                  ).withFade(const FadeStyle.fadeIn(duration: Duration(milliseconds: 400))),
+                  ).withFade(const GaplyFadeStyle.fadeIn(duration: Duration(milliseconds: 400))),
                 ),
               ],
             ),
@@ -85,7 +83,7 @@ class _GaplyFadeDemoState extends State<GaplyFadeDemo> {
                   leading: CircleAvatar(child: Text("${index + 1}")),
                   title: Text("Item ${index + 1}"),
                 ).withFade(
-                  FadeStyle(
+                  GaplyFadeStyle(
                     isVisible: _isVisible,
                     delay: Duration(milliseconds: index * 200), // 0.2초씩 차이
                   ),

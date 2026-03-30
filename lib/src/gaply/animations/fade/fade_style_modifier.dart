@@ -3,13 +3,13 @@ import 'package:flutter/animation.dart';
 import 'fade_style.dart';
 
 mixin FadeStyleModifier<T> {
-  FadeStyle get fadeStyle;
+  GaplyFadeStyle get fadeStyle;
 
-  T copyWithFade(FadeStyle fade);
+  T copyWithFade(GaplyFadeStyle fade);
 
-  T fadeStyleSet(FadeStyle fade) => copyWithFade(fade);
+  T fadeStyleSet(GaplyFadeStyle fade) => copyWithFade(fade);
 
-  T fadePreset(Object name) => copyWithFade(FadeStyle.preset(name));
+  // T fadePreset(Object name) => copyWithFade(GaplyFadeStyle.preset(name));
 
   T fadeIn() => copyWithFade(fadeStyle.copyWith(isVisible: true));
 

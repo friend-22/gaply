@@ -9,7 +9,7 @@ mixin LayoutStyleModifier<T> {
 
   T layoutStyleSet(GaplyLayout value) => copyWithLayout(value);
 
-  T layoutPreset(Object name) => copyWithLayout(GaplyLayout.preset(name));
+  // T layoutPreset(Object name) => copyWithLayout(GaplyLayout.preset(name));
 
   T layoutWidth(double value) => copyWithLayout(layoutStyle.copyWith(width: value));
 

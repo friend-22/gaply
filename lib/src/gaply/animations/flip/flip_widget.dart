@@ -15,12 +15,12 @@ import 'flip_style.dart';
 ///   key: flipKey,
 ///   front: MyFrontWidget(),
 ///   back: MyBackWidget(),
-///   style: FlipStyle(axis: Axis.vertical, isFlipped: false),
+///   style: GaplyFlipStyle(axis: Axis.vertical, isFlipped: false),
 /// );
 class GaplyFlip extends StatefulWidget {
   final Widget front;
   final Widget back;
-  final FlipStyle style;
+  final GaplyFlipStyle style;
 
   const GaplyFlip({super.key, required this.front, required this.back, required this.style});
 
@@ -80,7 +80,7 @@ class GaplyFlipState extends State<GaplyFlip> with SingleTickerProviderStateMixi
   void toggle() => flip();
   void reset() => _controller.reset();
 
-  void _execute(FlipStyle style) {
+  void _execute(GaplyFlipStyle style) {
     if (!mounted) return;
 
     if (style.isFlipped) {
@@ -90,7 +90,7 @@ class GaplyFlipState extends State<GaplyFlip> with SingleTickerProviderStateMixi
     }
   }
 
-  void executeParams(FlipStyle style) {
+  void executeParams(GaplyFlipStyle style) {
     Future.delayed(style.delay, () {
       if (!mounted) return;
 

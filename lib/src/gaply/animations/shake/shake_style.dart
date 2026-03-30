@@ -5,43 +5,12 @@ import 'package:gaply/src/utils/gaply_profiler.dart';
 import 'package:gaply/src/gaply/core/gaply_style.dart';
 import 'package:gaply/src/gaply/core/gaply_trigger.dart';
 
-import 'shake_presets.dart';
+import 'shake_preset.dart';
 import 'gaply_shake.dart';
 import 'shake_style_modifier.dart';
 
 part 'shake_trigger.dart';
 
-/// A configuration style for shake animations.
-///
-/// [ShakeStyle] controls the amplitude and frequency of a shake effect.
-/// The animation produces a sinusoidal motion that dampens over time.
-///
-/// ### Properties
-/// - **distance**: Maximum translation distance in logical pixels
-/// - **count**: Number of oscillations (can be fractional)
-/// - **isVertical**: Direction of shake (true = up/down, false = left/right)
-/// - **useHaptic**: Whether to trigger haptic feedback
-/// - **useRepaintBoundary**: Whether to optimize repainting
-///
-/// ### Examples
-///
-/// **Basic shake:**
-/// ```dart
-/// ShakeStyle(
-///   distance: 8.0,
-///   count: 4.0,
-///   duration: Duration(milliseconds: 500),
-/// )
-/// ```
-///
-/// **Vertical bounce:**
-/// ```dart
-/// ShakeStyle(
-///   isVertical: true,
-///   distance: 10.0,
-///   count: 3.0,
-/// )
-/// ```
 @immutable
 class ShakeStyle extends GaplyAnimStyle<ShakeStyle>
     with
@@ -49,19 +18,10 @@ class ShakeStyle extends GaplyAnimStyle<ShakeStyle>
         GaplyAnimMixin<ShakeStyle>,
         _ShakeStyleMixin,
         ShakeStyleModifier<ShakeStyle> {
-  /// Maximum translation distance in logical pixels
   final double distance;
-
-  /// Number of oscillations (can be fractional, e.g., 2.5)
   final double count;
-
-  /// Whether to trigger haptic feedback during shake
   final bool useHaptic;
-
-  /// Whether to use RepaintBoundary for optimization
   final bool useRepaintBoundary;
-
-  /// Whether shake is vertical (true) or horizontal (false)
   final bool isVertical;
 
   const ShakeStyle({
@@ -86,34 +46,30 @@ class ShakeStyle extends GaplyAnimStyle<ShakeStyle>
 
   const ShakeStyle.none() : this(duration: Duration.zero, distance: 0.0, count: 0.0);
 
-  /// Creates a [ShakeStyle] from a pre-defined preset name.
-  ///
-  /// Available presets: 'mild', 'normal', 'severe', 'alert', 'nod', 'celebrate'
-  ///
-  /// Throws [ArgumentError] if the [name] is not registered.
-  static void register(Object name, ShakeStyle style) => GaplyShakePreset.register(name, style);
-
-  factory ShakeStyle.preset(
-    Object name, {
-    GaplyProfiler? profiler,
-    double? distance,
-    double? count,
-    bool? isVertical,
-    VoidCallback? onComplete,
-  }) {
-    final style = GaplyShakePreset.of(name);
-    if (style == null) {
-      throw ArgumentError(GaplyShakePreset.instance.errorMessage("ShakeStyle", name));
-    }
-    return style.copyWith(
-      profiler: profiler,
-
-      distance: distance,
-      count: count,
-      isVertical: isVertical,
-      onComplete: onComplete,
-    );
-  }
+  // static void add(Object key, ShakeStyle style) => GaplyShakePreset.add(key, style);
+  // static void addSafe(Object key, ShakeStyle style) => GaplyShakePreset.addSafe(key, style);
+  //
+  // factory ShakeStyle.preset(
+  //   Object key, {
+  //   GaplyProfiler? profiler,
+  //   double? distance,
+  //   double? count,
+  //   bool? isVertical,
+  //   VoidCallback? onComplete,
+  // }) {
+  //   final style = GaplyShakePreset.of(key);
+  //   if (style == null) {
+  //     throw ArgumentError(GaplyShakePreset.error("ShakeStyle", key));
+  //   }
+  //   return style.copyWith(
+  //     profiler: profiler,
+  //
+  //     distance: distance,
+  //     count: count,
+  //     isVertical: isVertical,
+  //     onComplete: onComplete,
+  //   );
+  // }
 
   /// Returns a new [ShakeStyle] with intensity multiplied by [intensity].
   ///

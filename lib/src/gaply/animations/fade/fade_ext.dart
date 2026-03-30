@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
 import 'fade_style.dart';
-import 'gaply_fade.dart';
+import 'fade_widget.dart';
 
-extension GaplyFadeX on FadeStyle {}
+extension GaplyFadeX on GaplyFadeStyle {}
 
 /// Extension to easily wrap any [Widget] with a fade animation.
 extension GaplyFadeExtension on Widget {
@@ -13,11 +13,11 @@ extension GaplyFadeExtension on Widget {
   ///
   /// ```dart
   /// Text("Fading Text").withFade(
-  ///   FadeStyle(
+  ///   GaplyFadeStyle(
   ///     visible: _isVisible,
   ///     duration: Duration(seconds: 1),
   ///   ),
   /// )
   /// ```
-  Widget withFade(FadeStyle style) => style.buildWidget(child: this);
+  Widget withFade(GaplyFadeStyle style) => style.buildWidget(child: this);
 }

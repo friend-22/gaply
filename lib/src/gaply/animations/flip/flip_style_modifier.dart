@@ -3,13 +3,13 @@ import 'package:flutter/material.dart';
 import 'flip_style.dart';
 
 mixin FlipStyleModifier<T> {
-  FlipStyle get flipStyle;
+  GaplyFlipStyle get flipStyle;
 
-  T copyWithFlip(FlipStyle flip);
+  T copyWithFlip(GaplyFlipStyle flip);
 
-  T flipSet(FlipStyle value) => copyWithFlip(value);
+  T flipSet(GaplyFlipStyle value) => copyWithFlip(value);
 
-  T flipPreset(Object name) => copyWithFlip(FlipStyle.preset(name));
+  // T flipPreset(Object name) => copyWithFlip(GaplyFlipStyle.preset(name));
 
   T flipToggle() => copyWithFlip(flipStyle.copyWith(isFlipped: !flipStyle.isFlipped));
 

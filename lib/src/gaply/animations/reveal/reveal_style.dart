@@ -45,28 +45,29 @@ class RevealStyle extends GaplyAnimStyle<RevealStyle>
 
   const RevealStyle.none() : this(duration: Duration.zero, direction: AxisDirection.up, isVisible: false);
 
-  static void register(Object key, RevealStyle style) => GaplyRevealPreset.add(key, style);
-
-  factory RevealStyle.preset(
-    Object key, {
-    GaplyProfiler? profiler,
-    bool? isVisible,
-    bool? fixedSize,
-    bool? useFade,
-    VoidCallback? onComplete,
-  }) {
-    final style = GaplyRevealPreset.of(key);
-    if (style == null) {
-      throw ArgumentError(GaplyRevealPreset.error("RevealStyle", key));
-    }
-    return style.copyWith(
-      profiler: profiler,
-      isVisible: isVisible,
-      fixedSize: fixedSize,
-      useFade: useFade,
-      onComplete: onComplete,
-    );
-  }
+  // static void add(Object key, RevealStyle style) => GaplyRevealPreset.add(key, style);
+  // static void addSafe(Object key, RevealStyle style) => GaplyRevealPreset.addSafe(key, style);
+  //
+  // factory RevealStyle.preset(
+  //   Object key, {
+  //   GaplyProfiler? profiler,
+  //   bool? isVisible,
+  //   bool? fixedSize,
+  //   bool? useFade,
+  //   VoidCallback? onComplete,
+  // }) {
+  //   final style = GaplyRevealPreset.of(key);
+  //   if (style == null) {
+  //     throw ArgumentError(GaplyRevealPreset.error("RevealStyle", key));
+  //   }
+  //   return style.copyWith(
+  //     profiler: profiler,
+  //     isVisible: isVisible,
+  //     fixedSize: fixedSize,
+  //     useFade: useFade,
+  //     onComplete: onComplete,
+  //   );
+  // }
 
   const RevealStyle.up({
     GaplyProfiler? profiler,
@@ -240,7 +241,7 @@ mixin _RevealStyleMixin {
     }, tag: 'buildWidget');
   }
 
-  FadeStyle get _fade => FadeStyle(
+  GaplyFadeStyle get _fade => GaplyFadeStyle(
     duration: _self.duration,
     curve: _self.curve,
     isVisible: _self.useFade ? _self.isVisible : true,

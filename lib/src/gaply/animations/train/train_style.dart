@@ -8,7 +8,7 @@ import 'package:gaply/src/gaply/core/gaply_style.dart';
 import 'package:gaply/src/gaply/core/gaply_trigger.dart';
 
 import 'gaply_train.dart';
-import 'train_presets.dart';
+import 'train_preset.dart';
 import 'train_style_modifier.dart';
 
 part 'train_trigger.dart';
@@ -42,20 +42,20 @@ class TrainStyle extends GaplyAnimStyle<TrainStyle>
 
   const TrainStyle.none() : this(duration: Duration.zero, direction: AxisDirection.down);
 
-  static void register(Object name, TrainStyle style) => GaplyTrainPreset.register(name, style);
-
-  factory TrainStyle.preset(
-    Object name, {
-    GaplyProfiler? profiler,
-    bool? useOpacity,
-    VoidCallback? onComplete,
-  }) {
-    final style = GaplyTrainPreset.of(name);
-    if (style == null) {
-      throw ArgumentError(GaplyTrainPreset.instance.errorMessage("TrainStyle", name));
-    }
-    return style.copyWith(profiler: profiler, useOpacity: useOpacity, onComplete: onComplete);
-  }
+  // static void register(Object key, TrainStyle style) => GaplyTrainPreset.add(key, style);
+  //
+  // factory TrainStyle.preset(
+  //   Object key, {
+  //   GaplyProfiler? profiler,
+  //   bool? useOpacity,
+  //   VoidCallback? onComplete,
+  // }) {
+  //   final style = GaplyTrainPreset.of(key);
+  //   if (style == null) {
+  //     throw ArgumentError(GaplyTrainPreset.error("TrainStyle", key));
+  //   }
+  //   return style.copyWith(profiler: profiler, useOpacity: useOpacity, onComplete: onComplete);
+  // }
 
   const TrainStyle.left({
     GaplyProfiler? profiler,

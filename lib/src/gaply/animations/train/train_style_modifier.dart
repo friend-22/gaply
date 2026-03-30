@@ -9,7 +9,7 @@ mixin TrainStyleModifier<T> {
 
   T trainStyleSet(TrainStyle value) => copyWithTrain(value);
 
-  T trainPreset(Object name) => copyWithTrain(TrainStyle.preset(name));
+  // T trainPreset(Object name) => copyWithTrain(TrainStyle.preset(name));
 
   T trainDirection(AxisDirection direction) => copyWithTrain(trainStyle.copyWith(direction: direction));
 

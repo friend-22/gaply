@@ -1,16 +1,16 @@
 targets:
   $default:
     builders:
-      gaply|gaply_builder:
+      gaply|gaply_preset_builder:
         enabled: true
         generate_for:
           - lib/src/**
           
 builders:
-  gaply_builder:
+  gaply_preset_builder:
     import: "package:gaply/src/generator.dart"
-    builder_factories: ["gaplyBuilder"]
-    build_extensions: {".dart": [".gaply.g.part"]}
+    builder_factories: ["gaplyPresetBuilder"]
+    build_extensions: {".dart": [".preset.g.dart"]}
     auto_apply: dependents
-    build_to: cache
+    build_to: source
     applies_builders: ["source_gen|combining_builder"]

@@ -21,16 +21,16 @@ class BlurStyle extends GaplyStyle<BlurStyle> with _BlurStyleMixin, BlurStyleMod
     : assert(sigma >= 0, 'Sigma must be greater than or equal to 0.');
 
   const BlurStyle.none() : this(sigma: 0.0, color: const GaplyColor.none());
-
-  static void add(Object key, BlurStyle style) => GaplyBlurPreset.add(key, style);
-
-  factory BlurStyle.preset(Object key, {GaplyProfiler? profiler, GaplyColor? color}) {
-    final style = GaplyBlurPreset.of(key);
-    if (style == null) {
-      throw ArgumentError(GaplyBlurPreset.error("BlurStyle", key));
-    }
-    return style.copyWith(profiler: profiler, color: color);
-  }
+  //
+  // static void add(Object key, BlurStyle style) => GaplyBlurPreset.add(key, style);
+  //
+  // factory BlurStyle.preset(Object key, {GaplyProfiler? profiler, GaplyColor? color}) {
+  //   final style = GaplyBlurPreset.of(key);
+  //   if (style == null) {
+  //     throw ArgumentError(GaplyBlurPreset.error("BlurStyle", key));
+  //   }
+  //   return style.copyWith(profiler: profiler, color: color);
+  // }
 
   @override
   BlurStyle copyWith({GaplyProfiler? profiler, double? sigma, GaplyColor? color}) {

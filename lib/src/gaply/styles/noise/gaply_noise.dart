@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:gaply/src/gaply/core/gaply_style.dart';
 import 'package:gaply/src/utils/gaply_profiler.dart';
 
-import 'noise_presets.dart';
+import 'noise_preset.dart';
 import 'noise_style_modifier.dart';
 
 part 'noise_widget.dart';
@@ -28,15 +28,15 @@ class GaplyNoise extends GaplyStyle<GaplyNoise> with _GaplyNoiseMixin, NoiseStyl
 
   const GaplyNoise.none() : this();
 
-  static void register(Object name, GaplyNoise style) => GaplyNoisePreset.register(name, style);
-
-  factory GaplyNoise.preset(Object name, {GaplyProfiler? profiler}) {
-    final style = GaplyNoisePreset.of(name);
-    if (style == null) {
-      throw ArgumentError(GaplyNoisePreset.instance.errorMessage("GaplyNoise", name));
-    }
-    return style.copyWith(profiler: profiler);
-  }
+  // static void add(Object key, GaplyNoise style) => GaplyNoisePreset.add(key, style);
+  //
+  // factory GaplyNoise.preset(Object key, {GaplyProfiler? profiler}) {
+  //   final style = GaplyNoisePreset.of(key);
+  //   if (style == null) {
+  //     throw ArgumentError(GaplyNoisePreset.error("GaplyNoise", key));
+  //   }
+  //   return style.copyWith(profiler: profiler);
+  // }
 
   @override
   GaplyNoise copyWith({
