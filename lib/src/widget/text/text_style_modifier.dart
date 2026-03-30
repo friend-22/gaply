@@ -1,6 +1,6 @@
 import 'dart:ui';
 
-import 'package:gaply/src/gaply/styles/styles.dart';
+import 'package:gaply/src/gaply/styles/effects.dart';
 import 'package:gaply/src/gaply/animations/animations.dart';
 
 import 'text_style.dart';
@@ -17,9 +17,9 @@ mixin TextStyleModifier<T>
 
   //Blur Style
   @override
-  BlurStyle get blurStyle => textStyle.blur;
+  GaplyBlur get blurStyle => textStyle.blur;
   @override
-  T copyWithBlur(BlurStyle blur) => copyWithText(textStyle.copyWith(blur: blur));
+  T copyWithBlur(GaplyBlur blur) => copyWithText(textStyle.copyWith(blur: blur));
 
   //Shimmer Style
   @override

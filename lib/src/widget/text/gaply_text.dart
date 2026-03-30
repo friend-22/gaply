@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'package:gaply/src/gaply/styles/styles.dart';
+import 'package:gaply/src/gaply/styles/effects.dart';
 import 'package:gaply/src/gaply/animations/animations.dart';
 
 import 'text_style.dart';

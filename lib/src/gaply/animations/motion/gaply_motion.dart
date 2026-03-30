@@ -2,14 +2,13 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+import 'package:gaply/src/gaply/core/gaply_style.dart';
 import 'package:gaply/src/gaply/core/gaply_defines.dart';
 import 'package:gaply/src/annotations.dart';
 import 'package:gaply/src/utils/gaply_profiler.dart';
 import 'package:gaply/src/utils/gaply_logger.dart';
 
-import 'package:gaply/src/gaply/core/gaply_style.dart';
-
-import 'gaply_motion_modifier.dart';
+import 'package:gaply/src/gaply/animations/animations.dart';
 
 part 'gaply_motion.preset.g.dart';
 
@@ -220,77 +219,77 @@ mixin GaplyMotionMixin {
 }
 
 void _initPresets(GaplyMotionPreset preset) {
-  // preset.add(
-  //   'entrance',
-  //   const GaplyMotion(
-  //     animations: [
-  //       GaplyFade(isVisible: true, duration: Duration(milliseconds: 500)),
-  //       GaplyTranslate(
-  //         begin: Offset(0, 10),
-  //         end: Offset.zero,
-  //         isMoved: true,
-  //         duration: Duration(milliseconds: 400),
-  //         curve: Curves.easeOutCubic,
-  //       ),
-  //     ],
-  //   ),
-  // );
-  // preset.add(
-  //   'pop',
-  //   const GaplyMotion(
-  //     animations: [
-  //       GaplyScale(
-  //         begin: 0.8,
-  //         end: 1.0,
-  //         isScaled: true,
-  //         duration: Duration(milliseconds: 500),
-  //         curve: Curves.elasticOut,
-  //       ),
-  //       GaplyRotate(
-  //         begin: -5,
-  //         end: 0,
-  //         isRotated: true,
-  //         duration: Duration(milliseconds: 600),
-  //         curve: Curves.elasticOut,
-  //       ),
-  //     ],
-  //   ),
-  // );
-  //
-  // preset.add(
-  //   'attention',
-  //   const GaplyMotion(
-  //     animations: [
-  //       GaplyScale(begin: 1.0, end: 1.05, isScaled: true, duration: Duration(milliseconds: 200)),
-  //       GaplyShake(duration: Duration(milliseconds: 500), distance: 4.0, count: 3.0, curve: Curves.linear),
-  //     ],
-  //   ),
-  // );
-  //
-  // preset.add(
-  //   'cardHover',
-  //   const GaplyMotion(
-  //     animations: [
-  //       GaplyTranslate(
-  //         begin: Offset.zero,
-  //         end: Offset(0, -6),
-  //         isMoved: true,
-  //         duration: Duration(milliseconds: 300),
-  //       ),
-  //       GaplyScale(begin: 1.0, end: 1.02, isScaled: true, duration: Duration(milliseconds: 300)),
-  //     ],
-  //   ),
-  // );
-  //
-  // preset.add(
-  //   'introAndShake',
-  //   GaplyMotion(
-  //     animations: [GaplyFade(isVisible: true, duration: const Duration(milliseconds: 400))],
-  //     children: [
-  //       const GaplyMotion(
-  //         animations: [GaplyShake(distance: 2.0, count: 2.0, duration: Duration(milliseconds: 300))],
-  //       ),
-  //     ],
-  //   ),
-  // );
+  preset.add(
+    'entrance',
+    const GaplyMotion(
+      animations: [
+        GaplyFade(isVisible: true, duration: Duration(milliseconds: 500)),
+        GaplyTranslate(
+          begin: Offset(0, 10),
+          end: Offset.zero,
+          isMoved: true,
+          duration: Duration(milliseconds: 400),
+          curve: Curves.easeOutCubic,
+        ),
+      ],
+    ),
+  );
+  preset.add(
+    'pop',
+    const GaplyMotion(
+      animations: [
+        GaplyScale(
+          begin: 0.8,
+          end: 1.0,
+          isScaled: true,
+          duration: Duration(milliseconds: 500),
+          curve: Curves.elasticOut,
+        ),
+        GaplyRotate(
+          begin: -5,
+          end: 0,
+          isRotated: true,
+          duration: Duration(milliseconds: 600),
+          curve: Curves.elasticOut,
+        ),
+      ],
+    ),
+  );
+
+  preset.add(
+    'attention',
+    const GaplyMotion(
+      animations: [
+        GaplyScale(begin: 1.0, end: 1.05, isScaled: true, duration: Duration(milliseconds: 200)),
+        GaplyShake(duration: Duration(milliseconds: 500), distance: 4.0, count: 3.0, curve: Curves.linear),
+      ],
+    ),
+  );
+
+  preset.add(
+    'cardHover',
+    const GaplyMotion(
+      animations: [
+        GaplyTranslate(
+          begin: Offset.zero,
+          end: Offset(0, -6),
+          isMoved: true,
+          duration: Duration(milliseconds: 300),
+        ),
+        GaplyScale(begin: 1.0, end: 1.02, isScaled: true, duration: Duration(milliseconds: 300)),
+      ],
+    ),
+  );
+
+  preset.add(
+    'introAndShake',
+    GaplyMotion(
+      animations: [GaplyFade(isVisible: true, duration: const Duration(milliseconds: 400))],
+      children: [
+        const GaplyMotion(
+          animations: [GaplyShake(distance: 2.0, count: 2.0, duration: Duration(milliseconds: 300))],
+        ),
+      ],
+    ),
+  );
 }

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'package:gaply/src/gaply/styles/styles.dart';
+import 'package:gaply/src/gaply/styles/effects.dart';
 import 'package:gaply/src/gaply/animations/animations.dart';
 
 import 'box_style.dart';
@@ -28,9 +28,9 @@ mixin BoxStyleModifier<T>
 
   //Blur Style
   @override
-  BlurStyle get blurStyle => boxStyle.blur;
+  GaplyBlur get blurStyle => boxStyle.blur;
   @override
-  T copyWithBlur(BlurStyle blur) => copyWithBox(boxStyle.copyWith(blur: blur));
+  T copyWithBlur(GaplyBlur blur) => copyWithBox(boxStyle.copyWith(blur: blur));
 
   //Gradient Style
   @override

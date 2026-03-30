@@ -70,12 +70,12 @@ void main() {
 //     List<String> logs = [];
 //
 //     final complexAnim = GaplyMotion(
-//       styles: [
+//       effects: [
 //         GaplyShake(duration: const Duration(milliseconds: 200)).copyWith(onComplete: () => logs.add('1완료')),
 //       ],
 //       children: [
 //         GaplyMotion(
-//           styles: [
+//           effects: [
 //             GaplyShake(
 //               duration: const Duration(milliseconds: 200),
 //             ).copyWith(onComplete: () => logs.add('2완료')),

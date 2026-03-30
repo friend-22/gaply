@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 
+import 'package:gaply/src/gaply/core/gaply_style.dart';
 import 'package:gaply/src/gaply/core/gaply_defines.dart';
 import 'package:gaply/src/annotations.dart';
 import 'package:gaply/src/utils/gaply_profiler.dart';
@@ -9,7 +10,7 @@ import 'package:gaply/src/utils/gaply_logger.dart';
 
 import 'package:gaply/src/utils/gaply_profiler.dart';
 import 'package:gaply/src/gaply/core/core.dart';
-import 'package:gaply/src/gaply/styles/styles.dart';
+import 'package:gaply/src/gaply/styles/effects.dart';
 import 'package:gaply/src/gaply/animations/animations.dart';
 
 import 'box_preset.dart';
@@ -42,7 +43,7 @@ class BoxStyle extends GaplyTweenStyle<BoxStyle>
   final GaplyColor color;
   final GaplyColor borderColor;
   final List<GaplyShadow> shadows;
-  final BlurStyle blur;
+  final GaplyBlur blur;
   final GaplyGradient gradient;
 
   // 3. Dynamic Effects
@@ -64,7 +65,7 @@ class BoxStyle extends GaplyTweenStyle<BoxStyle>
     this.color = const GaplyColor.none(),
     this.borderColor = const GaplyColor.none(),
     this.shadows = const [],
-    this.blur = const BlurStyle.none(),
+    this.blur = const GaplyBlur.none(),
     this.gradient = const GaplyGradient.none(),
     this.shimmer = const GaplyShimmer.none(),
     this.filter = const GaplyFilter.none(),
@@ -97,7 +98,7 @@ class BoxStyle extends GaplyTweenStyle<BoxStyle>
     GaplyColor? borderColor,
     double? borderWidth,
     List<GaplyShadow>? shadows,
-    BlurStyle? blur,
+    GaplyBlur? blur,
     GaplyGradient? gradient,
     GaplyShimmer? shimmer,
     GaplyFilter? filter,

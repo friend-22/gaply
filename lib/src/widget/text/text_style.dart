@@ -2,9 +2,15 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 
+import 'package:gaply/src/gaply/core/gaply_style.dart';
+import 'package:gaply/src/gaply/core/gaply_defines.dart';
+import 'package:gaply/src/annotations.dart';
+import 'package:gaply/src/utils/gaply_profiler.dart';
+import 'package:gaply/src/utils/gaply_logger.dart';
+
 import 'package:gaply/src/utils/gaply_profiler.dart';
 import 'package:gaply/src/gaply/core/core.dart';
-import 'package:gaply/src/gaply/styles/styles.dart';
+import 'package:gaply/src/gaply/styles/effects.dart';
 import 'package:gaply/src/gaply/animations/animations.dart';
 
 import 'text_preset.dart';
@@ -31,7 +37,7 @@ class GaplyTextStyle extends GaplyTweenStyle<GaplyTextStyle>
   final Set<FontFeature> features;
 
   final GaplyColor color;
-  final BlurStyle blur;
+  final GaplyBlur blur;
   final GaplyShimmer shimmer;
   final GaplyMotion motion;
 
@@ -51,7 +57,7 @@ class GaplyTextStyle extends GaplyTweenStyle<GaplyTextStyle>
     this.motion = const GaplyMotion.none(),
     this.shimmer = const GaplyShimmer.none(),
     this.color = const GaplyColor.none(),
-    this.blur = const BlurStyle.none(),
+    this.blur = const GaplyBlur.none(),
     this.features = const {},
   }) : super(duration: duration ?? const Duration(milliseconds: 300), curve: curve ?? Curves.linear);
 
@@ -109,7 +115,7 @@ class GaplyTextStyle extends GaplyTweenStyle<GaplyTextStyle>
     String? fontFamily,
     TextAlign? alignRole,
     GaplyColor? color,
-    BlurStyle? blur,
+    GaplyBlur? blur,
     GaplyShimmer? shimmer,
     GaplyMotion? motion,
     Set<FontFeature>? features,

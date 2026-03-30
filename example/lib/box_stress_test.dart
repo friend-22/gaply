@@ -46,7 +46,7 @@ class _GaplyBoxStressTestState extends State<GaplyBoxStressTest> {
                 ],
                 // 복합 효과들
                 noise: GaplyNoise(intensity: _active ? 0.1 : 0),
-                blur: BlurStyle(sigma: _active ? 10 : 0),
+                blur: GaplyBlur(sigma: _active ? 10 : 0),
                 filter: GaplyFilter(grayscale: _active ? 1.0 : 0.0, contrast: _active ? 1.5 : 1.0),
                 // motion: GaplyMotion(scale: _active ? 1.2 : 1.0),
               ),
