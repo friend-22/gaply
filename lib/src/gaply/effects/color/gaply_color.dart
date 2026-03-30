@@ -181,7 +181,7 @@ class GaplyColor extends GaplyStyle<GaplyColor> with _GaplyColorMixin, GaplyColo
   GaplyColor lerp(GaplyColor? other, double t) {
     if (other == null) return this;
 
-    return profiler.trace(() {
+    return profiler.traceBatch(() {
       final double lerpOpacity = lerpDouble(opacity.value, other.opacity.value, t) ?? opacity.value;
       final double lerpShade = lerpDouble(shade.value, other.shade.value, t) ?? shade.value;
       final Color? lerpColor = Color.lerp(customColor, other.customColor, t);
@@ -268,7 +268,7 @@ mixin _GaplyColorMixin {
   Color? resolve(BuildContext context, {bool useCache = true}) {
     if (!_self.hasEffect) return null;
 
-    return _self.profiler.trace(() {
+    return _self.profiler.traceBatch(() {
       final themeData = _self.profiler.trace(
         () => GaplyTheme.maybeOf<GaplyColorTheme>(context),
         tag: 'findTheme',
@@ -311,7 +311,7 @@ mixin _GaplyColorMixin {
   }
 
   Color? _resolveColor(GaplyColor style, double progress) {
-    return _self.profiler.trace(() {
+    return _self.profiler.traceBatch(() {
       final start = style._begin ?? style;
       final finish = style._end ?? style;
 
@@ -333,7 +333,7 @@ mixin _GaplyColorMixin {
   }
 
   Color _resolveForBrightness(Color baseColor, bool isDark, GaplyColor style) {
-    return _self.profiler.trace(() {
+    return _self.profiler.traceBatch(() {
       Color finalColor = baseColor;
 
       if (finalColor is MaterialColor) {

@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:gaply/gaply.dart';
 
-class GaplyColorThemeTest extends StatefulWidget {
-  const GaplyColorThemeTest({super.key});
+class GaplyColorThemeStressTest extends StatefulWidget {
+  const GaplyColorThemeStressTest({super.key});
 
   @override
-  State<GaplyColorThemeTest> createState() => _GaplyColorThemeTestState();
+  State<GaplyColorThemeStressTest> createState() => _GaplyColorThemeStressTestState();
 }
 
-class _GaplyColorThemeTestState extends State<GaplyColorThemeTest> {
+class _GaplyColorThemeStressTestState extends State<GaplyColorThemeStressTest> {
   String _currentThemeName = 'light';
 
   void _toggleTheme() {
@@ -38,22 +38,21 @@ class _GaplyColorThemeTestState extends State<GaplyColorThemeTest> {
           return Scaffold(
             backgroundColor: bgColor,
             body: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text("애니메이션 확인 중", style: TextStyle(color: primaryColor, fontSize: 24)),
-                  const SizedBox(height: 20),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      _buildColorBox(context, "o70", primaryStyle.copyWith(opacity: 0.7)),
-                      const SizedBox(width: 20),
-                      _buildColorBox(context, "s200", primaryStyle.copyWith(shade: 0.2)),
-                      const SizedBox(width: 20),
-                      _buildColorBox(context, "Full", primaryStyle),
-                    ],
-                  ),
-                ],
+              child: SingleChildScrollView(
+                child: Wrap(
+                  spacing: 2,
+                  runSpacing: 2,
+                  children: List.generate(500, (index) {
+                    final tokenName = 'token_${index % 1000}';
+                    final style = theme.getColor(tokenName);
+
+                    return _buildColorBox(
+                      innerContext,
+                      "B$index",
+                      style.copyWith(shade: (index % 10) / 10.0),
+                    );
+                  }),
+                ),
               ),
             ),
             floatingActionButton: FloatingActionButton(
