@@ -59,7 +59,7 @@ class GaplyColorTheme extends GaplyThemeData<GaplyColorTheme>
   GaplyColorTheme lerp(GaplyColorTheme? other, double t) {
     if (other == null) return this;
 
-    return profiler.traceBatch(() {
+    return profiler.trace(() {
       final lerpColors = <GaplyColorToken, GaplyColor>{};
       final allKeys = {...colors.keys, ...other.colors.keys};
 
@@ -109,17 +109,17 @@ mixin _GaplyColorThemeMixin {
     );
   }
 
-  bool hasToken(dynamic token) {
+  bool hasToken(Object token) {
     final resolvedToken = GaplyColorToken.resolve(token);
     return _self.colors.containsKey(resolvedToken);
   }
 
-  GaplyColor getColor(dynamic token) {
+  GaplyColor getColor(Object token) {
     return _self.colors[GaplyColorToken.resolve(token)] ?? const GaplyColor.none();
   }
 
-  Color? toColor(BuildContext context, dynamic token) {
-    return _self.profiler.traceBatch(() => getColor(token).resolve(context), tag: 'toColor');
+  Color? toColor(BuildContext context, Object token) {
+    return getColor(token).resolve(context);
   }
 }
 

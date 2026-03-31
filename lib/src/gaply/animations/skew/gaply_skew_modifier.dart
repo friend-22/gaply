@@ -1,5 +1,5 @@
 import 'package:flutter/animation.dart';
-import 'package:gaply/src/utils/gaply_profiler.dart';
+import 'package:gaply/src/profiler/gaply_profiler.dart';
 import 'gaply_skew.dart';
 
 mixin GaplySkewModifier<T> {

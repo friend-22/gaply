@@ -2,7 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/animation.dart';
 
-import 'package:gaply/src/utils/gaply_profiler.dart';
+import 'package:gaply/src/profiler/gaply_profiler.dart';
 import 'color_defines.dart';
 import 'gaply_color_theme.dart';
 import 'gaply_color.dart';

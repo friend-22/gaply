@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:gaply/src/gaply/core/core.dart';
-import 'package:gaply/src/utils/gaply_logger.dart';
+import 'package:gaply/src/profiler/gaply_logger.dart';
 
 @immutable
 class GaplyColorToken extends GaplyIdentity<Object> {

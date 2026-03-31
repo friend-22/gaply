@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 
-import 'package:gaply/src/utils/gaply_logger.dart';
+import 'package:gaply/src/profiler/gaply_logger.dart';
 
 import 'gaply_core.dart';
 

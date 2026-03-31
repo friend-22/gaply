@@ -1,3 +1,4 @@
+import 'package:example/profiler_bundle.dart';
 import 'package:flutter/material.dart';
 import 'package:gaply/gaply.dart';
 
@@ -55,9 +56,18 @@ class _GaplyColorThemeStressTestState extends State<GaplyColorThemeStressTest> {
                 ),
               ),
             ),
-            floatingActionButton: FloatingActionButton(
-              onPressed: _toggleTheme,
-              child: const Icon(Icons.refresh),
+            floatingActionButton: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                FloatingActionButton(onPressed: _toggleTheme, child: const Icon(Icons.refresh)),
+                FloatingActionButton(
+                  onPressed: () {
+                    ProfilerBundle.lightProfiler.printStats();
+                    ProfilerBundle.darkProfiler.printStats();
+                  },
+                  child: const Icon(Icons.repartition),
+                ),
+              ],
             ),
           );
         },

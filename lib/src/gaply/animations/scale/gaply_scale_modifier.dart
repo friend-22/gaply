@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:gaply/src/utils/gaply_profiler.dart';
+import 'package:gaply/src/profiler/gaply_profiler.dart';
 import 'gaply_scale.dart';
 
 mixin GaplyScaleModifier<T> {

@@ -179,7 +179,7 @@ class GaplyColor extends GaplyStyle<GaplyColor> with _GaplyColorMixin, GaplyColo
   GaplyColor lerp(GaplyColor? other, double t) {
     if (other == null) return this;
 
-    return profiler.traceBatch(() {
+    return profiler.trace(() {
       final double lerpOpacity = lerpDouble(opacity.value, other.opacity.value, t) ?? opacity.value;
       final double lerpShade = lerpDouble(shade.value, other.shade.value, t) ?? shade.value;
       final Color? lerpColor = Color.lerp(customColor, other.customColor, t);
@@ -266,11 +266,8 @@ mixin _GaplyColorMixin {
   Color? resolve(BuildContext context, {bool useCache = true}) {
     if (!_self.hasEffect) return null;
 
-    return _self.profiler.traceBatch(() {
-      final themeData = _self.profiler.trace(
-        () => GaplyTheme.maybeOf<GaplyColorTheme>(context),
-        tag: 'findTheme',
-      );
+    return _self.profiler.trace(() {
+      final themeData = GaplyTheme.maybeOf<GaplyColorTheme>(context);
 
       final currentBrightness = themeData?.brightness ?? Theme.of(context).brightness;
 
@@ -309,43 +306,39 @@ mixin _GaplyColorMixin {
   }
 
   Color? _resolveColor(GaplyColor style, double progress) {
-    return _self.profiler.traceBatch(() {
-      final start = style._begin ?? style;
-      final finish = style._end ?? style;
+    final start = style._begin ?? style;
+    final finish = style._end ?? style;
 
-      final Color beginBase = start.customColor ?? const Color(0x00000000);
-      final Color endBase = finish.customColor ?? const Color(0x00000000);
+    final Color beginBase = start.customColor ?? const Color(0x00000000);
+    final Color endBase = finish.customColor ?? const Color(0x00000000);
 
-      if (progress <= 0) {
-        return _resolveForBrightness(beginBase, false, style);
-      }
-      if (progress >= 1) {
-        return _resolveForBrightness(endBase, true, style);
-      }
+    if (progress <= 0) {
+      return _resolveForBrightness(beginBase, false, style);
+    }
+    if (progress >= 1) {
+      return _resolveForBrightness(endBase, true, style);
+    }
 
-      final Color lightResult = _resolveForBrightness(beginBase, false, style);
-      final Color darkResult = _resolveForBrightness(endBase, true, style);
+    final Color lightResult = _resolveForBrightness(beginBase, false, style);
+    final Color darkResult = _resolveForBrightness(endBase, true, style);
 
-      return Color.lerp(lightResult, darkResult, progress);
-    }, tag: '_resolveColor');
+    return Color.lerp(lightResult, darkResult, progress);
   }
 
   Color _resolveForBrightness(Color baseColor, bool isDark, GaplyColor style) {
-    return _self.profiler.traceBatch(() {
-      Color finalColor = baseColor;
+    Color finalColor = baseColor;
 
-      if (finalColor is MaterialColor) {
-        finalColor = _getMaterialColorShade(finalColor, isDark, style);
-      } else {
-        finalColor = _applySmartShade(finalColor, isDark, style);
-      }
+    if (finalColor is MaterialColor) {
+      finalColor = _getMaterialColorShade(finalColor, isDark, style);
+    } else {
+      finalColor = _applySmartShade(finalColor, isDark, style);
+    }
 
-      if (style.opacity.value != 1.0) {
-        finalColor = finalColor.withValues(alpha: (finalColor.a * style.opacity.value).clamp(0.0, 1.0));
-      }
+    if (style.opacity.value != 1.0) {
+      finalColor = finalColor.withValues(alpha: (finalColor.a * style.opacity.value).clamp(0.0, 1.0));
+    }
 
-      return finalColor;
-    }, tag: 'compute');
+    return finalColor;
   }
 
   Color _applySmartShade(Color color, bool isDark, GaplyColor style) {

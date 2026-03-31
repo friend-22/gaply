@@ -1,5 +1,5 @@
 import 'package:flutter/animation.dart';
-import 'package:gaply/src/utils/gaply_profiler.dart';
+import 'package:gaply/src/profiler/gaply_profiler.dart';
 import 'package:gaply/src/gaply/core/gaply_core.dart';
 import 'gaply_motion.dart';
 

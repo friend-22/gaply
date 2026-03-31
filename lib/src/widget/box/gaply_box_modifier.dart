@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'package:gaply/src/utils/gaply_profiler.dart';
+import 'package:gaply/src/profiler/gaply_profiler.dart';
 import 'package:gaply/src/gaply/effects/effects.dart';
 import 'package:gaply/src/gaply/animations/animations.dart';
 

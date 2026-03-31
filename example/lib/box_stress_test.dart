@@ -1,3 +1,4 @@
+import 'package:example/profiler_bundle.dart';
 import 'package:flutter/material.dart';
 import 'package:gaply/gaply.dart';
 
@@ -10,8 +11,6 @@ class GaplyBoxStressTest extends StatefulWidget {
 
 class _GaplyBoxStressTestState extends State<GaplyBoxStressTest> {
   bool _active = false;
-
-  final profiler = const GaplyProfiler(label: 'StressBox', enabled: true, thresholdUs: 100);
 
   final shadowColor = const GaplyColor.fromColor(Colors.blueGrey);
   final blueColor = const GaplyColor.fromColor(Colors.blue);
@@ -26,7 +25,7 @@ class _GaplyBoxStressTestState extends State<GaplyBoxStressTest> {
           children: [
             GaplyBoxWidget(
               gaplyBox: GaplyBox(
-                profiler: profiler,
+                profiler: ProfilerBundle.boxProfiler,
                 duration: const Duration(milliseconds: 800),
                 curve: Curves.elasticOut,
                 layout: GaplyLayout(
@@ -53,10 +52,19 @@ class _GaplyBoxStressTestState extends State<GaplyBoxStressTest> {
               child: const FlutterLogo(size: 80),
             ),
             const SizedBox(height: 50),
-            ElevatedButton(
-              onPressed: () => setState(() => _active = !_active),
-              child: const Text("Run Stress Animation"),
-            ),
+            // ElevatedButton(
+            //   onPressed: () => setState(() => _active = !_active),
+            //   child: const Text("Run Stress Animation"),
+            // ),
+            const SizedBox(height: 50),
+            // ElevatedButton(
+            //   onPressed: () => setState(() {
+            //     Profiler.boxProfiler.printStats();
+            //     Profiler.lightProfiler.printStats();
+            //     Profiler.darkProfiler.printStats();
+            //   }),
+            //   child: const Text("printStats"),
+            // ),
           ],
         ),
       ),
