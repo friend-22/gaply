@@ -8,7 +8,7 @@ part of 'gaply_shadow.dart';
 
 class GaplyShadowPreset {
   final Map<Object, GaplyShadow> _presets = {};
-  final GaplyKeyPolicy _policy = GaplyKeyPolicy.values[0];
+  final GaplyResolvePolicy _policy = GaplyResolvePolicy.values[0];
 
   GaplyShadowPreset._() {
     _initPresets(this);
@@ -17,25 +17,16 @@ class GaplyShadowPreset {
   static final GaplyShadowPreset _i = GaplyShadowPreset._();
 
   Object _normalize(Object key) {
-    if (key is Enum) {
-      return _policy == GaplyKeyPolicy.strict
-          ? "${key.runtimeType}.${key.name}"
-          : key.name;
-    }
-    if (key is Record) return key.toString();
-
-    final result = key.toString();
-    return _policy == GaplyKeyPolicy.insensitive
-        ? result.toLowerCase()
-        : result;
+    return GaplyResolver.resolve(key, _policy) ?? key;
   }
 
   bool has(Object key) => _presets.containsKey(_normalize(key));
+
   void add(Object key, GaplyShadow style, {bool overwrite = false}) {
     final normalized = _normalize(key);
     if (_presets.containsKey(normalized) && !overwrite) {
       GaplyLogger.i(
-          "[GaplyShadow] Duplicate registration for key: '$normalized'. Overwritten.");
+          "[GaplyShadowPreset] Duplicate registration for key: '$normalized'. Overwritten.");
     }
     _presets[_normalize(key)] = style;
   }

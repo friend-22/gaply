@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 
 import 'package:gaply/src/utils/gaply_logger.dart';
 
-import 'gaply_style.dart';
+import 'gaply_core.dart';
 
 /// Mixin that handles animation triggering based on style or trigger changes.
 ///

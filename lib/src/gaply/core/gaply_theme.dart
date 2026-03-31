@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'gaply_style.dart';
+import 'gaply_core.dart';
 
 class GaplyTheme<T extends GaplyThemeData<T>> extends InheritedWidget {
   final T data;

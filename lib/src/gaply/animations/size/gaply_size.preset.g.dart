@@ -8,7 +8,7 @@ part of 'gaply_size.dart';
 
 class GaplySizePreset {
   final Map<Object, GaplySize> _presets = {};
-  final GaplyKeyPolicy _policy = GaplyKeyPolicy.values[0];
+  final GaplyResolvePolicy _policy = GaplyResolvePolicy.values[0];
 
   GaplySizePreset._() {
     _initPresets(this);
@@ -17,25 +17,16 @@ class GaplySizePreset {
   static final GaplySizePreset _i = GaplySizePreset._();
 
   Object _normalize(Object key) {
-    if (key is Enum) {
-      return _policy == GaplyKeyPolicy.strict
-          ? "${key.runtimeType}.${key.name}"
-          : key.name;
-    }
-    if (key is Record) return key.toString();
-
-    final result = key.toString();
-    return _policy == GaplyKeyPolicy.insensitive
-        ? result.toLowerCase()
-        : result;
+    return GaplyResolver.resolve(key, _policy) ?? key;
   }
 
   bool has(Object key) => _presets.containsKey(_normalize(key));
+
   void add(Object key, GaplySize style, {bool overwrite = false}) {
     final normalized = _normalize(key);
     if (_presets.containsKey(normalized) && !overwrite) {
       GaplyLogger.i(
-          "[GaplySize] Duplicate registration for key: '$normalized'. Overwritten.");
+          "[GaplySizePreset] Duplicate registration for key: '$normalized'. Overwritten.");
     }
     _presets[_normalize(key)] = style;
   }

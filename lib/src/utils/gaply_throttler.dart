@@ -1,4 +1,4 @@
-class Throttler<T> {
+class GaplyThrottler<T> {
   final Duration interval;
   final void Function(T value) onUpdate;
   final bool Function(T oldVal, T newVal)? shouldUpdate;
@@ -6,46 +6,55 @@ class Throttler<T> {
   T? _lastValue;
   DateTime _lastUpdateTime = DateTime.fromMillisecondsSinceEpoch(0);
 
-  Throttler({required this.interval, required this.onUpdate, this.shouldUpdate});
+  GaplyThrottler({required this.interval, required this.onUpdate, this.shouldUpdate});
 
-  factory Throttler.fps(
+  factory GaplyThrottler.fps(
     int fps, {
     required void Function(T value) onUpdate,
     bool Function(T oldVal, T newVal)? shouldUpdate,
   }) {
-    return Throttler(
+    return GaplyThrottler(
       interval: Duration(microseconds: 1000000 ~/ fps),
       onUpdate: onUpdate,
       shouldUpdate: shouldUpdate,
     );
   }
 
-  factory Throttler.fps60({
+  factory GaplyThrottler.fps60({
     required void Function(T value) onUpdate,
     bool Function(T oldVal, T newVal)? shouldUpdate,
-  }) => Throttler(
+  }) => GaplyThrottler(
     interval: const Duration(microseconds: 16666),
     onUpdate: onUpdate,
     shouldUpdate: shouldUpdate,
   );
 
-  factory Throttler.fps120({
+  factory GaplyThrottler.fps120({
     required void Function(T value) onUpdate,
     bool Function(T oldVal, T newVal)? shouldUpdate,
-  }) =>
-      Throttler(interval: const Duration(microseconds: 8333), onUpdate: onUpdate, shouldUpdate: shouldUpdate);
+  }) => GaplyThrottler(
+    interval: const Duration(microseconds: 8333),
+    onUpdate: onUpdate,
+    shouldUpdate: shouldUpdate,
+  );
 
-  factory Throttler.fps240({
+  factory GaplyThrottler.fps240({
     required void Function(T value) onUpdate,
     bool Function(T oldVal, T newVal)? shouldUpdate,
-  }) =>
-      Throttler(interval: const Duration(microseconds: 4166), onUpdate: onUpdate, shouldUpdate: shouldUpdate);
+  }) => GaplyThrottler(
+    interval: const Duration(microseconds: 4166),
+    onUpdate: onUpdate,
+    shouldUpdate: shouldUpdate,
+  );
 
-  factory Throttler.fpsNano({
+  factory GaplyThrottler.fpsNano({
     required void Function(T value) onUpdate,
     bool Function(T oldVal, T newVal)? shouldUpdate,
-  }) =>
-      Throttler(interval: const Duration(microseconds: 2083), onUpdate: onUpdate, shouldUpdate: shouldUpdate);
+  }) => GaplyThrottler(
+    interval: const Duration(microseconds: 2083),
+    onUpdate: onUpdate,
+    shouldUpdate: shouldUpdate,
+  );
 
   void update(T value) {
     final now = DateTime.now();

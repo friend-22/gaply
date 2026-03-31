@@ -1,20 +1,53 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/widgets.dart';
 
+import 'gaply_defines.dart';
 import 'package:gaply/src/utils/gaply_profiler.dart';
 
+// ---------------------------------------------------------------------------
+// SECTION: Resolver & Policy
+// ---------------------------------------------------------------------------
+
+class GaplyResolver {
+  static Object? resolve(Object? key, GaplyResolvePolicy policy) {
+    if (key == null) return null;
+    if (key is String) {
+      final trimmed = key.trim();
+      return trimmed.isEmpty
+          ? null
+          : (policy == GaplyResolvePolicy.insensitive ? trimmed.toLowerCase() : trimmed);
+    }
+    if (key is Enum) {
+      final name = (policy == GaplyResolvePolicy.strict) ? "${key.runtimeType}.${key.name}" : key.name;
+      return policy == GaplyResolvePolicy.insensitive ? name.toLowerCase() : name;
+    }
+    if (key is Record) return key.toString();
+    return key;
+  }
+
+  static Object? resolveByPolicyName(Object? key, String policyName) {
+    final policy = GaplyResolvePolicy.values.firstWhere(
+      (p) => p.name.toLowerCase() == policyName.trim().toLowerCase(),
+      orElse: () => GaplyResolvePolicy.flexible,
+    );
+    return resolve(key, policy);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// SECTION: Identities
+// ---------------------------------------------------------------------------
 @immutable
-abstract class GaplyToken<T> extends Equatable {
+abstract class GaplyIdentity<T> extends Equatable {
   final T value;
 
-  const GaplyToken(this.value);
+  const GaplyIdentity(this.value);
 
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-    if (other is GaplyToken<T>) return value == other.value;
-    if (other is T) return value == other;
-    return false;
+    if (other is GaplyIdentity<T>) return value == other.value;
+    return value == other;
   }
 
   @override
@@ -27,6 +60,23 @@ abstract class GaplyToken<T> extends Equatable {
   String toString() => value.toString();
 }
 
+@immutable
+abstract class GaplyNumericIdentity<Self extends GaplyNumericIdentity<Self>> extends GaplyIdentity<double> {
+  const GaplyNumericIdentity(super.value);
+
+  double _clamp(double val) => val.clamp(0.0, 1.0);
+
+  Self create(double val);
+
+  Self operator +(num other) => create(_clamp(value + other.toDouble()));
+  Self operator -(num other) => create(_clamp(value - other.toDouble()));
+  Self operator *(num other) => create(_clamp(value * other.toDouble()));
+  Self operator /(num other) => create(_clamp(value / other.toDouble()));
+}
+
+// ---------------------------------------------------------------------------
+// SECTION: Styles & Animations
+// ---------------------------------------------------------------------------
 @immutable
 abstract class GaplyStyle<T> extends Equatable {
   final GaplyProfiler profiler;
@@ -123,6 +173,9 @@ mixin GaplyAnimMixin<T extends GaplyAnimStyle<T>> on GaplyTweenMixin<T> {
   }
 }
 
+// ---------------------------------------------------------------------------
+// SECTION: ThemeData
+// ---------------------------------------------------------------------------
 @immutable
 abstract class GaplyThemeData<T extends GaplyThemeData<T>> extends GaplyTweenStyle<T> {
   final Brightness brightness;

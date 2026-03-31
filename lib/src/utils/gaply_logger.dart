@@ -3,7 +3,8 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io' show FileMode, File, IOSink;
-import 'package:gaply/src/utils/throttler.dart';
+
+import 'package:gaply/src/utils/gaply_throttler.dart';
 import 'package:flutter/material.dart';
 
 enum GaplyLogLevel { debug, info, warning, error, none }
@@ -56,10 +57,10 @@ class _GaplyNoOpLogger implements GaplyLogger {
 }
 
 class GaplyConsoleLogger implements GaplyLogger {
-  late final Throttler _throttler;
+  late final GaplyThrottler _throttler;
 
   GaplyConsoleLogger({Duration interval = Duration.zero}) {
-    _throttler = Throttler(
+    _throttler = GaplyThrottler(
       interval: interval,
       onUpdate: (value) => debugPrint(value),
       shouldUpdate: (oldVal, newVal) => oldVal != newVal,
@@ -94,7 +95,7 @@ class GaplyFileLogger implements GaplyLogger {
   final File file;
   final int maxBytes;
   final FileMode _mode;
-  late final Throttler _throttler;
+  late final GaplyThrottler _throttler;
   IOSink? _sink;
   int _currentFileBytes = 0;
 
@@ -107,7 +108,7 @@ class GaplyFileLogger implements GaplyLogger {
     this.maxBytes = 5 * 1024 * 1024,
   }) : file = File(path),
        _mode = mode {
-    _throttler = Throttler(
+    _throttler = GaplyThrottler(
       interval: interval,
       onUpdate: (value) => _enqueue(() => _writeAsync(value)),
       shouldUpdate: (oldVal, newVal) => oldVal != newVal,

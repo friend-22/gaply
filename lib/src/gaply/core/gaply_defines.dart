@@ -1,1 +1,1 @@
-enum GaplyKeyPolicy { flexible, strict, insensitive }
+enum GaplyResolvePolicy { flexible, strict, insensitive }

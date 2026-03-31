@@ -1,11 +1,28 @@
 import 'package:flutter/material.dart';
 
-import 'package:gaply/src/gaply/core/gaply_style.dart';
+import 'package:gaply/src/gaply/core/core.dart';
 import 'package:gaply/src/utils/gaply_logger.dart';
 
 @immutable
-class GaplyColorToken extends GaplyToken<String> {
+class GaplyColorToken extends GaplyIdentity<Object> {
   const GaplyColorToken(super.value);
+
+  static GaplyResolvePolicy policy = GaplyResolvePolicy.flexible;
+
+  static GaplyColorToken resolve(Object? input) {
+    if (input is GaplyColorToken) return input;
+
+    final resolved = GaplyResolver.resolve(input, policy);
+
+    if (resolved == null) {
+      if (input != null) {
+        GaplyLogger.i("GaplyColorToken: Failed to resolve '$input'. Defaulting to 'GaplyColorToken.none'.");
+      }
+      return GaplyColorToken.none;
+    }
+
+    return GaplyColorToken(resolved);
+  }
 
   static const GaplyColorToken none = GaplyColorToken('none');
   static const GaplyColorToken primary = GaplyColorToken('primary');
@@ -18,33 +35,14 @@ class GaplyColorToken extends GaplyToken<String> {
   static const GaplyColorToken warning = GaplyColorToken('warning');
   static const GaplyColorToken info = GaplyColorToken('info');
   static const GaplyColorToken shadow = GaplyColorToken('shadow');
-
-  static GaplyColorToken resolve(Object? role) {
-    if (role is GaplyColorToken) return role;
-
-    if (role is Enum) {
-      return GaplyColorToken(role.name);
-    }
-
-    if (role is String) {
-      if (role.trim().isEmpty) {
-        GaplyLogger.i("GaplyColorToken.resolve received an empty string.");
-        return GaplyColorToken.none;
-      }
-
-      return GaplyColorToken(role);
-    }
-
-    if (role != null) {
-      GaplyLogger.i("Unsupported role type: ${role.runtimeType}. String or GaplyColorToken expected.");
-    }
-
-    return GaplyColorToken.none;
-  }
 }
 
-class GaplyColorOpacity extends GaplyToken<double> {
+@immutable
+class GaplyColorOpacity extends GaplyNumericIdentity<GaplyColorOpacity> {
   const GaplyColorOpacity(super.value);
+
+  @override
+  GaplyColorOpacity create(double val) => GaplyColorOpacity(val);
 
   static const GaplyColorOpacity transparent = GaplyColorOpacity(0.0);
   static const GaplyColorOpacity o10 = GaplyColorOpacity(0.1);
@@ -61,26 +59,30 @@ class GaplyColorOpacity extends GaplyToken<double> {
   static const GaplyColorOpacity half = GaplyColorOpacity(0.5);
   static const GaplyColorOpacity solid = GaplyColorOpacity(1.0);
 
-  static GaplyColorOpacity resolve(Object? value) {
-    if (value is GaplyColorOpacity) return value;
-    if (value is num) return GaplyColorOpacity(value.toDouble());
-    if (value != null) {
-      GaplyLogger.i(
-        "⚠️ [Gaply Warning] Unsupported opacity type: ${value.runtimeType}. "
-        "Expected num or GaplyColorOpacity. Falling back to full.",
-      );
+  static GaplyColorOpacity resolve(Object? input) {
+    if (input is GaplyColorOpacity) return input;
+
+    final resolved = GaplyResolver.resolve(input, GaplyResolvePolicy.flexible);
+
+    if (resolved is num) return GaplyColorOpacity(resolved.toDouble());
+    if (resolved is String) {
+      final parsed = double.tryParse(resolved);
+      if (parsed != null) return GaplyColorOpacity(parsed.toDouble());
     }
+
+    if (input != null) {
+      GaplyLogger.i("GaplyColorOpacity: Invalid input '$input'. Falling back to 'GaplyColorOpacity.full'.");
+    }
+
     return GaplyColorOpacity.full;
   }
-
-  GaplyColorOpacity operator +(double other) => GaplyColorOpacity((value + other).clamp(0.0, 1.0));
-  GaplyColorOpacity operator -(double other) => GaplyColorOpacity((value - other).clamp(0.0, 1.0));
-  GaplyColorOpacity operator *(double other) => GaplyColorOpacity((value * other).clamp(0.0, 1.0));
-  GaplyColorOpacity operator /(double other) => GaplyColorOpacity((value / other).clamp(0.0, 1.0));
 }
 
-class GaplyColorShade extends GaplyToken<double> {
+class GaplyColorShade extends GaplyNumericIdentity<GaplyColorShade> {
   const GaplyColorShade(super.value);
+
+  @override
+  GaplyColorShade create(double val) => GaplyColorShade(val);
 
   static const GaplyColorShade s50 = GaplyColorShade(0.05);
   static const GaplyColorShade s100 = GaplyColorShade(0.1);
@@ -93,23 +95,25 @@ class GaplyColorShade extends GaplyToken<double> {
   static const GaplyColorShade s800 = GaplyColorShade(0.8);
   static const GaplyColorShade s900 = GaplyColorShade(0.9);
   static const GaplyColorShade s950 = GaplyColorShade(0.95);
-
   static const GaplyColorShade defaultShade = GaplyColorShade(0.5);
 
-  static GaplyColorShade resolve(Object? value) {
-    if (value is GaplyColorShade) return value;
-    if (value is num) return GaplyColorShade(value.toDouble());
-    if (value != null) {
+  static GaplyColorShade resolve(Object? input) {
+    if (input is GaplyColorShade) return input;
+
+    final resolved = GaplyResolver.resolve(input, GaplyResolvePolicy.flexible);
+
+    if (resolved is num) return GaplyColorShade(resolved.toDouble());
+    if (resolved is String) {
+      final parsed = double.tryParse(resolved);
+      if (parsed != null) return GaplyColorShade(parsed.toDouble());
+    }
+
+    if (input != null) {
       GaplyLogger.i(
-        "⚠️ [Gaply Warning] Unsupported shade type: ${value.runtimeType}. "
-        "Expected num or GaplyColorShade. Falling back to defaultShade.",
+        "GaplyColorShade: Invalid input '$input'. Falling back to 'GaplyColorShade.defaultShade'.",
       );
     }
+
     return GaplyColorShade.defaultShade;
   }
-
-  GaplyColorShade operator +(double other) => GaplyColorShade((value + other).clamp(0.0, 1.0));
-  GaplyColorShade operator -(double other) => GaplyColorShade((value - other).clamp(0.0, 1.0));
-  GaplyColorShade operator *(double other) => GaplyColorShade((value * other).clamp(0.0, 1.0));
-  GaplyColorShade operator /(double other) => GaplyColorShade((value / other).clamp(0.0, 1.0));
 }

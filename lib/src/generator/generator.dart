@@ -22,7 +22,7 @@ class GaplyPresetGenerator extends GeneratorForAnnotation<GaplyPresetGen> {
     return '''
 class $presetClassName {
   final Map<Object, $className> _presets = {};
-  final GaplyKeyPolicy _policy = GaplyKeyPolicy.values[$policyIndex];
+  final GaplyResolvePolicy _policy = GaplyResolvePolicy.values[$policyIndex];
   
   $presetClassName._() {
     ${initializerName != null ? '$initializerName(this);' : ''}
@@ -31,22 +31,15 @@ class $presetClassName {
   static final $presetClassName _i = $presetClassName._();
 
   Object _normalize(Object key) {
-    if (key is Enum) {
-      return _policy == GaplyKeyPolicy.strict 
-          ? "\${key.runtimeType}.\${key.name}" 
-          : key.name;
-    }
-    if (key is Record) return key.toString();
-    
-    final result = key.toString();
-    return _policy == GaplyKeyPolicy.insensitive ? result.toLowerCase() : result;
+    return GaplyResolver.resolve(key, _policy) ?? key;
   }
 
   bool has(Object key) => _presets.containsKey(_normalize(key));
+  
   void add(Object key, $className style, {bool overwrite = false}) {
     final normalized = _normalize(key);
     if (_presets.containsKey(normalized) && !overwrite) {
-      GaplyLogger.i("[$className] Duplicate registration for key: '\$normalized'. Overwritten.");
+      GaplyLogger.i("[$presetClassName] Duplicate registration for key: '\$normalized'. Overwritten.");
     }
     _presets[_normalize(key)] = style;
   }

@@ -8,7 +8,7 @@ part of 'gaply_noise.dart';
 
 class GaplyNoisePreset {
   final Map<Object, GaplyNoise> _presets = {};
-  final GaplyKeyPolicy _policy = GaplyKeyPolicy.values[0];
+  final GaplyResolvePolicy _policy = GaplyResolvePolicy.values[0];
 
   GaplyNoisePreset._() {
     _initPresets(this);
@@ -17,25 +17,16 @@ class GaplyNoisePreset {
   static final GaplyNoisePreset _i = GaplyNoisePreset._();
 
   Object _normalize(Object key) {
-    if (key is Enum) {
-      return _policy == GaplyKeyPolicy.strict
-          ? "${key.runtimeType}.${key.name}"
-          : key.name;
-    }
-    if (key is Record) return key.toString();
-
-    final result = key.toString();
-    return _policy == GaplyKeyPolicy.insensitive
-        ? result.toLowerCase()
-        : result;
+    return GaplyResolver.resolve(key, _policy) ?? key;
   }
 
   bool has(Object key) => _presets.containsKey(_normalize(key));
+
   void add(Object key, GaplyNoise style, {bool overwrite = false}) {
     final normalized = _normalize(key);
     if (_presets.containsKey(normalized) && !overwrite) {
       GaplyLogger.i(
-          "[GaplyNoise] Duplicate registration for key: '$normalized'. Overwritten.");
+          "[GaplyNoisePreset] Duplicate registration for key: '$normalized'. Overwritten.");
     }
     _presets[_normalize(key)] = style;
   }
