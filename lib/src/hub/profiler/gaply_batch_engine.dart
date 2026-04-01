@@ -1,47 +1,46 @@
+import 'dart:async';
+
 import 'package:gaply/src/hub/gaply_budget.dart';
 import 'package:gaply/src/hub/gaply_hub.dart';
 import 'gaply_profiler_base.dart';
-import 'gaply_profiler_mixin.dart';
 
 /// [GaplyBatchEngine] - Collects data and flushes summaries periodically
-class GaplyBatchEngine extends GaplyProfilerEngine with GaplyProfilerMixin<BatchCollector> {
-  final Duration threshold;
-  @override
-  String get category => 'Batch';
-  @override
-  final Map<String, BatchCollector> statsMap = {};
-  @override
-  final int maxKeys;
-  @override
-  final Duration maxIdleTime;
-
+class GaplyBatchEngine extends GaplyProfilerEngine<BatchCollector> {
   final Duration maxBatchInterval;
   final int maxBatchCount;
 
+  @override
+  String get category => 'Batch';
+
   GaplyBatchEngine({
     super.customLogger,
-    this.threshold = GaplyBudget.all,
+    Duration? threshold,
+    int? maxKeys,
+    Duration? maxIdleTime,
     this.maxBatchInterval = GaplyBudget.fps60,
     this.maxBatchCount = 100,
-    this.maxKeys = 500,
-    this.maxIdleTime = const Duration(minutes: 5),
-  }) {
-    initMasterListener((packet) {
-      final key = "${packet.label}${packet.tag != null ? '_${packet.tag}' : ''}";
-      statsMap
-          .putIfAbsent(
-            key,
-            () => BatchCollector(
-              engine: this,
-              label: packet.label,
-              tag: packet.tag,
-              maxInterval: maxBatchInterval,
-              maxCount: maxBatchCount,
-              threshold: threshold,
-            ),
-          )
-          .add(packet.elapsed.inMicroseconds);
-    });
+  }) : super(
+         threshold: threshold ?? GaplyBudget.all,
+         maxKeys: maxKeys ?? 500,
+         maxIdleTime: maxIdleTime ?? const Duration(minutes: 5),
+       );
+
+  @override
+  void onPacketReceived(ProfilePacket packet) {
+    final key = "${packet.label}${packet.tag != null ? '_${packet.tag}' : ''}";
+    statsMap
+        .putIfAbsent(
+          key,
+          () => BatchCollector(
+            engine: this,
+            label: packet.label,
+            tag: packet.tag,
+            maxInterval: maxBatchInterval,
+            maxCount: maxBatchCount,
+            threshold: threshold,
+          ),
+        )
+        .add(packet.elapsed.inMicroseconds);
   }
 
   @override
@@ -72,6 +71,8 @@ class BatchCollector implements GaplyProfilerStats {
   @override
   bool get isNotEmpty => count > 0;
 
+  Timer? _autoFlushTimer;
+
   BatchCollector({
     required this.engine,
     required this.label,
@@ -79,7 +80,11 @@ class BatchCollector implements GaplyProfilerStats {
     required this.maxInterval,
     required this.maxCount,
     required this.threshold,
-  });
+  }) {
+    _autoFlushTimer = Timer.periodic(const Duration(seconds: 60), (_) {
+      if (isNotEmpty) flush();
+    });
+  }
 
   void add(int us) {
     totalUs += us;
@@ -90,8 +95,9 @@ class BatchCollector implements GaplyProfilerStats {
     if (us > maxSingleUs) maxSingleUs = us;
 
     final now = DateTime.now();
-    final bool isTimeOut = now.difference(lastLogTime) > maxInterval;
+    final bool isTimeOut = now.difference(lastLogTime) >= maxInterval;
     final bool isCountOver = count >= maxCount;
+
     if (isTimeOut || isCountOver) {
       flush();
     }
@@ -109,8 +115,9 @@ class BatchCollector implements GaplyProfilerStats {
     final double limit = threshold.inMicroseconds / 1000;
 
     final String tagStr = tag != null ? ' ${a.tag}@$tag${a.reset}' : '';
+
     final String percentStr = limit > 0
-        ? '${a.gray}(${(avgMs / limit * 100).toStringAsFixed(1)}%)${a.reset}'
+        ? ' ${a.gray}(${(avgMs / limit * 100).toStringAsFixed(1)}%)${a.reset}'
         : '';
 
     engine.infoLog(
@@ -121,6 +128,7 @@ class BatchCollector implements GaplyProfilerStats {
       isForce: true,
     );
 
+    // 초기화 및 시간 갱신
     totalUs = 0;
     count = 0;
     lastLogTime = DateTime.now();
@@ -146,5 +154,15 @@ class BatchCollector implements GaplyProfilerStats {
       'Total Calls: ${a.label}$globalCount${a.reset}',
       isForce: true,
     );
+  }
+
+  @override
+  Future<void> dispose() async {
+    _autoFlushTimer?.cancel();
+    _autoFlushTimer = null;
+
+    if (isNotEmpty) {
+      flush();
+    }
   }
 }

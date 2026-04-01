@@ -13,15 +13,15 @@ class GaplyConsoleLogger extends GaplyLoggerEngine {
     _throttler = GaplyThrottler(
       interval: interval,
       onUpdate: (value) => _log(value),
-      shouldUpdate: (oldVal, newVal) => oldVal != newVal,
+      shouldUpdate: (oldVal, newVal) => oldVal.text != newVal.text || oldVal.level != newVal.level,
     );
   }
 
   @override
   void write(LogPacket packet) {
     if (packet.isForce) {
+      _log(packet);
       _throttler.reset();
-      debugPrint(packet.text);
     } else {
       _throttler.update(packet);
     }

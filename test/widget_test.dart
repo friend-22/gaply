@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gaply/gaply.dart';
 
-void main() {
+Future<void> main() async {
+  GaplyHub.initialize();
   //testFade();
   //testColorSystem();
+  await GaplyHub.dispose();
 }
 
 void testFade() {
@@ -12,10 +14,7 @@ void testFade() {
     await tester.pumpWidget(
       MaterialApp(
         home: Scaffold(
-          body: GaplyFadeWidget(
-            style: GaplyFade(isVisible: true),
-            child: SizedBox(width: 100, height: 100),
-          ),
+          body: GaplyFadeWidget(style: GaplyFade(isVisible: true), child: SizedBox(width: 100, height: 100)),
         ),
       ),
     );

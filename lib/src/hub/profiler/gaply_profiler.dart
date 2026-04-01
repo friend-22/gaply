@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart' show kDebugMode;
-import 'package:gaply/src/hub/gaply_budget.dart';
 import 'package:gaply/src/hub/logger/gaply_logger.dart';
 
 import 'gaply_profiler_base.dart';
@@ -34,26 +33,37 @@ class GaplyProfiler {
     }
 
     final int nextDepth = _currentDepth + 1;
+    final sw = Stopwatch()..start();
+    final int startMem = ProcessInfo.currentRss;
+
+    void recordFinal(bool isAsync, {bool isError = false}) {
+      if (!sw.isRunning) return;
+      _handleRecord(sw, startMem, isError ? '${tag ?? 'task'}:error' : tag, nextDepth, isAsync);
+    }
 
     return runZoned(() {
-      final int startMem = ProcessInfo.currentRss;
-      final sw = Stopwatch()..start();
-
       try {
         final result = operation();
 
         if (result is Future) {
-          return result.whenComplete(() {
-                _handleRecord(sw, startMem, tag, nextDepth, true);
-              })
+          return result
+                  .then((value) {
+                    recordFinal(true);
+                    return value;
+                  })
+                  .catchError((e) {
+                    recordFinal(true, isError: true);
+                    GaplyLogger.error('❌ [ASYNC ERROR] $label: $e');
+                    throw e;
+                  })
               as T;
         }
 
-        _handleRecord(sw, startMem, tag, nextDepth, false);
+        recordFinal(false);
         return result;
       } catch (e) {
-        if (sw.isRunning) sw.stop();
-        GaplyLogger.error('❌ [ERROR] $label: $e');
+        recordFinal(false, isError: true);
+        GaplyLogger.error('❌ [SYNC ERROR] $label: $e');
         rethrow;
       }
     }, zoneValues: {_depthKey: nextDepth});

@@ -52,10 +52,10 @@ class _GaplyBoxStressTestState extends State<GaplyBoxStressTest> {
               child: const FlutterLogo(size: 80),
             ),
             const SizedBox(height: 50),
-            // ElevatedButton(
-            //   onPressed: () => setState(() => _active = !_active),
-            //   child: const Text("Run Stress Animation"),
-            // ),
+            ElevatedButton(
+              onPressed: () => setState(() => _active = !_active),
+              child: const Text("Run Stress Animation"),
+            ),
             const SizedBox(height: 50),
             // ElevatedButton(
             //   onPressed: () => setState(() {

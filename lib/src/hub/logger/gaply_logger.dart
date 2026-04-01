@@ -1,42 +1,65 @@
 import 'dart:isolate';
 
+import 'package:gaply/src/hub/gaply_hub.dart';
 import 'gaply_logger_base.dart';
 
 class GaplyLogger {
   static GaplyLogLevel level = GaplyLogLevel.debug;
 
-  static GaplyLogDispatcher dispatcher = GaplyLogDispatcher((packet) {
-    if (packet.engineId != null && _customEngines.containsKey(packet.engineId)) {
-      _customEngines[packet.engineId!]!.write(packet);
-    } else {
-      _defaultEngine.write(packet);
-    }
-  });
+  static const String _channelId = 'GaplyLogger';
 
   static final Map<String, GaplyLoggerEngine> _customEngines = {};
   static GaplyLoggerEngine _defaultEngine = _GaplyNoOpLogger();
 
   static void initialize(List<GaplyLoggerEngine> engines) {
     _defaultEngine = GaplyCompositeLogger(engines: engines);
+
+    GaplyHub.createChannel(_channelId, (packet) {
+      if (packet is LogPacket) {
+        _handlePacket(packet);
+      }
+    });
+  }
+
+  static void _handlePacket(LogPacket packet) {
+    if (packet.engineId != null && _customEngines.containsKey(packet.engineId)) {
+      _customEngines[packet.engineId!]!.write(packet);
+    } else {
+      _defaultEngine.write(packet);
+    }
   }
 
   static void addCustomLogger(GaplyLoggerEngine engine) {
-    if (engine.id != null) {
-      _customEngines[engine.id!] = engine;
+    if (engine.id == null) {
+      GaplyHub.error('⚠️ [Gaply] Custom logger must have an ID.', isForce: true);
+      return;
     }
+    _customEngines[engine.id!] = engine;
   }
 
   static Future<void> dispose() async {
     await _defaultEngine.dispose();
     await Future.wait(_customEngines.values.map((e) => e.dispose()));
+    GaplyHub.removeChannel(_channelId);
   }
 
   static void dispatch(String text, GaplyLogLevel level, bool isForce, {String? engineId}) {
     if (level.index < GaplyLogger.level.index && !isForce) return;
 
-    dispatcher.sendPacket(
-      LogPacket(text: text, level: level, isForce: isForce, timestamp: DateTime.now(), engineId: engineId),
+    final packet = LogPacket(
+      text: text,
+      level: level,
+      isForce: isForce,
+      timestamp: DateTime.now(),
+      engineId: engineId,
     );
+
+    final sendPort = GaplyHub.getSendPort(_channelId);
+    if (sendPort != null) {
+      sendPort.send(packet);
+    } else {
+      _handlePacket(packet);
+    }
   }
 
   static void info(String text, {bool isForce = false}) => dispatch(text, GaplyLogLevel.info, isForce);

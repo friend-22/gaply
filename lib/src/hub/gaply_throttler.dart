@@ -1,5 +1,3 @@
-import 'gaply_budget.dart';
-
 class GaplyThrottler<T> {
   final Duration interval;
   final void Function(T value) onUpdate;
@@ -37,36 +35,4 @@ class GaplyThrottler<T> {
     _lastValue = null;
     _lastUpdateTime = DateTime.fromMillisecondsSinceEpoch(0);
   }
-}
-
-extension GaplyThrottlerShortcuts on GaplyThrottler {
-  static GaplyThrottler<T> fps60<T>({
-    required void Function(T value) onUpdate,
-    bool Function(T old, T next)? shouldUpdate,
-  }) => GaplyThrottler(interval: GaplyBudget.fps60, onUpdate: onUpdate, shouldUpdate: shouldUpdate);
-
-  static GaplyThrottler<T> fps120<T>({
-    required void Function(T value) onUpdate,
-    bool Function(T old, T next)? shouldUpdate,
-  }) => GaplyThrottler(interval: GaplyBudget.fps120, onUpdate: onUpdate, shouldUpdate: shouldUpdate);
-
-  static GaplyThrottler<T> fps240<T>({
-    required void Function(T value) onUpdate,
-    bool Function(T old, T next)? shouldUpdate,
-  }) => GaplyThrottler(interval: GaplyBudget.fps240, onUpdate: onUpdate, shouldUpdate: shouldUpdate);
-
-  static GaplyThrottler<T> smooth60<T>({
-    required void Function(T value) onUpdate,
-    bool Function(T old, T next)? shouldUpdate,
-  }) => GaplyThrottler(interval: GaplyBudget.smooth60, onUpdate: onUpdate, shouldUpdate: shouldUpdate);
-
-  static GaplyThrottler<T> smooth120<T>({
-    required void Function(T value) onUpdate,
-    bool Function(T old, T next)? shouldUpdate,
-  }) => GaplyThrottler(interval: GaplyBudget.smooth120, onUpdate: onUpdate, shouldUpdate: shouldUpdate);
-
-  static GaplyThrottler<T> smooth240<T>({
-    required void Function(T value) onUpdate,
-    bool Function(T old, T next)? shouldUpdate,
-  }) => GaplyThrottler(interval: GaplyBudget.smooth240, onUpdate: onUpdate, shouldUpdate: shouldUpdate);
 }

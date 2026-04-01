@@ -4,34 +4,26 @@ import 'gaply_profiler_base.dart';
 import 'gaply_profiler_mixin.dart';
 
 /// [GaplyTraceEngine] - Immediate logging for individual performance hits
-class GaplyTraceEngine extends GaplyProfilerEngine with GaplyProfilerMixin<TraceStats> {
-  final Duration threshold;
+class GaplyTraceEngine extends GaplyProfilerEngine<TraceStats> {
   @override
   String get category => 'Trace';
+
+  GaplyTraceEngine({super.customLogger, Duration? threshold, int? maxKeys, Duration? maxIdleTime})
+    : super(
+        threshold: threshold ?? GaplyBudget.all,
+        maxKeys: maxKeys ?? 500,
+        maxIdleTime: maxIdleTime ?? const Duration(minutes: 5),
+      );
+
   @override
-  final int maxKeys;
-  @override
-  final Duration maxIdleTime;
-  @override
-  Map<String, TraceStats> get statsMap => _statsMap;
+  void onPacketReceived(ProfilePacket packet) {
+    final stats = statsMap.putIfAbsent(packet.label, () => TraceStats(engine: this));
 
-  static final Map<String, TraceStats> _statsMap = {};
+    stats.add(packet.elapsed.inMicroseconds, packet.isAsync, packet.tag, threshold.inMicroseconds);
 
-  GaplyTraceEngine({
-    super.customLogger,
-    this.threshold = GaplyBudget.smooth60,
-    this.maxKeys = 500,
-    this.maxIdleTime = const Duration(minutes: 5),
-  }) {
-    initMasterListener((packet) {
-      final stats = statsMap.putIfAbsent(packet.label, () => TraceStats(engine: this));
-
-      stats.add(packet.elapsed.inMicroseconds, packet.isAsync, packet.tag, threshold.inMicroseconds);
-
-      if (packet.elapsed >= threshold) {
-        _log(packet);
-      }
-    });
+    if (packet.elapsed >= threshold) {
+      _log(packet);
+    }
   }
 
   @override
@@ -47,18 +39,13 @@ class GaplyTraceEngine extends GaplyProfilerEngine with GaplyProfilerMixin<Trace
     final fmt = GaplyHub.theme.formatter;
 
     final String indent = packet.depth > 0 ? '${'  ' * packet.depth}└ ' : '';
-    final String tagStr = packet.tag != null ? ' ${a.tag}@$packet.tag${a.reset}' : '';
+    final String tagStr = packet.tag != null ? ' ${a.tag}@${packet.tag}${a.reset}' : '';
 
     infoLog(
       '${a.gray}[${DateTime.now().toString().substring(11, 19)}]${a.reset} '
-      '$indent$packet.label$tagStr : ${fmt.formatMs(ms, limit)}',
+      '$indent${packet.label}$tagStr : ${fmt.formatMs(ms, limit)}',
       isForce: false,
     );
-  }
-
-  @override
-  void printStats(String label) {
-    _statsMap[label]?.printSummary(label);
   }
 }
 
@@ -120,6 +107,8 @@ class TraceStats implements GaplyProfilerStats {
 
   @override
   void printSummary(String label) {
+    if (!isNotEmpty) return;
+
     final a = GaplyHub.theme.ansi;
     final fmt = GaplyHub.theme.formatter;
 
@@ -142,7 +131,6 @@ class TraceStats implements GaplyProfilerStats {
         'Max:${fmt.formatMs(maxMs, limit)}',
         isForce: true,
       );
-
       engine.infoLog('           Total Dist: ${fmt.formatDistRow(syncDist, syncCount)}', isForce: true);
 
       tagDist.forEach((tag, dist) {
@@ -168,4 +156,7 @@ class TraceStats implements GaplyProfilerStats {
 
   @override
   void flush() {}
+
+  @override
+  Future<void> dispose() async {}
 }

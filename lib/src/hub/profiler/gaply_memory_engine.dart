@@ -1,37 +1,39 @@
+import 'dart:async';
+
 import 'package:gaply/src/hub/gaply_budget.dart';
 import 'package:gaply/src/hub/gaply_hub.dart';
 import 'gaply_profiler_base.dart';
-import 'gaply_profiler_mixin.dart';
 
 /// [GaplyMemoryEngine] - Focused on tracking memory allocation and leaks
-class GaplyMemoryEngine extends GaplyProfilerEngine with GaplyProfilerMixin<MemoryStats> {
+class GaplyMemoryEngine extends GaplyProfilerEngine<MemoryStats> {
   final int thresholdBytes;
-  @override
-  String get category => 'Trace';
-  @override
-  final int maxKeys;
-  @override
-  final Duration maxIdleTime;
-  @override
-  Map<String, MemoryStats> get statsMap => _statsMap;
 
-  static final Map<String, MemoryStats> _statsMap = {};
+  @override
+  String get category => 'Memory';
 
   GaplyMemoryEngine({
     super.customLogger,
-    this.thresholdBytes = GaplyBudget.zeroBytes, // Default: log all memory changes
-    this.maxKeys = 500,
-    this.maxIdleTime = const Duration(minutes: 5),
-  }) {
-    initMasterListener((packet) {
-      final stats = statsMap.putIfAbsent(packet.label, () => MemoryStats(engine: this));
+    this.thresholdBytes = GaplyBudget.mb1,
+    int? maxKeys,
+    Duration? maxIdleTime,
+  }) : super(
+         threshold: GaplyBudget.all,
+         maxKeys: maxKeys ?? 500,
+         maxIdleTime: maxIdleTime ?? const Duration(minutes: 5),
+       );
 
-      stats.add(packet.memoryDelta, thresholdBytes);
+  @override
+  void onPacketReceived(ProfilePacket packet) {
+    final stats = statsMap.putIfAbsent(
+      packet.label,
+      () => MemoryStats(engine: this, thresholdBytes: thresholdBytes),
+    );
 
-      if (packet.memoryDelta.abs() >= thresholdBytes) {
-        _log(packet.memoryDelta, label: packet.label, tag: packet.tag, depth: packet.depth);
-      }
-    });
+    stats.add(packet.memoryDelta);
+
+    if (packet.memoryDelta.abs() >= thresholdBytes) {
+      _log(packet.memoryDelta, label: packet.label, tag: packet.tag, depth: packet.depth);
+    }
   }
 
   @override
@@ -43,25 +45,21 @@ class GaplyMemoryEngine extends GaplyProfilerEngine with GaplyProfilerMixin<Memo
     final a = GaplyHub.theme.ansi;
     final String formatted = GaplyBudget.formatBytes(delta);
 
+    final String icon = delta > 0 ? '📈' : '📉';
     final String color = delta > 0 ? a.jank : a.perf;
     final String indent = depth > 0 ? '${'  ' * depth}└ ' : '';
     final String tagStr = tag != null ? ' ${a.tag}@$tag${a.reset}' : '';
 
-    String percentStr = '';
-    if (thresholdBytes > 0) {
-      final double p = (delta.abs() / thresholdBytes) * 100;
-      percentStr = ' ${a.gray}(${p.toStringAsFixed(1)}%)${a.reset}';
-    }
-
     infoLog(
-      '${a.gray}[MEM]${a.reset} $indent${a.label}$label${a.reset}$tagStr : '
-      '$color${formatted.padLeft(10)}${a.reset}$percentStr',
+      '${a.gray}[MEM]${a.reset} $indent$icon ${a.label}$label${a.reset}$tagStr : '
+      '$color${formatted.padLeft(10)}${a.reset}',
     );
   }
 }
 
 class MemoryStats implements GaplyProfilerStats {
   final GaplyMemoryEngine engine;
+  final int thresholdBytes;
 
   int count = 0;
   int totalDelta = 0;
@@ -75,38 +73,37 @@ class MemoryStats implements GaplyProfilerStats {
   @override
   bool get isNotEmpty => count > 0;
 
-  MemoryStats({required this.engine});
+  MemoryStats({required this.engine, required this.thresholdBytes});
 
-  void add(int delta, int thresholdBytes) {
+  void add(int delta) {
     count++;
     totalDelta += delta;
-    lastThresholdBytes = thresholdBytes;
     lastLogTime = DateTime.now();
 
     if (delta > peakDelta) peakDelta = delta;
     if (delta < minDelta) minDelta = delta;
   }
 
-  double get avgDelta => totalDelta / count;
-
   @override
   void printSummary(String label) {
+    if (count == 0) return;
+
     final a = GaplyHub.theme.ansi;
 
-    final String avgStr = GaplyBudget.formatBytes((totalDelta / count).toInt());
+    final String avgStr = GaplyBudget.formatBytes((totalDelta ~/ count));
     final String peakStr = GaplyBudget.formatBytes(peakDelta);
     final String minStr = GaplyBudget.formatBytes(minDelta);
-    final String limitStr = GaplyBudget.formatBytes(lastThresholdBytes);
+    final String limitStr = GaplyBudget.formatBytes(thresholdBytes);
 
-    final bool isOver = lastThresholdBytes > 0 && peakDelta > lastThresholdBytes;
+    final bool isOver = thresholdBytes > 0 && peakDelta > thresholdBytes;
     final String peakColor = isOver ? a.accent : a.label;
 
     String offsetStr = '';
-    if (lastThresholdBytes > 0) {
-      final int diff = peakDelta - lastThresholdBytes;
-      final String sign = diff > 0 ? '+' : '';
-      final String diffColor = diff > 0 ? a.jank : a.gray;
-      offsetStr = ' ${a.gray}($diffColor$sign${GaplyBudget.formatBytes(diff)}${a.gray})${a.reset}';
+    if (thresholdBytes > 0) {
+      final int diff = peakDelta - thresholdBytes;
+      if (diff > 0) {
+        offsetStr = ' ${a.gray}(${a.jank}+${GaplyBudget.formatBytes(diff)}${a.gray})${a.reset}';
+      }
     }
 
     engine.infoLog(
@@ -121,4 +118,7 @@ class MemoryStats implements GaplyProfilerStats {
 
   @override
   void flush() {}
+
+  @override
+  Future<void> dispose() async {}
 }
