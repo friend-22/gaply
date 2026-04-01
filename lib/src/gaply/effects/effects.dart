@@ -1,3 +1,4 @@
+export 'blur/blur_defines.dart';
 export 'blur/blur_ext.dart';
 export 'blur/gaply_blur.dart';
 export 'blur/gaply_blur_modifier.dart';

@@ -25,7 +25,7 @@ class GaplyTranslatePreset {
   void add(Object key, GaplyTranslate style, {bool overwrite = false}) {
     final normalized = _normalize(key);
     if (_presets.containsKey(normalized) && !overwrite) {
-      GaplyLogger.i(
+      GaplyHub.info(
           "[GaplyTranslatePreset] Duplicate registration for key: '$normalized'. Overwritten.");
     }
     _presets[_normalize(key)] = style;

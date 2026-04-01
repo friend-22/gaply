@@ -2,7 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/widgets.dart';
 
-import 'package:gaply/src/gaply_base.dart';
+import 'package:gaply/src/inner_gaply_base.dart';
 
 import 'shake_widget.dart';
 import 'gaply_shake_modifier.dart';

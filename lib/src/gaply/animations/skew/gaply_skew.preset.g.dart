@@ -25,7 +25,7 @@ class GaplySkewPreset {
   void add(Object key, GaplySkew style, {bool overwrite = false}) {
     final normalized = _normalize(key);
     if (_presets.containsKey(normalized) && !overwrite) {
-      GaplyLogger.i(
+      GaplyHub.info(
           "[GaplySkewPreset] Duplicate registration for key: '$normalized'. Overwritten.");
     }
     _presets[_normalize(key)] = style;

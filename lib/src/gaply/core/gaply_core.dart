@@ -2,7 +2,7 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter/widgets.dart';
 
 import 'gaply_defines.dart';
-import 'package:gaply/src/profiler/gaply_profiler.dart';
+import 'package:gaply/src/hub/profiler/gaply_profiler.dart';
 
 // ---------------------------------------------------------------------------
 // SECTION: Resolver & Policy
@@ -23,14 +23,6 @@ class GaplyResolver {
     }
     if (key is Record) return key.toString();
     return key;
-  }
-
-  static Object? resolveByPolicyName(Object? key, String policyName) {
-    final policy = GaplyResolvePolicy.values.firstWhere(
-      (p) => p.name.toLowerCase() == policyName.trim().toLowerCase(),
-      orElse: () => GaplyResolvePolicy.flexible,
-    );
-    return resolve(key, policy);
   }
 }
 

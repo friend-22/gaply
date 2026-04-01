@@ -17,7 +17,7 @@ class _GaplyColorThemeStressTestState extends State<GaplyColorThemeStressTest> {
     setState(() {
       _currentThemeName = _currentThemeName == 'light' ? 'dark' : 'light';
     });
-    GaplyLogger.i('🔄 [THEME_TOGGLED] $oldTheme -> $_currentThemeName');
+    GaplyHub.info('🔄 [THEME_TOGGLED] $oldTheme -> $_currentThemeName');
   }
 
   @override

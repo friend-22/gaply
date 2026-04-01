@@ -14,12 +14,18 @@ void main() async {
   // final directory = await getApplicationDocumentsDirectory();
   // final logPath = '${directory.path}/app_logs.txt';
 
-  GaplyProfiler.theme = GaplyProfilerTheme.dark;
-  GaplyLogger.init([GaplyConsoleLogger()]);
+  GaplyBlurToken.add('key');
+
+  final aa = GaplyBlurToken.resolve('key');
+
+  GaplyHub.theme = GaplyAnsiTheme.dark;
+  GaplyHub.initialize();
 
   _setupGaplyThemes();
 
   runApp(const MaterialApp(home: GaplyColorThemeStressTest()));
+
+  await GaplyHub.dispose();
 }
 
 final List<GaplyColorToken> _stressTokenNames = List.generate(

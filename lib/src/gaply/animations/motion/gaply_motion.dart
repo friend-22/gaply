@@ -2,7 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
-import 'package:gaply/src/gaply_base.dart';
+import 'package:gaply/src/inner_gaply_base.dart';
 import 'package:gaply/src/gaply/animations/animations.dart';
 
 part 'gaply_motion.preset.g.dart';

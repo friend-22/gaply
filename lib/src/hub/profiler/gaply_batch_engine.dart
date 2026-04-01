@@ -1,59 +1,58 @@
-import 'gaply_budget.dart';
-import 'gaply_profiler.dart';
-import 'gaply_logger.dart';
+import 'package:gaply/src/hub/gaply_budget.dart';
+import 'package:gaply/src/hub/gaply_hub.dart';
+import 'gaply_profiler_base.dart';
+import 'gaply_profiler_mixin.dart';
 
 /// [GaplyBatchEngine] - Collects data and flushes summaries periodically
-class GaplyBatchEngine implements GaplyProfileEngine {
+class GaplyBatchEngine extends GaplyProfilerEngine with GaplyProfilerMixin<BatchCollector> {
   final Duration threshold;
+  @override
+  String get category => 'Batch';
+  @override
+  final Map<String, BatchCollector> statsMap = {};
+  @override
+  final int maxKeys;
+  @override
+  final Duration maxIdleTime;
+
   final Duration maxBatchInterval;
   final int maxBatchCount;
 
-  final Map<String, _BatchCollector> _batchMap = {};
-
   GaplyBatchEngine({
+    super.customLogger,
     this.threshold = GaplyBudget.all,
     this.maxBatchInterval = GaplyBudget.fps60,
     this.maxBatchCount = 100,
-  });
-
-  @override
-  void record(
-    Duration elapsed, {
-    required int memoryDelta,
-    required String label,
-    String? tag,
-    int? depth,
-    bool isAsync = false,
+    this.maxKeys = 500,
+    this.maxIdleTime = const Duration(minutes: 5),
   }) {
-    if (elapsed < threshold) return;
-
-    final key = "$label${tag != null ? '_$tag' : ''}";
-
-    _batchMap
-        .putIfAbsent(
-          key,
-          () => _BatchCollector(
-            label: label,
-            tag: tag,
-            maxInterval: maxBatchInterval,
-            maxCount: maxBatchCount,
-            threshold: threshold,
-          ),
-        )
-        .add(elapsed.inMicroseconds);
+    initMasterListener((packet) {
+      final key = "${packet.label}${packet.tag != null ? '_${packet.tag}' : ''}";
+      statsMap
+          .putIfAbsent(
+            key,
+            () => BatchCollector(
+              engine: this,
+              label: packet.label,
+              tag: packet.tag,
+              maxInterval: maxBatchInterval,
+              maxCount: maxBatchCount,
+              threshold: threshold,
+            ),
+          )
+          .add(packet.elapsed.inMicroseconds);
+    });
   }
 
   @override
-  void printStats(String label) {
-    for (var entry in _batchMap.entries) {
-      if (entry.key.startsWith(label)) {
-        entry.value.printSummary();
-      }
-    }
+  void record(ProfilePacket packet) {
+    if (packet.elapsed < threshold) return;
+    sendPacket(packet);
   }
 }
 
-class _BatchCollector {
+class BatchCollector implements GaplyProfilerStats {
+  final GaplyBatchEngine engine;
   final String label;
   final String? tag;
   final Duration maxInterval;
@@ -67,9 +66,14 @@ class _BatchCollector {
   int globalCount = 0;
   int maxSingleUs = 0;
 
+  @override
   DateTime lastLogTime = DateTime.now();
 
-  _BatchCollector({
+  @override
+  bool get isNotEmpty => count > 0;
+
+  BatchCollector({
+    required this.engine,
     required this.label,
     this.tag,
     required this.maxInterval,
@@ -89,15 +93,16 @@ class _BatchCollector {
     final bool isTimeOut = now.difference(lastLogTime) > maxInterval;
     final bool isCountOver = count >= maxCount;
     if (isTimeOut || isCountOver) {
-      _flush();
+      flush();
     }
   }
 
-  void _flush() {
+  @override
+  void flush() {
     if (count == 0) return;
 
-    final a = GaplyProfiler.theme.ansi;
-    final fmt = GaplyProfiler.theme.formatter;
+    final a = GaplyHub.theme.ansi;
+    final fmt = GaplyHub.theme.formatter;
 
     final double avgMs = (totalUs / count) / 1000;
     final double totalMs = totalUs / 1000;
@@ -108,7 +113,7 @@ class _BatchCollector {
         ? '${a.gray}(${(avgMs / limit * 100).toStringAsFixed(1)}%)${a.reset}'
         : '';
 
-    GaplyLogger.i(
+    engine.infoLog(
       '${a.gray}📦 [BATCH]${a.reset} ${a.label}$label$tagStr${a.reset} : '
       'Avg ${fmt.formatMs(avgMs, limit)} | '
       'Total ${a.label}${totalMs.toStringAsFixed(3).padLeft(7)}ms${a.reset} | '
@@ -121,11 +126,12 @@ class _BatchCollector {
     lastLogTime = DateTime.now();
   }
 
-  void printSummary() {
+  @override
+  void printSummary(String label) {
     if (globalCount == 0) return;
 
-    final a = GaplyProfiler.theme.ansi;
-    final fmt = GaplyProfiler.theme.formatter;
+    final a = GaplyHub.theme.ansi;
+    final fmt = GaplyHub.theme.formatter;
 
     final double avgMs = (globalTotalUs / globalCount) / 1000;
     final double maxMs = maxSingleUs / 1000;
@@ -133,7 +139,7 @@ class _BatchCollector {
 
     final String tagStr = tag != null ? ' ${a.tag}@$tag${a.reset}' : '';
 
-    GaplyLogger.i(
+    engine.infoLog(
       '${a.gray}📦 [BATCH SUMMARY]${a.reset} ${a.label}$label$tagStr${a.reset}\n'
       '           Avg: ${fmt.formatMs(avgMs, limit)} | '
       'Max: ${a.accent}${maxMs.toStringAsFixed(3).padLeft(7)}ms${a.reset} | '

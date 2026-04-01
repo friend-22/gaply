@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:gaply/src/gaply/core/core.dart';
-import 'package:gaply/src/profiler/gaply_logger.dart';
+import 'package:gaply/src/hub/gaply_hub.dart';
 
 @immutable
 class GaplyColorToken extends GaplyIdentity<Object> {
@@ -16,7 +16,9 @@ class GaplyColorToken extends GaplyIdentity<Object> {
 
     if (resolved == null) {
       if (input != null) {
-        GaplyLogger.i("GaplyColorToken: Failed to resolve '$input'. Defaulting to 'GaplyColorToken.none'.");
+        GaplyHub.warning(
+          "GaplyColorToken: Failed to resolve '$input'. Defaulting to 'GaplyColorToken.none'.",
+        );
       }
       return GaplyColorToken.none;
     }
@@ -71,7 +73,9 @@ class GaplyColorOpacity extends GaplyNumericIdentity<GaplyColorOpacity> {
     }
 
     if (input != null) {
-      GaplyLogger.i("GaplyColorOpacity: Invalid input '$input'. Falling back to 'GaplyColorOpacity.full'.");
+      GaplyHub.warning(
+        "GaplyColorOpacity: Invalid input '$input'. Falling back to 'GaplyColorOpacity.full'.",
+      );
     }
 
     return GaplyColorOpacity.full;
@@ -109,7 +113,7 @@ class GaplyColorShade extends GaplyNumericIdentity<GaplyColorShade> {
     }
 
     if (input != null) {
-      GaplyLogger.i(
+      GaplyHub.warning(
         "GaplyColorShade: Invalid input '$input'. Falling back to 'GaplyColorShade.defaultShade'.",
       );
     }

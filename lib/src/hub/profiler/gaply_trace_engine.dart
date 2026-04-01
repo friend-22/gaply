@@ -1,46 +1,57 @@
-import 'gaply_budget.dart';
-import 'gaply_profiler.dart';
-import 'gaply_logger.dart';
+import 'package:gaply/src/hub/gaply_budget.dart';
+import 'package:gaply/src/hub/gaply_hub.dart';
+import 'gaply_profiler_base.dart';
+import 'gaply_profiler_mixin.dart';
 
 /// [GaplyTraceEngine] - Immediate logging for individual performance hits
-class GaplyTraceEngine implements GaplyProfileEngine {
+class GaplyTraceEngine extends GaplyProfilerEngine with GaplyProfilerMixin<TraceStats> {
   final Duration threshold;
-
-  static final Map<String, _ProfilerStats> _statsMap = {};
-
-  const GaplyTraceEngine({this.threshold = GaplyBudget.smooth60});
-
   @override
-  void record(
-    Duration elapsed, {
-    required int memoryDelta,
-    required String label,
-    String? tag,
-    int? depth,
-    bool isAsync = false,
+  String get category => 'Trace';
+  @override
+  final int maxKeys;
+  @override
+  final Duration maxIdleTime;
+  @override
+  Map<String, TraceStats> get statsMap => _statsMap;
+
+  static final Map<String, TraceStats> _statsMap = {};
+
+  GaplyTraceEngine({
+    super.customLogger,
+    this.threshold = GaplyBudget.smooth60,
+    this.maxKeys = 500,
+    this.maxIdleTime = const Duration(minutes: 5),
   }) {
-    _statsMap
-        .putIfAbsent(label, () => _ProfilerStats())
-        .add(elapsed.inMicroseconds, isAsync, tag, threshold.inMicroseconds);
+    initMasterListener((packet) {
+      final stats = statsMap.putIfAbsent(packet.label, () => TraceStats(engine: this));
 
-    if (elapsed < threshold) return;
+      stats.add(packet.elapsed.inMicroseconds, packet.isAsync, packet.tag, threshold.inMicroseconds);
 
-    _log(elapsed, label: label, tag: tag, depth: depth, isAsync: isAsync);
+      if (packet.elapsed >= threshold) {
+        _log(packet);
+      }
+    });
   }
 
-  void _log(Duration elapsed, {required String label, String? tag, int? depth, bool isAsync = false}) {
-    final double ms = elapsed.inMicroseconds / 1000;
+  @override
+  void record(ProfilePacket packet) {
+    sendPacket(packet);
+  }
+
+  void _log(ProfilePacket packet) {
+    final double ms = packet.elapsed.inMicroseconds / 1000;
     final double limit = threshold.inMicroseconds / 1000;
 
-    final a = GaplyProfiler.theme.ansi;
-    final fmt = GaplyProfiler.theme.formatter;
+    final a = GaplyHub.theme.ansi;
+    final fmt = GaplyHub.theme.formatter;
 
-    final String indent = depth != null && depth > 0 ? '${'  ' * depth}└ ' : '';
-    final String tagStr = tag != null ? ' ${a.tag}@$tag${a.reset}' : '';
+    final String indent = packet.depth > 0 ? '${'  ' * packet.depth}└ ' : '';
+    final String tagStr = packet.tag != null ? ' ${a.tag}@$packet.tag${a.reset}' : '';
 
-    GaplyLogger.i(
+    infoLog(
       '${a.gray}[${DateTime.now().toString().substring(11, 19)}]${a.reset} '
-      '$indent$label$tagStr : ${fmt.formatMs(ms, limit)}',
+      '$indent$packet.label$tagStr : ${fmt.formatMs(ms, limit)}',
       isForce: false,
     );
   }
@@ -51,7 +62,9 @@ class GaplyTraceEngine implements GaplyProfileEngine {
   }
 }
 
-class _ProfilerStats {
+class TraceStats implements GaplyProfilerStats {
+  final GaplyTraceEngine engine;
+
   int syncCount = 0;
   int syncTotalUs = 0;
   int syncMaxUs = 0;
@@ -65,8 +78,17 @@ class _ProfilerStats {
   int asyncTotalUs = 0;
   int asyncMaxUs = 0;
 
+  @override
+  DateTime lastLogTime = DateTime.now();
+
+  @override
+  bool get isNotEmpty => syncCount > 0 || asyncCount > 0;
+
+  TraceStats({required this.engine});
+
   void add(int us, bool isAsync, String? tag, int thresholdUs) {
     lastThresholdUs = thresholdUs;
+    lastLogTime = DateTime.now();
 
     if (isAsync) {
       asyncCount++;
@@ -96,34 +118,36 @@ class _ProfilerStats {
     }
   }
 
+  @override
   void printSummary(String label) {
-    final a = GaplyProfiler.theme.ansi;
-    final fmt = GaplyProfiler.theme.formatter;
+    final a = GaplyHub.theme.ansi;
+    final fmt = GaplyHub.theme.formatter;
 
     final double limit = lastThresholdUs / 1000;
 
-    GaplyLogger.i(
+    engine.infoLog(
       '📊 ${a.label}[STATS] $label${a.reset} ${a.gray}(Threshold: ${limit.toStringAsFixed(2)}ms)${a.reset}',
       isForce: true,
     );
-    GaplyLogger.i(' 🎯 ${a.hint}${GaplyBudget.syncThresholdGuide} 🎯', isForce: true);
+
+    engine.infoLog(' 🎯 ${a.hint}${GaplyBudget.syncThresholdGuide} 🎯', isForce: true);
 
     if (syncCount > 0) {
       final double avgMs = (syncTotalUs / syncCount) / 1000;
       final double maxMs = syncMaxUs / 1000;
 
-      GaplyLogger.i(
+      engine.infoLog(
         '   ${a.label}[Sync]${a.reset}  Total:$syncCount | '
         'Avg:${fmt.formatMs(avgMs, limit)} | '
         'Max:${fmt.formatMs(maxMs, limit)}',
         isForce: true,
       );
 
-      GaplyLogger.i('           Total Dist: ${fmt.formatDistRow(syncDist, syncCount)}', isForce: true);
+      engine.infoLog('           Total Dist: ${fmt.formatDistRow(syncDist, syncCount)}', isForce: true);
 
       tagDist.forEach((tag, dist) {
         int tagTotal = dist.reduce((a, b) => a + b);
-        GaplyLogger.i(
+        engine.infoLog(
           '           ${a.gray}└${a.reset} ${a.tag}@$tag${a.reset}: ${fmt.formatDistRow(dist, tagTotal)}',
           isForce: true,
         );
@@ -133,7 +157,7 @@ class _ProfilerStats {
     if (asyncCount > 0) {
       final double avg = (asyncTotalUs / asyncCount) / 1000;
       final double max = asyncMaxUs / 1000;
-      GaplyLogger.i(
+      engine.infoLog(
         '   ${a.async}[Async]${a.reset} Calls:$asyncCount | '
         'Avg:${a.async}${avg.toStringAsFixed(2)}ms${a.reset} | '
         'Max:${max.toStringAsFixed(2)}ms (Latency)',
@@ -141,4 +165,7 @@ class _ProfilerStats {
       );
     }
   }
+
+  @override
+  void flush() {}
 }

@@ -25,7 +25,7 @@ class GaplyScalePreset {
   void add(Object key, GaplyScale style, {bool overwrite = false}) {
     final normalized = _normalize(key);
     if (_presets.containsKey(normalized) && !overwrite) {
-      GaplyLogger.i(
+      GaplyHub.info(
           "[GaplyScalePreset] Duplicate registration for key: '$normalized'. Overwritten.");
     }
     _presets[_normalize(key)] = style;

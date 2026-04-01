@@ -2,12 +2,12 @@ import 'dart:async';
 import 'package:gaply/gaply.dart';
 
 Future<void> profilerTest() async {
-  GaplyLogger.init([GaplyConsoleLogger()]);
+  GaplyHub.initialize();
 
   // 1. Setup Engines
-  final traceEngine = GaplyTraceEngine(threshold: GaplyBudget.warning); // 8.3ms
-  final memoryEngine = GaplyMemoryEngine(thresholdBytes: GaplyBudget.mb1); // 1MB
-  final batchEngine = GaplyBatchEngine(
+  final traceEngine = GaplyHub.traceEngine(threshold: GaplyBudget.warning); // 8.3ms
+  final memoryEngine = GaplyHub.memoryEngine(thresholdBytes: GaplyBudget.mb1); // 1MB
+  final batchEngine = GaplyHub.batchEngine(
     threshold: GaplyBudget.all,
     maxBatchInterval: const Duration(seconds: 2),
   );

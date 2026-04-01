@@ -25,7 +25,7 @@ class GaplyColorThemePreset {
   void add(Object key, GaplyColorTheme style, {bool overwrite = false}) {
     final normalized = _normalize(key);
     if (_presets.containsKey(normalized) && !overwrite) {
-      GaplyLogger.i(
+      GaplyHub.info(
           "[GaplyColorThemePreset] Duplicate registration for key: '$normalized'. Overwritten.");
     }
     _presets[_normalize(key)] = style;

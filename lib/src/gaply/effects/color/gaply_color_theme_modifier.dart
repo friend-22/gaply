@@ -2,7 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/animation.dart';
 
-import 'package:gaply/src/profiler/gaply_profiler.dart';
+import 'package:gaply/src/hub/profiler/gaply_profiler.dart';
 import 'color_defines.dart';
 import 'gaply_color_theme.dart';
 import 'gaply_color.dart';
@@ -17,8 +17,8 @@ mixin GaplyColorThemeModifier<T> {
   T colorThemeOf(Object key, {GaplyProfiler? profiler}) =>
       copyWithColorTheme(GaplyColorTheme.of(key, profiler: profiler));
 
-  T colorThemeUpdate(dynamic role, GaplyColor color) {
-    final resolvedRole = GaplyColorToken.resolve(role);
+  T colorThemeUpdate(Object key, GaplyColor color) {
+    final resolvedRole = GaplyColorToken.resolve(key);
     final newColors = Map<GaplyColorToken, GaplyColor>.from(gaplyColorTheme.colors);
     newColors[resolvedRole] = color;
     return copyWithColorTheme(gaplyColorTheme.copyWith(colors: newColors));

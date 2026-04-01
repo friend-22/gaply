@@ -2,7 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 
-import 'package:gaply/src/gaply_base.dart';
+import 'package:gaply/src/inner_gaply_base.dart';
 
 import 'package:gaply/src/gaply/effects/effects.dart';
 import 'package:gaply/src/gaply/animations/animations.dart';

@@ -9,3 +9,10 @@ class GaplyPresetGen {
 }
 
 const gaplyPreset = GaplyPresetGen();
+
+class GaplyIdentityGen {
+  final String? initializer;
+  final GaplyResolvePolicy policy;
+
+  const GaplyIdentityGen({this.initializer, this.policy = GaplyResolvePolicy.flexible});
+}

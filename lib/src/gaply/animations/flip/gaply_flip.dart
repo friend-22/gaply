@@ -4,7 +4,7 @@ import 'dart:ui';
 import 'package:flutter/widgets.dart';
 import 'package:flutter/material.dart';
 
-import 'package:gaply/src/gaply_base.dart';
+import 'package:gaply/src/inner_gaply_base.dart';
 
 import 'flip_widget.dart';
 import 'gaply_flip_modifier.dart';

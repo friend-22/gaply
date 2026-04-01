@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 
-import 'package:gaply/src/profiler/gaply_logger.dart';
+import 'package:gaply/src/hub/gaply_hub.dart';
 
 import 'gaply_core.dart';
 
@@ -56,7 +56,7 @@ mixin GaplyMotionTrigger<W extends StatefulWidget, MST extends GaplyAnimStyle<MS
       onDelay(style.delay, () {
         if (!mounted) {
           // Widget was disposed during delay - safe to ignore
-          GaplyLogger.i("🚨 딜레이 도중 위젯이 사라짐: ${style.delay}");
+          GaplyHub.warning("🚨 딜레이 도중 위젯이 사라짐: ${style.delay}");
           return;
         }
 

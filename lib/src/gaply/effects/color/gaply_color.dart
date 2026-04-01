@@ -2,7 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 
-import 'package:gaply/src/gaply_base.dart';
+import 'package:gaply/src/inner_gaply_base.dart';
 
 import 'color_defines.dart';
 import 'gaply_color_modifier.dart';

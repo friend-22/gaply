@@ -1,5 +1,5 @@
 import 'package:shimmer/shimmer.dart';
-import 'package:gaply/src/profiler/gaply_profiler.dart';
+import 'package:gaply/src/hub/profiler/gaply_profiler.dart';
 import 'package:gaply/src/gaply/effects/color/gaply_color.dart';
 import 'gaply_shimmer.dart';
 

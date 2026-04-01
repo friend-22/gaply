@@ -5,12 +5,24 @@ targets:
         enabled: true
         generate_for:
           - lib/src/**
+      gaply|gaply_identity_builder:
+        enabled: true
+        generate_for:
+          - lib/src/**
           
 builders:
   gaply_preset_builder:
-    import: "package:gaply/src/generator.dart"
+    import: "package:gaply/src/generator/generator.dart"
     builder_factories: ["gaplyPresetBuilder"]
     build_extensions: {".dart": [".preset.g.dart"]}
     auto_apply: dependents
     build_to: source
     applies_builders: ["source_gen|combining_builder"]
+    
+  gaply_identity_builder:
+    import: "package:gaply/src/generator/generator.dart"
+    builder_factories: ["gaplyIdentityBuilder"]
+    build_extensions: {".dart": [".identity.g.dart"]}
+    auto_apply: dependents
+    build_to: source
+    applies_builders: ["source_gen|combining_builder"]    

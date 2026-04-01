@@ -1,4 +1,4 @@
-import 'gaply_logger.dart';
+import 'logger/gaply_logger_base.dart';
 
 class GaplyBudget {
   // Precision Budgets
@@ -68,10 +68,6 @@ class GaplyBudget {
     } else {
       return '$sign${(absBytes / (1024 * 1024)).toStringAsFixed(2)} MB';
     }
-  }
-
-  static void flushThresholdGuide({String padding = ' '}) {
-    GaplyLogger.i(padding + syncThresholdGuide, isForce: true);
   }
 
   static String get syncThresholdGuide =>

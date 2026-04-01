@@ -1,4 +1,4 @@
-import 'package:gaply/src/profiler/gaply_profiler.dart';
+import 'package:gaply/src/hub/profiler/gaply_profiler.dart';
 import 'gaply_noise.dart';
 
 mixin GaplyNoiseModifier<T> {
