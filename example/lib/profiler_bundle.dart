@@ -1,42 +1,25 @@
 import 'package:gaply/gaply.dart';
 
 class ProfilerBundle {
-  static GaplyProfiler lightProfiler = GaplyProfiler(
-    label: 'lightTheme',
-    children: [
-      GaplyHub.traceEngine(threshold: GaplyBudget.fps60),
-      GaplyHub.batchEngine(
-        threshold: GaplyBudget.all,
-        maxBatchInterval: GaplyBudget.fps60,
-        maxBatchCount: 100,
-      ),
-      GaplyHub.memoryEngine(thresholdBytes: GaplyBudget.mb1),
-    ],
+  static final traceEngine = GaplyTraceEngineSpec(threshold: GaplyBudget.fps60);
+  static final batchEngine = GaplyBatchEngineSpec(
+    threshold: GaplyBudget.all,
+    maxBatchInterval: GaplyBudget.fps60,
+    maxBatchCount: 100,
+  );
+  static final memoryEngine = GaplyMemoryEngineSpec(thresholdBytes: GaplyBudget.mb1);
+
+  static GaplyProfiler lightProfiler = GaplyHub.createProfiler(
+    id: 'lightTheme',
+    specs: [traceEngine, memoryEngine, batchEngine],
+  );
+  static GaplyProfiler darkProfiler = GaplyHub.createProfiler(
+    id: 'darkTheme',
+    specs: [traceEngine, memoryEngine, batchEngine],
   );
 
-  static GaplyProfiler darkProfiler = GaplyProfiler(
-    label: 'darkTheme',
-    children: [
-      GaplyHub.traceEngine(threshold: GaplyBudget.fps60),
-      GaplyHub.batchEngine(
-        threshold: GaplyBudget.all,
-        maxBatchInterval: GaplyBudget.fps60,
-        maxBatchCount: 100,
-      ),
-      GaplyHub.memoryEngine(thresholdBytes: GaplyBudget.mb1),
-    ],
-  );
-
-  static GaplyProfiler boxProfiler = GaplyProfiler(
-    label: 'StressBox',
-    children: [
-      GaplyHub.traceEngine(threshold: GaplyBudget.fps120),
-      GaplyHub.batchEngine(
-        threshold: GaplyBudget.all,
-        maxBatchInterval: GaplyBudget.instant,
-        maxBatchCount: 100,
-      ),
-      GaplyHub.memoryEngine(thresholdBytes: GaplyBudget.zeroBytes),
-    ],
+  static GaplyProfiler boxProfiler = GaplyHub.createProfiler(
+    id: 'StressBox',
+    specs: [traceEngine, memoryEngine, batchEngine],
   );
 }

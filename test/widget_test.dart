@@ -3,7 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:gaply/gaply.dart';
 
 Future<void> main() async {
-  GaplyHub.initialize();
+  GaplyHub.addDefaultLogger(const GaplyConsoleLoggerSpec());
   //testFade();
   //testColorSystem();
   await GaplyHub.dispose();

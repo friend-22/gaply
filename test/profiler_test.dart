@@ -1,44 +1,49 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:gaply/gaply.dart';
 
 Future<void> profilerTest() async {
-  GaplyHub.initialize();
+  const GaplyConsoleLoggerSpec().registerDefault();
+  //GaplyHub.addDefaultLogger(const GaplyConsoleLoggerSpec());
 
   // 1. Setup Engines
-  final traceEngine = GaplyHub.traceEngine(threshold: GaplyBudget.warning); // 8.3ms
-  final memoryEngine = GaplyHub.memoryEngine(thresholdBytes: GaplyBudget.mb1); // 1MB
-  final batchEngine = GaplyHub.batchEngine(
+  final traceEngine = GaplyTraceEngineSpec(threshold: GaplyBudget.warning); // 8.3ms
+  final memoryEngine = GaplyMemoryEngineSpec(thresholdBytes: GaplyBudget.mb1); // 1MB
+  final batchEngine = GaplyBatchEngineSpec(
     threshold: GaplyBudget.all,
     maxBatchInterval: const Duration(seconds: 2),
   );
 
   // 2. Initialize Profilers
-  final heavyProfiler = GaplyProfiler(label: 'HeavyTask', children: [traceEngine, memoryEngine]);
+  final heavyProfiler = GaplyHub.createProfiler(id: 'HeavyTask');
+  heavyProfiler.addEngine(traceEngine);
+  heavyProfiler.addEngine(memoryEngine);
+  heavyProfiler.addEngine(batchEngine);
 
-  final loopProfiler = GaplyProfiler(label: 'LoopTask', children: [batchEngine]);
+  final loopProfiler = GaplyProfiler(id: 'BatchTask').addEngine(batchEngine);
 
-  print('🚀 Starting Gaply Performance Test...\n');
+  debugPrint('🚀 Starting Gaply Performance Test...\n');
 
   // --- Test Case 1: Synchronous Heavy Task (Time & Memory) ---
   heavyProfiler.trace(() {
-    print('🧐 Running Sync Heavy Task...');
+    debugPrint('🧐 Running Sync Heavy Task...');
     // Artificial Delay (~15ms)
     final s = Stopwatch()..start();
     while (s.elapsedMilliseconds < 15) {}
 
     // Artificial Memory Allocation (~5MB)
     final list = List.generate(1000000, (i) => i);
-    print('   Allocated ${list.length} integers.');
+    debugPrint('   Allocated ${list.length} integers.');
   }, tag: 'InitialLoad');
 
   // --- Test Case 2: Async Task (Time Tracking) ---
   await heavyProfiler.trace(() async {
-    print('\n🌐 Running Async Network Simulation...');
+    debugPrint('\n🌐 Running Async Network Simulation...');
     await Future.delayed(const Duration(milliseconds: 500));
   }, tag: 'ApiCall');
 
   // --- Test Case 3: Batched Loop Task (Aggregation) ---
-  print('\n🔄 Running Loop Task (Batched)...');
+  debugPrint('\n🔄 Running Loop Task (Batched)...');
   for (int i = 0; i < 50; i++) {
     loopProfiler.trace(() {
       // Very fast task
@@ -49,9 +54,11 @@ Future<void> profilerTest() async {
   }
 
   // 3. Print Final Stats
-  print('\n--- [ Final Performance Report ] ---');
+  debugPrint('\n--- [ Final Performance Report ] ---');
   heavyProfiler.printStats();
   loopProfiler.printStats();
+
+  GaplyHub.dispose();
 }
 
 // 🚀 Starting Gaply Performance Test...

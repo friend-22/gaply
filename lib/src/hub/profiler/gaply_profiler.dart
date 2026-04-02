@@ -1,22 +1,26 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:isolate';
 
-import 'package:flutter/foundation.dart' show kDebugMode;
-import 'package:gaply/src/hub/logger/gaply_logger.dart';
+import 'package:equatable/equatable.dart';
+import 'package:flutter/foundation.dart';
+import 'package:gaply/src/hub/gaply_ansi.dart';
 
-import 'gaply_profiler_base.dart';
+import 'package:gaply/src/hub/gaply_budget.dart';
+import 'package:gaply/src/hub/gaply_hub.dart';
+
+part 'gaply_profiler_base.dart';
+part 'gaply_engine_specs.dart';
+part 'gaply_batch_engine.dart';
+part 'gaply_trace_engine.dart';
+part 'gaply_memory_engine.dart';
 
 class GaplyProfiler {
+  final String id;
   final bool enabled;
-  final String label;
-  final List<GaplyProfilerEngine> children;
+  final List<GaplyProfilerEngine> _engines;
 
   static const Object _depthKey = #gaply_profiler_depth;
-
-  const GaplyProfiler({required this.label, this.enabled = true, List<GaplyProfilerEngine>? children})
-    : children = children ?? const [];
-
-  const GaplyProfiler.none() : label = 'none', enabled = false, children = const [];
 
   static int get _currentDepth {
     try {
@@ -26,9 +30,53 @@ class GaplyProfiler {
     }
   }
 
+  const GaplyProfiler({required this.id, this.enabled = true, List<GaplyProfilerEngine>? engines})
+    : _engines = engines ?? const [];
+
+  const GaplyProfiler.none() : id = '', enabled = false, _engines = const [];
+
+  GaplyProfiler.withSpecs({required this.id, this.enabled = true, List<GaplyEngineSpec>? specs})
+    : _engines = const [] {
+    if (specs != null) {
+      for (final spec in specs) {
+        addEngine(spec);
+      }
+    }
+  }
+
+  GaplyProfiler addEngine(GaplyEngineSpec spec) {
+    if (_engineExists(spec)) {
+      GaplyHub.info('⚠️ [Gaply] Engine with this spec already exists: ${spec.id}');
+      return this;
+    }
+    _engines.add(_createEngineFactory(spec));
+    return this;
+  }
+
+  GaplyProfiler removeEngine(GaplyEngineSpec spec) {
+    final targets = _engines.where((e) => e.spec == spec).toList();
+
+    for (var engine in targets) {
+      engine.dispose();
+      _engines.remove(engine);
+    }
+    return this;
+  }
+
+  bool _engineExists(GaplyEngineSpec spec) {
+    return _engines.any((e) => e.spec.id == spec.id && spec.id.isNotEmpty);
+  }
+
+  String _getCategoryName(GaplyEngineSpec spec) {
+    if (spec is GaplyBatchEngineSpec) return GaplyBatchEngine.categoryName;
+    if (spec is GaplyMemoryEngineSpec) return GaplyMemoryEngine.categoryName;
+    if (spec is GaplyTraceEngineSpec) return GaplyTraceEngine.categoryName;
+    return 'Unknown';
+  }
+
   /// Executes and traces the performance of a given operation
   T trace<T>(T Function() operation, {String? tag}) {
-    if (!enabled || !kDebugMode || children.isEmpty) {
+    if (!enabled || !kDebugMode || _engines.isEmpty) {
       return operation();
     }
 
@@ -53,7 +101,7 @@ class GaplyProfiler {
                   })
                   .catchError((e) {
                     recordFinal(true, isError: true);
-                    GaplyLogger.error('❌ [ASYNC ERROR] $label: $e');
+                    GaplyHub.error('❌ [ASYNC ERROR] $id: $e');
                     throw e;
                   })
               as T;
@@ -63,7 +111,7 @@ class GaplyProfiler {
         return result;
       } catch (e) {
         recordFinal(false, isError: true);
-        GaplyLogger.error('❌ [SYNC ERROR] $label: $e');
+        GaplyHub.error('❌ [SYNC ERROR] $id: $e');
         rethrow;
       }
     }, zoneValues: {_depthKey: nextDepth});
@@ -84,55 +132,69 @@ class GaplyProfiler {
     final int endMem = ProcessInfo.currentRss;
     final int memoryDelta = endMem - startMem;
 
-    String cleanLabel = _cleanLabel(label);
     String? cleanTag = _cleanTag(tag);
 
-    final packet = ProfilePacket(
-      elapsed: sw.elapsed,
-      label: cleanLabel,
-      tag: cleanTag,
-      isAsync: isAsync,
-      depth: depth,
-      memoryDelta: memoryDelta,
-    );
-
-    for (var child in children) {
-      child.record(packet);
+    final data = [sw.elapsedMicroseconds, id, cleanTag, isAsync ? 1 : 0, depth, memoryDelta];
+    for (var child in _engines) {
+      child.record(data);
     }
   }
 
+  GaplyProfilerEngine _createEngineFactory(GaplyEngineSpec spec) {
+    final String finalId = spec.id.isEmpty ? '${_getCategoryName(spec)} + $id' : spec.id;
+
+    switch (spec) {
+      case GaplyBatchEngineSpec s:
+        return GaplyBatchEngine(spec: s.copyWith(id: finalId));
+      case GaplyMemoryEngineSpec s:
+        return GaplyMemoryEngine(spec: s.copyWith(id: finalId));
+      case GaplyTraceEngineSpec s:
+        return GaplyTraceEngine(spec: s.copyWith(id: finalId));
+    }
+
+    return _GaplyNoOpEngine();
+  }
+
   void printStats() {
-    GaplyLogger.info('\n--- [ $label - Final Performance Report ] ---', isForce: true);
-    for (final child in children) {
-      child.printStats(label);
-      GaplyLogger.info('', isForce: true);
+    GaplyHub.info('\n--- [ $id - Final Performance Report ] ---', isImmediate: true);
+    for (final child in _engines) {
+      child.printStats(id);
+      GaplyHub.info('', isImmediate: true);
     }
   }
 
   Future<void> dispose() async {
-    for (final child in children) {
+    for (final child in _engines) {
       await child.dispose();
     }
   }
 
-  bool _isValidLabel(String label) => RegExp(r'^[a-zA-Z0-9_]+$').hasMatch(label);
   bool _isValidTag(String? tag) => tag == null || RegExp(r'^[a-zA-Z0-9_:]+$').hasMatch(tag);
-
-  String _cleanLabel(String label) {
-    String cleanLabel = label;
-    if (!_isValidLabel(label)) {
-      cleanLabel = label.replaceAll(RegExp(r'[^a-zA-Z0-9_:]'), '_');
-      GaplyLogger.info('⚠️ [Gaply] Invalid label "$label" sanitized to "$cleanLabel"');
-    }
-    return cleanLabel;
-  }
 
   String? _cleanTag(String? tag) {
     String? cleanTag = tag;
     if (tag != null && !_isValidTag(tag)) {
       cleanTag = tag.replaceAll(RegExp(r'[^a-zA-Z0-9_:]'), '_');
-      GaplyLogger.info('⚠️ [Gaply] Invalid tag "$tag" sanitized to "$cleanTag"');
+      GaplyHub.info('⚠️ [Gaply] Invalid tag "$tag" sanitized to "$cleanTag"');
     }
     return cleanTag;
   }
+}
+
+class _GaplyNoOpEngine extends GaplyProfilerEngine {
+  static const String categoryName = '_GaplyNoOpEngine';
+
+  @override
+  final GaplyNoOpEngineSpec spec = const GaplyNoOpEngineSpec();
+
+  @override
+  String get category => GaplyTraceEngine.categoryName;
+
+  _GaplyNoOpEngine();
+
+  @override
+  void record(dynamic data) {}
+
+  @override
+  void onDataReceived(dynamic data) {}
 }

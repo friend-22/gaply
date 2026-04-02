@@ -1,37 +1,20 @@
 // ignore_for_file: avoid_slow_async_io
 
-import 'dart:async';
-import 'dart:convert';
-import 'dart:io' show FileMode, File, IOSink;
-
-import 'package:flutter/foundation.dart' show debugPrint;
-
-import 'gaply_logger_base.dart';
+part of '../gaply_hub.dart';
 
 class GaplyFileLogger extends GaplyLoggerEngine {
-  final File file;
-  final int maxBytes;
-  final FileMode _mode;
+  @override
+  final GaplyFileLoggerSpec spec;
 
+  final File _file;
   Future<void> _lock = Future.value();
   IOSink? _sink;
   int _currentFileBytes = 0;
 
   final List<String> _buffer = [];
   Timer? _flushTimer;
-  final int bufferCapacity;
-  final Duration flushInterval;
 
-  GaplyFileLogger(
-    String path, {
-    super.id,
-    Duration interval = Duration.zero,
-    FileMode mode = FileMode.append,
-    this.maxBytes = 5 * 1024 * 1024,
-    this.bufferCapacity = 20,
-    this.flushInterval = const Duration(seconds: 5),
-  }) : file = File(path),
-       _mode = mode {
+  GaplyFileLogger({required this.spec}) : _file = File(spec.path) {
     _enqueue(_initLogger);
   }
 
@@ -43,28 +26,33 @@ class GaplyFileLogger extends GaplyLoggerEngine {
 
   Future<void> _initLogger() async {
     try {
-      if (await file.exists()) {
-        _currentFileBytes = await file.length();
+      if (await _file.exists()) {
+        _currentFileBytes = await _file.length();
       } else {
         _currentFileBytes = 0;
       }
-      _sink = file.openWrite(mode: _mode, encoding: utf8);
+      _sink = _file.openWrite(mode: spec.mode, encoding: utf8);
     } catch (e) {
       debugPrint('❌ GaplyFileLogger Init Error: $e');
     }
   }
 
   @override
-  void write(LogPacket packet) {
-    if (packet.level.index < GaplyLogLevel.warning.index) return;
+  void write(dynamic data) {
+    final String text = data[LogPktIdx.text];
+    final bool isImmediate = data[LogPktIdx.isImmediate] == 1;
+    final GaplyLogLevel level = GaplyLogLevel.values[data[LogPktIdx.level]];
+    final DateTime timestamp = DateTime.fromMicrosecondsSinceEpoch(data[LogPktIdx.timestamp]);
 
-    final message = '${packet.timestamp} | [${packet.level.name}] | ${packet.text}';
+    if (level.index < GaplyLogLevel.warning.index) return;
+
+    final message = '$timestamp | [${level.name}] | $text';
     _buffer.add(message);
 
-    if (packet.isForce || _buffer.length >= bufferCapacity) {
+    if (isImmediate || _buffer.length >= spec.bufferCapacity) {
       _flush();
     } else {
-      _flushTimer ??= Timer(flushInterval, _flush);
+      _flushTimer ??= Timer(spec.flushInterval, _flush);
     }
   }
 
@@ -85,7 +73,7 @@ class GaplyFileLogger extends GaplyLoggerEngine {
     try {
       final List<int> bytes = utf8.encode(content);
 
-      if (_currentFileBytes + bytes.length > maxBytes) {
+      if (_currentFileBytes + bytes.length > spec.maxBytes) {
         await _rotateFileAsync();
       }
 
@@ -102,9 +90,9 @@ class GaplyFileLogger extends GaplyLoggerEngine {
       await _sink?.close();
       _sink = null;
 
-      final oldFile = File('${file.path}.old');
+      final oldFile = File('${_file.path}.old');
       if (await oldFile.exists()) await oldFile.delete();
-      if (await file.exists()) await file.rename(oldFile.path);
+      if (await _file.exists()) await _file.rename(oldFile.path);
 
       _currentFileBytes = 0;
       await _initLogger();

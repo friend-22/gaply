@@ -1,63 +1,69 @@
-import 'dart:async';
-import 'dart:isolate';
-
-import 'package:gaply/src/hub/logger/gaply_logger_base.dart';
-import 'package:gaply/src/hub/logger/gaply_logger.dart';
-import 'package:gaply/src/hub/gaply_hub.dart';
+part of 'gaply_profiler.dart';
 
 abstract class GaplyProfilerEngine<T extends GaplyProfilerStats> {
-  final GaplyLoggerEngine? customLogger;
-  final Duration threshold;
-  final int maxKeys;
-  final Duration maxIdleTime;
+  GaplyEngineSpec get spec;
 
   Map<String, T> statsMap = {};
   Timer? _cleanupTimer;
-  late SendPort _cachedPort;
 
-  GaplyProfilerEngine({
-    required this.threshold,
-    required this.maxKeys,
-    required this.maxIdleTime,
-    this.customLogger,
-  }) {
-    final channel =
-        GaplyHub.getChannel(category) ??
-        GaplyHub.createChannel(category, (packet) {
-          if (packet is ProfilePacket) {
-            _handleIncomingPacket(packet);
-          }
-        });
+  late GaplyChannel _channel;
+  late String _channelId;
+  late SendPort _channelPort;
+  late String _listenerId;
 
-    _cachedPort = channel.sendPort;
+  GaplyProfilerEngine() {
+    _channelId = _getGroupedChannelId(category, spec.threshold);
+    _channel = GaplyChannelPool.getChannel(_channelId);
+    _listenerId = _channel.registerListener(spec.id, (data) {
+      if (data is List) {
+        handleIncomingData(data);
+      }
+    });
+    _channelPort = _channel.sendPort;
 
     _cleanupTimer = Timer.periodic(const Duration(minutes: 1), (_) {
       _performCleanup();
     });
   }
 
+  String _getGroupedChannelId(String category, Duration threshold) {
+    final int ms = threshold.inMilliseconds;
+
+    if (ms <= 0) return 'Gaply_${category}_All';
+
+    if (ms <= 33) return 'Gaply_${category}_Fast';
+
+    final int group = (ms / 50).floor() * 50;
+    return 'Gaply_${category}_${group}ms';
+  }
+
   String get category;
 
-  void onPacketReceived(ProfilePacket packet);
-  void record(ProfilePacket packet);
+  void record(dynamic data);
+  void onDataReceived(dynamic data);
 
-  void _handleIncomingPacket(ProfilePacket packet) {
-    if (statsMap.length >= maxKeys) {
+  void handleIncomingData(dynamic data) {
+    if (statsMap.length >= spec.maxKeys) {
       statsMap.clear();
       warningLog('⚠️ [Gaply] $category: Memory limit reached. Map cleared.');
     }
-    onPacketReceived(packet);
+    onDataReceived(data);
   }
 
   void _performCleanup() {
     final now = DateTime.now();
-    statsMap.removeWhere((key, stats) {
-      final isIdle = now.difference(stats.lastLogTime) > maxIdleTime;
-      if (isIdle && stats.isNotEmpty) {
-        stats.dispose();
+    final keysToRemove = <String>[];
+
+    statsMap.forEach((key, stats) {
+      if (now.difference(stats.lastLogTime) > spec.maxIdleTime) {
+        keysToRemove.add(key);
       }
-      return isIdle;
     });
+
+    for (var key in keysToRemove) {
+      statsMap[key]?.dispose();
+      statsMap.remove(key);
+    }
   }
 
   void printStats(String label) {
@@ -68,29 +74,35 @@ abstract class GaplyProfilerEngine<T extends GaplyProfilerStats> {
     for (var stats in statsMap.values) {
       await stats.dispose();
     }
+
     _cleanupTimer?.cancel();
+    _cleanupTimer = null;
+
+    statsMap.clear();
+
+    _channel.removeListener(_listenerId);
   }
 
-  void sendPacket(ProfilePacket packet) {
-    _cachedPort.send(packet);
+  void sendPacket(dynamic payload) {
+    _channelPort.sendPacket(spec.id, payload);
   }
 }
 
 extension GaplyProfilerEngineX on GaplyProfilerEngine {
-  void debugLog(String text, {bool isForce = false}) {
-    GaplyLogger.dispatch(text, GaplyLogLevel.debug, isForce, engineId: customLogger?.id);
+  void debugLog(String text, {bool isImmediate = false}) {
+    GaplyHub.dispatch(text, GaplyLogLevel.debug, isImmediate, engineId: spec.customLogger?.id);
   }
 
-  void infoLog(String text, {bool isForce = false}) {
-    GaplyLogger.dispatch(text, GaplyLogLevel.info, isForce, engineId: customLogger?.id);
+  void infoLog(String text, {bool isImmediate = false}) {
+    GaplyHub.dispatch(text, GaplyLogLevel.info, isImmediate, engineId: spec.customLogger?.id);
   }
 
-  void warningLog(String text, {bool isForce = true}) {
-    GaplyLogger.dispatch(text, GaplyLogLevel.warning, isForce, engineId: customLogger?.id);
+  void warningLog(String text, {bool isImmediate = true}) {
+    GaplyHub.dispatch(text, GaplyLogLevel.warning, isImmediate, engineId: spec.customLogger?.id);
   }
 
-  void errorLog(String text, {bool isForce = true}) {
-    GaplyLogger.dispatch(text, GaplyLogLevel.error, isForce, engineId: customLogger?.id);
+  void errorLog(String text, {bool isImmediate = true}) {
+    GaplyHub.dispatch(text, GaplyLogLevel.error, isImmediate, engineId: spec.customLogger?.id);
   }
 }
 
@@ -106,20 +118,11 @@ abstract class GaplyProfilerStats {
   Future<void> dispose();
 }
 
-class ProfilePacket {
-  final Duration elapsed;
-  final String label;
-  final String? tag;
-  final bool isAsync;
-  final int depth;
-  final int memoryDelta;
-
-  ProfilePacket({
-    required this.elapsed,
-    required this.label,
-    this.tag,
-    required this.isAsync,
-    required this.depth,
-    required this.memoryDelta,
-  });
+abstract class ProfilerIdx {
+  static const int us = 0;
+  static const int id = 1;
+  static const int tag = 2;
+  static const int isAsync = 3;
+  static const int depth = 4;
+  static const int mem = 5;
 }

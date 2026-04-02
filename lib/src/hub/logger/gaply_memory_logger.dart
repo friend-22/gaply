@@ -1,15 +1,19 @@
-import 'gaply_logger_base.dart';
+part of '../gaply_hub.dart';
 
 class GaplyMemoryLogger extends GaplyLoggerEngine {
-  final List<String> _logs = [];
-  final int maxCapacity;
+  @override
+  final GaplyMemoryLoggerSpec spec;
 
-  GaplyMemoryLogger({super.id, this.maxCapacity = 1000});
+  final List<String> _logs = [];
+
+  GaplyMemoryLogger({required this.spec});
 
   @override
-  void write(LogPacket packet) {
-    if (_logs.length >= maxCapacity) _logs.removeAt(0);
-    _logs.add(packet.text);
+  void write(dynamic data) {
+    final String text = data[LogPktIdx.text];
+
+    if (_logs.length >= spec.maxCapacity) _logs.removeAt(0);
+    _logs.add(text);
   }
 
   List<String> get allLogs => List.unmodifiable(_logs);

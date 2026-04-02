@@ -1,37 +1,48 @@
-import 'package:flutter/foundation.dart' show debugPrint;
-import 'package:gaply/src/hub/gaply_hub.dart';
-
-import 'package:gaply/src/hub/gaply_throttler.dart';
-import 'package:gaply/src/hub/gaply_budget.dart';
-
-import 'gaply_logger_base.dart';
+part of '../gaply_hub.dart';
 
 class GaplyConsoleLogger extends GaplyLoggerEngine {
-  late final GaplyThrottler<LogPacket> _throttler;
+  @override
+  final GaplyConsoleLoggerSpec spec;
 
-  GaplyConsoleLogger({super.id, Duration interval = GaplyBudget.fps60}) {
-    _throttler = GaplyThrottler(
-      interval: interval,
-      onUpdate: (value) => _log(value),
-      shouldUpdate: (oldVal, newVal) => oldVal.text != newVal.text || oldVal.level != newVal.level,
-    );
+  final List<dynamic> _buffer = [];
+  Timer? _flushTimer;
+
+  GaplyConsoleLogger({required this.spec}) {
+    _flushTimer = Timer.periodic(spec.flushInterval, (_) => flush());
   }
 
   @override
-  void write(LogPacket packet) {
-    if (packet.isForce) {
-      _log(packet);
-      _throttler.reset();
+  void write(dynamic data) {
+    final bool isImmediate = data[LogPktIdx.isImmediate] == 1;
+
+    if (isImmediate) {
+      flush();
+      _log(data);
     } else {
-      _throttler.update(packet);
+      _buffer.add(data);
+
+      if (_buffer.length >= spec.bufferCapacity) flush();
     }
   }
 
-  void _log(LogPacket packet) {
+  void flush() {
+    if (_buffer.isEmpty) return;
+
+    for (final data in _buffer) {
+      _log(data);
+    }
+
+    _buffer.clear();
+  }
+
+  void _log(dynamic data) {
+    final GaplyLogLevel level = GaplyLogLevel.values[data[LogPktIdx.level]];
+    final String text = data[LogPktIdx.text];
+
     final a = GaplyHub.theme.ansi;
     String prefix = '';
 
-    switch (packet.level) {
+    switch (level) {
       case GaplyLogLevel.error:
         prefix = '${a.error}[ERROR]${a.reset} ';
         break;
@@ -48,6 +59,12 @@ class GaplyConsoleLogger extends GaplyLoggerEngine {
         break;
     }
 
-    debugPrint('$prefix${packet.text}');
+    debugPrint('$prefix$text');
+  }
+
+  @override
+  Future<void> dispose() async {
+    _flushTimer?.cancel();
+    flush();
   }
 }

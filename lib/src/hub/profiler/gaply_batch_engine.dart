@@ -1,52 +1,35 @@
-import 'dart:async';
-
-import 'package:gaply/src/hub/gaply_budget.dart';
-import 'package:gaply/src/hub/gaply_hub.dart';
-import 'gaply_profiler_base.dart';
+part of 'gaply_profiler.dart';
 
 /// [GaplyBatchEngine] - Collects data and flushes summaries periodically
 class GaplyBatchEngine extends GaplyProfilerEngine<BatchCollector> {
-  final Duration maxBatchInterval;
-  final int maxBatchCount;
+  static const String categoryName = 'GaplyBatch';
 
   @override
-  String get category => 'Batch';
-
-  GaplyBatchEngine({
-    super.customLogger,
-    Duration? threshold,
-    int? maxKeys,
-    Duration? maxIdleTime,
-    this.maxBatchInterval = GaplyBudget.fps60,
-    this.maxBatchCount = 100,
-  }) : super(
-         threshold: threshold ?? GaplyBudget.all,
-         maxKeys: maxKeys ?? 500,
-         maxIdleTime: maxIdleTime ?? const Duration(minutes: 5),
-       );
+  final GaplyBatchEngineSpec spec;
 
   @override
-  void onPacketReceived(ProfilePacket packet) {
-    final key = "${packet.label}${packet.tag != null ? '_${packet.tag}' : ''}";
-    statsMap
-        .putIfAbsent(
-          key,
-          () => BatchCollector(
-            engine: this,
-            label: packet.label,
-            tag: packet.tag,
-            maxInterval: maxBatchInterval,
-            maxCount: maxBatchCount,
-            threshold: threshold,
-          ),
-        )
-        .add(packet.elapsed.inMicroseconds);
+  String get category => GaplyTraceEngine.categoryName;
+
+  GaplyBatchEngine({required this.spec});
+
+  @override
+  void record(dynamic data) {
+    final List<dynamic> pkt = data;
+    final int elapsedUs = pkt[ProfilerIdx.us];
+
+    if (elapsedUs < spec.threshold.inMicroseconds) return;
+    sendPacket(data);
   }
 
   @override
-  void record(ProfilePacket packet) {
-    if (packet.elapsed < threshold) return;
-    sendPacket(packet);
+  void onDataReceived(dynamic data) {
+    final List<dynamic> pkt = data;
+    final int elapsedUs = pkt[ProfilerIdx.us];
+    final String labelId = pkt[ProfilerIdx.id];
+    final String? tag = pkt[ProfilerIdx.tag];
+
+    final key = "$labelId${tag != null ? '_$tag' : ''}";
+    statsMap.putIfAbsent(key, () => BatchCollector(engine: this, label: labelId, tag: tag)).add(elapsedUs);
   }
 }
 
@@ -54,9 +37,6 @@ class BatchCollector implements GaplyProfilerStats {
   final GaplyBatchEngine engine;
   final String label;
   final String? tag;
-  final Duration maxInterval;
-  final int maxCount;
-  final Duration threshold;
 
   int totalUs = 0;
   int count = 0;
@@ -73,15 +53,8 @@ class BatchCollector implements GaplyProfilerStats {
 
   Timer? _autoFlushTimer;
 
-  BatchCollector({
-    required this.engine,
-    required this.label,
-    this.tag,
-    required this.maxInterval,
-    required this.maxCount,
-    required this.threshold,
-  }) {
-    _autoFlushTimer = Timer.periodic(const Duration(seconds: 60), (_) {
+  BatchCollector({required this.engine, required this.label, this.tag}) {
+    _autoFlushTimer = Timer.periodic(const Duration(minutes: 1), (_) {
       if (isNotEmpty) flush();
     });
   }
@@ -95,8 +68,8 @@ class BatchCollector implements GaplyProfilerStats {
     if (us > maxSingleUs) maxSingleUs = us;
 
     final now = DateTime.now();
-    final bool isTimeOut = now.difference(lastLogTime) >= maxInterval;
-    final bool isCountOver = count >= maxCount;
+    final bool isTimeOut = now.difference(lastLogTime) >= engine.spec.maxBatchInterval;
+    final bool isCountOver = count >= engine.spec.maxBatchCount;
 
     if (isTimeOut || isCountOver) {
       flush();
@@ -112,7 +85,7 @@ class BatchCollector implements GaplyProfilerStats {
 
     final double avgMs = (totalUs / count) / 1000;
     final double totalMs = totalUs / 1000;
-    final double limit = threshold.inMicroseconds / 1000;
+    final double limit = engine.spec.threshold.inMicroseconds / 1000;
 
     final String tagStr = tag != null ? ' ${a.tag}@$tag${a.reset}' : '';
 
@@ -125,7 +98,7 @@ class BatchCollector implements GaplyProfilerStats {
       'Avg ${fmt.formatMs(avgMs, limit)} | '
       'Total ${a.label}${totalMs.toStringAsFixed(3).padLeft(7)}ms${a.reset} | '
       '$percentStr ${a.gray}($count calls)${a.reset}',
-      isForce: true,
+      isImmediate: true,
     );
 
     // 초기화 및 시간 갱신
@@ -143,7 +116,7 @@ class BatchCollector implements GaplyProfilerStats {
 
     final double avgMs = (globalTotalUs / globalCount) / 1000;
     final double maxMs = maxSingleUs / 1000;
-    final double limit = threshold.inMicroseconds / 1000;
+    final double limit = engine.spec.threshold.inMicroseconds / 1000;
 
     final String tagStr = tag != null ? ' ${a.tag}@$tag${a.reset}' : '';
 
@@ -152,7 +125,7 @@ class BatchCollector implements GaplyProfilerStats {
       '           Avg: ${fmt.formatMs(avgMs, limit)} | '
       'Max: ${a.accent}${maxMs.toStringAsFixed(3).padLeft(7)}ms${a.reset} | '
       'Total Calls: ${a.label}$globalCount${a.reset}',
-      isForce: true,
+      isImmediate: true,
     );
   }
 

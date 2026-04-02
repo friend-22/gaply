@@ -19,7 +19,7 @@ void main() async {
   final aa = GaplyBlurToken.resolve('key');
 
   GaplyHub.theme = GaplyAnsiTheme.dark;
-  GaplyHub.initialize();
+  GaplyHub.addDefaultLogger(const GaplyConsoleLoggerSpec());
 
   _setupGaplyThemes();
 

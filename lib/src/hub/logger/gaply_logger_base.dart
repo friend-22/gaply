@@ -1,34 +1,42 @@
-import 'package:equatable/equatable.dart';
-import 'package:flutter/foundation.dart';
+part of '../gaply_hub.dart';
 
 enum GaplyLogLevel { debug, info, warning, error, none }
 
 abstract class GaplyLoggerEngine {
-  final String? id;
+  GaplyLoggerSpec get spec;
+  String? get id => spec.id;
 
-  const GaplyLoggerEngine({this.id});
+  const GaplyLoggerEngine();
 
-  void write(LogPacket packet);
+  void write(dynamic data);
   Future<void> dispose() async {}
 }
 
-sdlfkjslkdjflksjdf
-@immutable
-class LogPacket extends Equatable {
-  final String text;
-  final bool isForce;
-  final GaplyLogLevel level;
-  final DateTime timestamp;
-  final String? engineId;
-
-  const LogPacket({
-    required this.text,
-    required this.isForce,
-    required this.level,
-    required this.timestamp,
-    this.engineId,
-  });
-
-  @override
-  List<Object?> get props => [text, isForce, level, timestamp, engineId];
+abstract class LogPktIdx {
+  static const int text = 0;
+  static const int isImmediate = 1;
+  static const int level = 2;
+  static const int timestamp = 3;
+  static const int engineId = 4;
 }
+
+//
+// @immutable
+// class LogPacket extends Equatable {
+//   final String text;
+//   final bool isImmediate;
+//   final GaplyLogLevel level;
+//   final DateTime timestamp;
+//   final String? engineId;
+//
+//   const LogPacket({
+//     required this.text,
+//     required this.isImmediate,
+//     required this.level,
+//     required this.timestamp,
+//     this.engineId,
+//   });
+//
+//   @override
+//   List<Object?> get props => [...super.props, text, isImmediate, level, timestamp, engineId];
+// }
