@@ -45,6 +45,7 @@ class GaplyTraceEngine extends GaplyProfilerEngine<TraceStats> {
     final String labelId = pkt[ProfilerIdx.id];
     final String? tag = pkt[ProfilerIdx.tag];
     final int depth = pkt[ProfilerIdx.depth];
+    final Map<String, dynamic>? metadata = pkt[ProfilerIdx.metadata];
 
     final double ms = elapsedUs / 1000;
     final double limit = spec.threshold.inMicroseconds / 1000;
@@ -55,9 +56,14 @@ class GaplyTraceEngine extends GaplyProfilerEngine<TraceStats> {
     final String indent = depth > 0 ? '${'  ' * depth}└ ' : '';
     final String tagStr = tag != null ? ' ${a.tag}@$tag${a.reset}' : '';
 
+    String metaStr = '';
+    if (metadata != null && metadata.isNotEmpty) {
+      metaStr = ' ${a.gray}meta:$metadata${a.reset}';
+    }
+
     infoLog(
       '${a.gray}[${DateTime.now().toString().substring(11, 19)}]${a.reset} '
-      '$indent$labelId$tagStr : ${fmt.formatMs(ms, limit)}',
+      '$indent$labelId$tagStr : ${fmt.formatMs(ms, limit)}$metaStr',
       isImmediate: false,
     );
   }
@@ -65,6 +71,9 @@ class GaplyTraceEngine extends GaplyProfilerEngine<TraceStats> {
 
 class TraceStats implements GaplyProfilerStats {
   final GaplyTraceEngine engine;
+
+  Map<String, dynamic>? maxSyncMeta;
+  Map<String, dynamic>? maxAsyncMeta;
 
   int syncCount = 0;
   int syncTotalUs = 0;
@@ -93,18 +102,24 @@ class TraceStats implements GaplyProfilerStats {
     });
   }
 
-  void add(int us, bool isAsync, String? tag, int thresholdUs) {
+  void add(int us, bool isAsync, String? tag, int thresholdUs, {Map<String, dynamic>? metadata}) {
     lastThresholdUs = thresholdUs;
     lastLogTime = DateTime.now();
 
     if (isAsync) {
       asyncCount++;
       asyncTotalUs += us;
-      if (us > asyncMaxUs) asyncMaxUs = us;
+      if (us > asyncMaxUs) {
+        asyncMaxUs = us;
+        maxAsyncMeta = metadata;
+      }
     } else {
       syncCount++;
       syncTotalUs += us;
-      if (us > syncMaxUs) syncMaxUs = us;
+      if (us > syncMaxUs) {
+        syncMaxUs = us;
+        maxSyncMeta = metadata;
+      }
 
       int distIdx;
       if (us < GaplyBudget.slow.inMicroseconds) {
@@ -160,6 +175,10 @@ class TraceStats implements GaplyProfilerStats {
           isImmediate: true,
         );
       });
+
+      if (maxSyncMeta != null) {
+        engine.infoLog('           ${a.gray}└ Max Meta: $maxSyncMeta${a.reset}', isImmediate: true);
+      }
     }
 
     if (asyncCount > 0) {
@@ -171,6 +190,9 @@ class TraceStats implements GaplyProfilerStats {
         'Max:${max.toStringAsFixed(2)}ms (Latency)',
         isImmediate: true,
       );
+      if (maxAsyncMeta != null) {
+        engine.infoLog('           ${a.gray}└ Max Meta: $maxAsyncMeta${a.reset}', isImmediate: true);
+      }
     }
   }
 
@@ -193,6 +215,8 @@ class TraceStats implements GaplyProfilerStats {
     asyncCount = 0;
     asyncTotalUs = 0;
     asyncMaxUs = 0;
+    maxSyncMeta = null;
+    maxAsyncMeta = null;
   }
 
   @override

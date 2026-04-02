@@ -2,26 +2,31 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gaply/gaply.dart';
 
-Future<void> main() async {
-  GaplyHub.addDefaultLogger(const GaplyConsoleLoggerSpec());
-  //testFade();
-  //testColorSystem();
-  await GaplyHub.dispose();
-}
+import 'profiler_test.dart';
 
-void testFade() {
-  testWidgets('Fade animation fades in', (WidgetTester tester) async {
-    await tester.pumpWidget(
-      MaterialApp(
-        home: Scaffold(
-          body: GaplyFadeWidget(style: GaplyFade(isVisible: true), child: SizedBox(width: 100, height: 100)),
-        ),
-      ),
-    );
-
-    expect(find.byType(FadeTransition), findsOneWidget);
+void main() async {
+  test('Gaply Hub Integration Test', () async {
+    print('--- Start Test ---');
+    await testHeavyHub();
+    print('--- End Test ---');
   });
+
+  print('--- Main Loop Finished (Waiting for Tests...) ---');
 }
+
+// void testFade() {
+//   testWidgets('Fade animation fades in', (WidgetTester tester) async {
+//     await tester.pumpWidget(
+//       MaterialApp(
+//         home: Scaffold(
+//           body: GaplyFadeWidget(style: GaplyFade(isVisible: true), child: SizedBox(width: 100, height: 100)),
+//         ),
+//       ),
+//     );
+//
+//     expect(find.byType(FadeTransition), findsOneWidget);
+//   });
+// }
 
 // void testColorSystem() {
 //   group('Gaply Color System & Preset Tests', () {

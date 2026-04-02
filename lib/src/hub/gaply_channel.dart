@@ -30,6 +30,9 @@ class GaplyChannelPool {
 }
 
 class GaplyChannel {
+  static const String systemPing = 'gaply_sync_ping';
+  static const String systemPong = 'gaply_sync_pong';
+
   final ReceivePort _receivePort = ReceivePort();
   final Map<String, Function(dynamic)> _listeners = {};
 
@@ -38,9 +41,25 @@ class GaplyChannel {
       if (data is List && data.length >= 2) {
         final String id = data[0];
         final dynamic payload = data[1];
+
+        if (id == systemPing) {
+          final SendPort replyPort = payload;
+          replyPort.send(systemPong);
+          return;
+        }
+
         _listeners[id]?.call(payload);
       }
     });
+  }
+
+  Future<void> waitForPendingMessages() async {
+    final responsePort = ReceivePort();
+
+    _receivePort.sendPort.send([systemPing, responsePort.sendPort]);
+
+    await responsePort.first;
+    responsePort.close();
   }
 
   String registerListener(String id, Function(dynamic) listener) {
@@ -54,7 +73,11 @@ class GaplyChannel {
 
   SendPort get sendPort => _receivePort.sendPort;
 
-  void dispose() => _receivePort.close();
+  Future<void> dispose() async {
+    await waitForPendingMessages();
+    _receivePort.close();
+    _listeners.clear();
+  }
 }
 
 extension GaplySendX on SendPort {

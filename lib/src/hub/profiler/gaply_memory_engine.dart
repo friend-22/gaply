@@ -29,17 +29,24 @@ class GaplyMemoryEngine extends GaplyProfilerEngine<MemoryStats> {
     final String? tag = pkt[ProfilerIdx.tag];
     final int depth = pkt[ProfilerIdx.depth];
     final int memoryDelta = pkt[ProfilerIdx.mem];
+    final Map<String, dynamic>? metadata = pkt[ProfilerIdx.metadata];
 
     final String statsKey = tag != null ? '$labelId@$tag' : labelId;
     final stats = statsMap.putIfAbsent(statsKey, () => MemoryStats(engine: this));
     stats.add(memoryDelta);
 
     if (memoryDelta.abs() >= spec.thresholdBytes) {
-      _log(memoryDelta, label: labelId, tag: tag, depth: depth);
+      _log(memoryDelta, label: labelId, tag: tag, depth: depth, metadata: metadata);
     }
   }
 
-  void _log(int delta, {required String label, String? tag, required int depth}) {
+  void _log(
+    int delta, {
+    required String label,
+    String? tag,
+    required int depth,
+    Map<String, dynamic>? metadata,
+  }) {
     final a = GaplyHub.theme.ansi;
     final String formatted = GaplyBudget.formatBytes(delta);
 
@@ -48,15 +55,22 @@ class GaplyMemoryEngine extends GaplyProfilerEngine<MemoryStats> {
     final String indent = depth > 0 ? '${'  ' * depth}└ ' : '';
     final String tagStr = tag != null ? ' ${a.tag}@$tag${a.reset}' : '';
 
+    String metaStr = '';
+    if (metadata != null && metadata.isNotEmpty) {
+      metaStr = ' ${a.gray}context:$metadata${a.reset}';
+    }
+
     infoLog(
       '${a.gray}[MEM]${a.reset} $indent$icon ${a.label}$label${a.reset}$tagStr : '
-      '$color${formatted.padLeft(10)}${a.reset}',
+      '$color${formatted.padLeft(10)}${a.reset}$metaStr',
     );
   }
 }
 
 class MemoryStats implements GaplyProfilerStats {
   final GaplyMemoryEngine engine;
+
+  Map<String, dynamic>? peakMetadata;
 
   int count = 0;
   int totalDelta = 0;
@@ -72,12 +86,17 @@ class MemoryStats implements GaplyProfilerStats {
 
   MemoryStats({required this.engine});
 
-  void add(int delta) {
+  void add(int delta, {Map<String, dynamic>? metadata}) {
     count++;
     totalDelta += delta;
     lastLogTime = DateTime.now();
 
-    if (delta > peakDelta) peakDelta = delta;
+    print('DEBUG: MemoryStats added data. current count: $count');
+
+    if (delta > peakDelta) {
+      peakDelta = delta;
+      peakMetadata = metadata;
+    }
     if (delta < minDelta) minDelta = delta;
   }
 
@@ -103,12 +122,18 @@ class MemoryStats implements GaplyProfilerStats {
       }
     }
 
+    String peakHint = '';
+    if (peakMetadata != null) {
+      peakHint = '\n      ${a.gray}└ Peak Context: $peakMetadata${a.reset}';
+    }
+
     engine.infoLog(
       '🧠 ${a.label}[MEMORY STATS] $label${a.reset} ${a.gray}(Budget: $limitStr)${a.reset}\n'
       '   Calls: $count | '
       'Avg Delta: ${a.label}$avgStr${a.reset} | '
       'Peak: $peakColor$peakStr$offsetStr${a.reset} | '
-      'Min: ${a.perf}$minStr${a.reset}',
+      'Min: ${a.perf}$minStr${a.reset} | '
+      '$peakHint',
       isImmediate: true,
     );
   }

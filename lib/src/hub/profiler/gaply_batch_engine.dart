@@ -27,9 +27,12 @@ class GaplyBatchEngine extends GaplyProfilerEngine<BatchCollector> {
     final int elapsedUs = pkt[ProfilerIdx.us];
     final String labelId = pkt[ProfilerIdx.id];
     final String? tag = pkt[ProfilerIdx.tag];
+    final Map<String, dynamic>? metadata = pkt[ProfilerIdx.metadata];
 
     final key = "$labelId${tag != null ? '_$tag' : ''}";
-    statsMap.putIfAbsent(key, () => BatchCollector(engine: this, label: labelId, tag: tag)).add(elapsedUs);
+    statsMap
+        .putIfAbsent(key, () => BatchCollector(engine: this, label: labelId, tag: tag))
+        .add(elapsedUs, metadata: metadata);
   }
 }
 
@@ -37,6 +40,8 @@ class BatchCollector implements GaplyProfilerStats {
   final GaplyBatchEngine engine;
   final String label;
   final String? tag;
+
+  Map<String, dynamic>? _lastMetadata;
 
   int totalUs = 0;
   int count = 0;
@@ -59,13 +64,17 @@ class BatchCollector implements GaplyProfilerStats {
     });
   }
 
-  void add(int us) {
+  void add(int us, {Map<String, dynamic>? metadata}) {
     totalUs += us;
     count++;
 
     globalTotalUs += us;
     globalCount++;
     if (us > maxSingleUs) maxSingleUs = us;
+
+    if (metadata != null) {
+      _lastMetadata = metadata;
+    }
 
     final now = DateTime.now();
     final bool isTimeOut = now.difference(lastLogTime) >= engine.spec.maxBatchInterval;
@@ -89,6 +98,11 @@ class BatchCollector implements GaplyProfilerStats {
 
     final String tagStr = tag != null ? ' ${a.tag}@$tag${a.reset}' : '';
 
+    String metaStr = '';
+    if (_lastMetadata != null && _lastMetadata!.isNotEmpty) {
+      metaStr = ' ${a.gray}meta:$_lastMetadata${a.reset}';
+    }
+
     final String percentStr = limit > 0
         ? ' ${a.gray}(${(avgMs / limit * 100).toStringAsFixed(1)}%)${a.reset}'
         : '';
@@ -97,13 +111,14 @@ class BatchCollector implements GaplyProfilerStats {
       '${a.gray}📦 [BATCH]${a.reset} ${a.label}$label$tagStr${a.reset} : '
       'Avg ${fmt.formatMs(avgMs, limit)} | '
       'Total ${a.label}${totalMs.toStringAsFixed(3).padLeft(7)}ms${a.reset} | '
-      '$percentStr ${a.gray}($count calls)${a.reset}',
+      '$percentStr ${a.gray}($count calls)${a.reset}$metaStr',
       isImmediate: true,
     );
 
     // 초기화 및 시간 갱신
     totalUs = 0;
     count = 0;
+    _lastMetadata = null;
     lastLogTime = DateTime.now();
   }
 

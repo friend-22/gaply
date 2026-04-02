@@ -71,9 +71,9 @@ class GaplyHub {
     _profilers[profiler.id]?.printStats();
   }
 
-  static void reportAll() {
+  static Future<void> reportAll() async {
     for (var profiler in _profilers.values) {
-      profiler.printStats();
+      await profiler.printStats();
     }
   }
 
@@ -88,6 +88,8 @@ class GaplyHub {
       dispatch(text, GaplyLogLevel.warning, isImmediate, engineId: null);
   static void error(String text, {bool isImmediate = true}) =>
       dispatch(text, GaplyLogLevel.error, isImmediate, engineId: null);
+  static void none(String text, {bool isImmediate = false}) =>
+      dispatch(text, GaplyLogLevel.none, isImmediate, engineId: null);
 
   // static GaplyLoggerEngine fileLogger(
   //   String path, {

@@ -66,11 +66,14 @@ abstract class GaplyProfilerEngine<T extends GaplyProfilerStats> {
     }
   }
 
-  void printStats(String label) {
+  Future<void> printStats(String label) async {
+    await _channel.waitForPendingMessages();
     statsMap.entries.where((e) => e.key.startsWith(label)).forEach((e) => e.value.printSummary(label));
   }
 
   Future<void> dispose() async {
+    await _channel.waitForPendingMessages();
+
     for (var stats in statsMap.values) {
       await stats.dispose();
     }
@@ -84,7 +87,7 @@ abstract class GaplyProfilerEngine<T extends GaplyProfilerStats> {
   }
 
   void sendPacket(dynamic payload) {
-    _channelPort.sendPacket(spec.id, payload);
+    _channelPort.sendPacket(_listenerId, payload);
   }
 }
 
@@ -125,4 +128,5 @@ abstract class ProfilerIdx {
   static const int isAsync = 3;
   static const int depth = 4;
   static const int mem = 5;
+  static const int metadata = 6;
 }

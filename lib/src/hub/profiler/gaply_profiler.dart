@@ -36,7 +36,7 @@ class GaplyProfiler {
   const GaplyProfiler.none() : id = '', enabled = false, _engines = const [];
 
   GaplyProfiler.withSpecs({required this.id, this.enabled = true, List<GaplyEngineSpec>? specs})
-    : _engines = const [] {
+    : _engines = [] {
     if (specs != null) {
       for (final spec in specs) {
         addEngine(spec);
@@ -75,43 +75,26 @@ class GaplyProfiler {
   }
 
   /// Executes and traces the performance of a given operation
-  T trace<T>(T Function() operation, {String? tag}) {
-    if (!enabled || !kDebugMode || _engines.isEmpty) {
-      return operation();
-    }
+  T trace<T>(T Function() operation, {String? tag, Map<String, dynamic>? metadata}) {
+    if (!enabled || !kDebugMode || _engines.isEmpty) return operation();
 
-    final int nextDepth = _currentDepth + 1;
+    final nextDepth = _currentDepth + 1;
     final sw = Stopwatch()..start();
-    final int startMem = ProcessInfo.currentRss;
-
-    void recordFinal(bool isAsync, {bool isError = false}) {
-      if (!sw.isRunning) return;
-      _handleRecord(sw, startMem, isError ? '${tag ?? 'task'}:error' : tag, nextDepth, isAsync);
-    }
+    final startMem = ProcessInfo.currentRss;
 
     return runZoned(() {
       try {
         final result = operation();
 
         if (result is Future) {
-          return result
-                  .then((value) {
-                    recordFinal(true);
-                    return value;
-                  })
-                  .catchError((e) {
-                    recordFinal(true, isError: true);
-                    GaplyHub.error('❌ [ASYNC ERROR] $id: $e');
-                    throw e;
-                  })
-              as T;
+          GaplyHub.warning('⚠️ [Gaply] Use traceAsync for Future operations.');
+          return result;
         }
 
-        recordFinal(false);
+        _handleRecord(sw, startMem, tag, nextDepth, false, metadata);
         return result;
       } catch (e) {
-        recordFinal(false, isError: true);
-        GaplyHub.error('❌ [SYNC ERROR] $id: $e');
+        _handleRecord(sw, startMem, '${tag ?? 'task'}:error', nextDepth, false, metadata);
         rethrow;
       }
     }, zoneValues: {_depthKey: nextDepth});
@@ -120,21 +103,45 @@ class GaplyProfiler {
   Future<T> traceAsync<T>(
     Future<T> Function() operation, {
     String? tag,
+    Map<String, dynamic>? metadata,
     Duration timeout = const Duration(seconds: 60),
   }) async {
-    return trace(() async {
-      return await operation().timeout(timeout);
-    }, tag: tag);
+    if (!enabled || !kDebugMode || _engines.isEmpty) {
+      return operation().timeout(timeout);
+    }
+
+    final nextDepth = _currentDepth + 1;
+    final sw = Stopwatch()..start();
+    final startMem = ProcessInfo.currentRss;
+
+    return await runZoned(() async {
+      try {
+        final T result = await operation().timeout(timeout);
+        _handleRecord(sw, startMem, tag, nextDepth, true, metadata);
+        return result;
+      } catch (e) {
+        _handleRecord(sw, startMem, '${tag ?? 'task'}:error', nextDepth, true, metadata);
+        GaplyHub.error('❌ [ASYNC ERROR] $id: $e');
+        rethrow;
+      }
+    }, zoneValues: {_depthKey: nextDepth});
   }
 
-  void _handleRecord(Stopwatch sw, int startMem, String? tag, int depth, bool isAsync) {
+  void _handleRecord(
+    Stopwatch sw,
+    int startMem,
+    String? tag,
+    int depth,
+    bool isAsync,
+    Map<String, dynamic>? metadata,
+  ) {
     sw.stop();
     final int endMem = ProcessInfo.currentRss;
     final int memoryDelta = endMem - startMem;
 
     String? cleanTag = _cleanTag(tag);
 
-    final data = [sw.elapsedMicroseconds, id, cleanTag, isAsync ? 1 : 0, depth, memoryDelta];
+    final data = [sw.elapsedMicroseconds, id, cleanTag, isAsync ? 1 : 0, depth, memoryDelta, metadata];
     for (var child in _engines) {
       child.record(data);
     }
@@ -155,11 +162,10 @@ class GaplyProfiler {
     return _GaplyNoOpEngine();
   }
 
-  void printStats() {
+  Future<void> printStats() async {
     GaplyHub.info('\n--- [ $id - Final Performance Report ] ---', isImmediate: true);
     for (final child in _engines) {
-      child.printStats(id);
-      GaplyHub.info('', isImmediate: true);
+      await child.printStats(id);
     }
   }
 
@@ -188,7 +194,7 @@ class _GaplyNoOpEngine extends GaplyProfilerEngine {
   final GaplyNoOpEngineSpec spec = const GaplyNoOpEngineSpec();
 
   @override
-  String get category => GaplyTraceEngine.categoryName;
+  String get category => _GaplyNoOpEngine.categoryName;
 
   _GaplyNoOpEngine();
 
