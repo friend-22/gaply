@@ -126,6 +126,10 @@ class BatchCollector implements GaplyProfilerStats {
   void printSummary(String label) {
     if (globalCount == 0) return;
 
+    if (isNotEmpty) {
+      flush();
+    }
+
     final a = GaplyHub.theme.ansi;
     final fmt = GaplyHub.theme.formatter;
 

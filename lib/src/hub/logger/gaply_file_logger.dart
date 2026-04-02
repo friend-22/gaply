@@ -50,13 +50,14 @@ class GaplyFileLogger extends GaplyLoggerEngine {
     _buffer.add(message);
 
     if (isImmediate || _buffer.length >= spec.bufferCapacity) {
-      _flush();
+      flush();
     } else {
-      _flushTimer ??= Timer(spec.flushInterval, _flush);
+      _flushTimer ??= Timer(spec.flushInterval, flush);
     }
   }
 
-  void _flush() {
+  @override
+  Future<void> flush() async {
     if (_buffer.isEmpty) return;
 
     final String content = '${_buffer.join('\n')}\n';

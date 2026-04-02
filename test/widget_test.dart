@@ -5,13 +5,14 @@ import 'package:gaply/gaply.dart';
 import 'profiler_test.dart';
 
 void main() async {
-  test('Gaply Hub Integration Test', () async {
-    print('--- Start Test ---');
-    await testHeavyHub();
-    print('--- End Test ---');
-  });
+  const GaplyConsoleLoggerSpec(
+    id: 'MainConsole',
+    flushInterval: Duration(milliseconds: 100),
+  ).registerDefault();
 
-  print('--- Main Loop Finished (Waiting for Tests...) ---');
+  test('Gaply Hub Integration Test', () async {
+    await testExtremeMemory();
+  });
 }
 
 // void testFade() {

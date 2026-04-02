@@ -16,5 +16,10 @@ class GaplyMemoryLogger extends GaplyLoggerEngine {
     _logs.add(text);
   }
 
+  @override
+  Future<void> flush() async {
+    _logs.clear();
+  }
+
   List<String> get allLogs => List.unmodifiable(_logs);
 }

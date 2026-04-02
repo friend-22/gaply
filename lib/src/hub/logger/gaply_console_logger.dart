@@ -6,6 +6,7 @@ class GaplyConsoleLogger extends GaplyLoggerEngine {
 
   final List<dynamic> _buffer = [];
   Timer? _flushTimer;
+  bool _isFlushing = false;
 
   GaplyConsoleLogger({required this.spec}) {
     _flushTimer = Timer.periodic(spec.flushInterval, (_) => flush());
@@ -16,7 +17,6 @@ class GaplyConsoleLogger extends GaplyLoggerEngine {
     final bool isImmediate = data[LogPktIdx.isImmediate] == 1;
 
     if (isImmediate) {
-      flush();
       _log(data);
     } else {
       _buffer.add(data);
@@ -25,14 +25,20 @@ class GaplyConsoleLogger extends GaplyLoggerEngine {
     }
   }
 
-  void flush() {
-    if (_buffer.isEmpty) return;
+  @override
+  Future<void> flush() async {
+    if (_isFlushing || _buffer.isEmpty) return;
 
-    for (final data in _buffer) {
-      _log(data);
+    try {
+      final logsToPrint = List.from(_buffer);
+      _buffer.clear();
+
+      for (final data in logsToPrint) {
+        _log(data);
+      }
+    } finally {
+      _isFlushing = false;
     }
-
-    _buffer.clear();
   }
 
   void _log(dynamic data) {
@@ -65,6 +71,6 @@ class GaplyConsoleLogger extends GaplyLoggerEngine {
   @override
   Future<void> dispose() async {
     _flushTimer?.cancel();
-    flush();
+    await flush();
   }
 }

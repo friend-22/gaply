@@ -3,6 +3,7 @@ part of '../gaply_hub.dart';
 class _GaplyLogger {
   static const String _channelId = 'GaplyLogger';
   static GaplyLogLevel level = GaplyLogLevel.debug;
+  static late _GaplyLogger _instance;
 
   final Map<String, GaplyLoggerEngine> _customEngines = {};
   GaplyCompositeLogger _defaultEngine = GaplyCompositeLogger();
@@ -19,6 +20,7 @@ class _GaplyLogger {
       }
     });
     _channelPort = _channel.sendPort;
+    _instance = this;
   }
 
   void _handleIncomingData(dynamic data) {
@@ -77,6 +79,7 @@ class _GaplyLogger {
   }
 
   Future<void> dispose() async {
+    await _channel.waitForPendingMessages();
     await _defaultEngine.dispose();
     await Future.wait(_customEngines.values.map((e) => e.dispose()));
     GaplyChannelPool.removeChannel(_channelId);
@@ -95,6 +98,10 @@ class _GaplyLogger {
 
     _channelPort.sendPacket(_listenerId, logData);
   }
+
+  static Future<void> waitForPendingMessages() async {
+    await _instance._channel.waitForPendingMessages();
+  }
 }
 
 class _GaplyNoOpLogger extends GaplyLoggerEngine {
@@ -102,9 +109,6 @@ class _GaplyNoOpLogger extends GaplyLoggerEngine {
   final GaplyNoOpLoggerSpec spec = const GaplyNoOpLoggerSpec();
 
   const _GaplyNoOpLogger();
-
-  @override
-  void write(dynamic data) {}
 }
 
 class GaplyCompositeLogger extends GaplyLoggerEngine {
@@ -151,5 +155,11 @@ class GaplyCompositeLogger extends GaplyLoggerEngine {
   @override
   Future<void> dispose() {
     return Future.wait(_engines.map((l) => l.dispose()));
+  }
+
+  @override
+  Future<void> flush() async {
+    await _GaplyLogger.waitForPendingMessages();
+    await Future.wait(_engines.map((l) => l.flush()));
   }
 }

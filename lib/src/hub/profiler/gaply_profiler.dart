@@ -19,6 +19,7 @@ class GaplyProfiler {
   final String id;
   final bool enabled;
   final List<GaplyProfilerEngine> _engines;
+  bool _hasMemoryEngine = false;
 
   static const Object _depthKey = #gaply_profiler_depth;
 
@@ -30,10 +31,10 @@ class GaplyProfiler {
     }
   }
 
-  const GaplyProfiler({required this.id, this.enabled = true, List<GaplyProfilerEngine>? engines})
+  GaplyProfiler({required this.id, this.enabled = true, List<GaplyProfilerEngine>? engines})
     : _engines = engines ?? const [];
 
-  const GaplyProfiler.none() : id = '', enabled = false, _engines = const [];
+  GaplyProfiler.none() : id = '', enabled = false, _engines = const [];
 
   GaplyProfiler.withSpecs({required this.id, this.enabled = true, List<GaplyEngineSpec>? specs})
     : _engines = [] {
@@ -50,6 +51,7 @@ class GaplyProfiler {
       return this;
     }
     _engines.add(_createEngineFactory(spec));
+    _hasMemoryEngine = _hasMemoryEngine || spec is GaplyMemoryEngineSpec;
     return this;
   }
 
@@ -60,6 +62,8 @@ class GaplyProfiler {
       engine.dispose();
       _engines.remove(engine);
     }
+
+    _hasMemoryEngine = _engines.any((e) => e is GaplyMemoryEngine);
     return this;
   }
 
@@ -80,7 +84,7 @@ class GaplyProfiler {
 
     final nextDepth = _currentDepth + 1;
     final sw = Stopwatch()..start();
-    final startMem = ProcessInfo.currentRss;
+    final startMem = _hasMemoryEngine ? ProcessInfo.currentRss : 0;
 
     return runZoned(() {
       try {
@@ -136,7 +140,7 @@ class GaplyProfiler {
     Map<String, dynamic>? metadata,
   ) {
     sw.stop();
-    final int endMem = ProcessInfo.currentRss;
+    final int endMem = _hasMemoryEngine ? ProcessInfo.currentRss : 0;
     final int memoryDelta = endMem - startMem;
 
     String? cleanTag = _cleanTag(tag);

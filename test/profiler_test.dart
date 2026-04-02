@@ -2,6 +2,45 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:gaply/gaply.dart';
 
+Future<void> testExtremeMemory() async {
+  final netProfiler = GaplyHub.createProfiler(
+    id: 'HeavyNet',
+    specs: [
+      const GaplyBatchEngineSpec(
+        id: 'Batch100',
+        threshold: Duration.zero, // 모든 호출 기록
+      ),
+
+      const GaplyMemoryEngineSpec(threshold: GaplyBudget.batchFlushLazy),
+    ],
+  );
+
+  final int totalCount = 1000; // 1만 건으로 점프!
+  print('--- Memory Stress Test Start: $totalCount tasks ---');
+
+  final tasks = List.generate(totalCount, (i) {
+    return netProfiler.traceAsync(() async {
+      if (i % 10 == 0) {
+        // 1000개 보낼 때마다 아주 잠깐(1ms) 쉬어서 포트가 비워질 시간을 줌
+        await Future.delayed(const Duration(milliseconds: 1));
+      }
+      return i;
+    }, tag: 'stress_task');
+  });
+
+  // 1. 발신 속도 측정
+  final watch = Stopwatch()..start();
+  await Future.wait(tasks);
+  watch.stop();
+
+  print('DEBUG: Sending $totalCount packets took ${watch.elapsedMilliseconds}ms');
+
+  // 2. 수신 및 처리 완료 대기
+  await GaplyHub.reportAll();
+
+  print('--- Memory Stress Test End ---');
+}
+
 Future<void> testHeavyHub() async {
   print('--- Heavy Load Start ---');
 
@@ -20,23 +59,22 @@ Future<void> testHeavyHub() async {
     return netProfiler.traceAsync(() async {
       // 각 작업마다 미세하게 다른 지연 시간 (동시성 극대화)
       await Future.delayed(Duration(milliseconds: i % 10));
+      if (i % 2 == 0) throw Exception('Panic $i');
       return i;
     }, tag: 'heavy_task');
-  });
+  }).map((f) => f.catchError((_) => -1)).toList();
 
   // 2. 모든 작업이 끝날 때까지 대기
   await Future.wait(tasks);
+
   print('DEBUG: All 100 traceAsync operations finished!');
 
   // 3. [가혹한 구간] 채널에 쌓인 100개의 패킷이 소화될 때까지 flush!
   // 만약 flush가 부실하다면 리포트의 Total Calls는 100보다 작게 나옵니다.
 
-  await Future.delayed(Duration(seconds: 1));
-
   // 4. 리포트 출력
   await GaplyHub.reportAll();
-
-  await Future.delayed(Duration(seconds: 1));
+  await GaplyHub.dispose();
 
   print('--- Heavy Load End ---');
 }

@@ -41,6 +41,8 @@ class GaplyHub {
   }
 
   static Future<void> dispose() async {
+    _logger._defaultEngine.flush();
+
     for (var profiler in _profilers.values) {
       await profiler.dispose();
     }
@@ -72,6 +74,8 @@ class GaplyHub {
   }
 
   static Future<void> reportAll() async {
+    await _logger._defaultEngine.flush();
+
     for (var profiler in _profilers.values) {
       await profiler.printStats();
     }
@@ -90,6 +94,7 @@ class GaplyHub {
       dispatch(text, GaplyLogLevel.error, isImmediate, engineId: null);
   static void none(String text, {bool isImmediate = false}) =>
       dispatch(text, GaplyLogLevel.none, isImmediate, engineId: null);
+  static Future<void> flush() async => await _logger._defaultEngine.flush();
 
   // static GaplyLoggerEngine fileLogger(
   //   String path, {

@@ -91,8 +91,6 @@ class MemoryStats implements GaplyProfilerStats {
     totalDelta += delta;
     lastLogTime = DateTime.now();
 
-    print('DEBUG: MemoryStats added data. current count: $count');
-
     if (delta > peakDelta) {
       peakDelta = delta;
       peakMetadata = metadata;

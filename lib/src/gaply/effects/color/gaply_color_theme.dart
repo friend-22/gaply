@@ -70,7 +70,7 @@ class GaplyColorTheme extends GaplyThemeData<GaplyColorTheme>
         if (beginColor != null && endColor != null) {
           lerpColors[key] = beginColor.lerp(endColor, t);
         } else {
-          lerpColors[key] = (t < 0.5 ? beginColor : endColor) ?? const GaplyColor.none();
+          lerpColors[key] = (t < 0.5 ? beginColor : endColor) ?? GaplyColor.none();
         }
       }
 
@@ -115,7 +115,7 @@ mixin _GaplyColorThemeMixin {
   }
 
   GaplyColor getColor(Object token) {
-    return _self.colors[GaplyColorToken.resolve(token)] ?? const GaplyColor.none();
+    return _self.colors[GaplyColorToken.resolve(token)] ?? GaplyColor.none();
   }
 
   Color? toColor(BuildContext context, Object token) {

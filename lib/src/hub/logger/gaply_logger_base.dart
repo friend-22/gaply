@@ -8,8 +8,10 @@ abstract class GaplyLoggerEngine {
 
   const GaplyLoggerEngine();
 
-  void write(dynamic data);
   Future<void> dispose() async {}
+
+  void write(dynamic data) {}
+  Future<void> flush() async {}
 }
 
 abstract class LogPktIdx {
