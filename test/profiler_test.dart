@@ -2,20 +2,75 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:gaply/gaply.dart';
 
+Future<void> testParallelExplosion() async {
+  final net = GaplyHub.createProfiler(
+    id: 'NET',
+    specs: [const GaplyBatchEngineSpec(id: 'B')],
+  );
+  final img = GaplyHub.createProfiler(
+    id: 'IMG',
+    specs: [const GaplyMemoryEngineSpec(thresholdBytes: GaplyBudget.kb1)],
+  );
+  final db = GaplyHub.createProfiler(
+    id: 'DB',
+    specs: [
+      const GaplyBatchEngineSpec(id: 'B'),
+      const GaplyMemoryEngineSpec(thresholdBytes: GaplyBudget.kb1),
+    ],
+  );
+
+  print('--- 🚀 Parallel Explosion Start ---');
+  final watch = Stopwatch()..start();
+
+  // 3개의 엔진에 총 30,000개의 작업을 병렬로 주입
+  await Future.wait([
+    // 1. 네트워크: 지연 위주
+    ...List.generate(
+      10000,
+      (i) => net.traceAsync(() => Future.delayed(const Duration(milliseconds: 100)), tag: 'api_call'),
+    ),
+
+    // 2. 이미지: 메모리 폭발 위주
+    ...List.generate(
+      100,
+      (i) => img.traceAsync(() async {
+        final data = List.generate(10000, (index) => index);
+        await Future.delayed(const Duration(milliseconds: 20)); // 💡 게이트가 열릴 시간을 줌
+        return data.length;
+      }, tag: 'decode'),
+    ),
+
+    // 3. DB: 혼합형
+    ...List.generate(
+      10000,
+      (i) => db.traceAsync(() => Future.delayed(Duration(milliseconds: i % 5)), tag: 'query'),
+    ),
+  ]);
+
+  watch.stop();
+  print('--- 🏁 All 30,000 Parallel Tasks Finished in ${watch.elapsedMilliseconds}ms ---');
+
+  await Future.delayed(const Duration(milliseconds: 100));
+
+  print('--- 📊 Generating Final Report ---');
+}
+
 Future<void> testExtremeMemory() async {
   final netProfiler = GaplyHub.createProfiler(
     id: 'HeavyNet',
     specs: [
       const GaplyBatchEngineSpec(
         id: 'Batch100',
-        threshold: Duration.zero, // 모든 호출 기록
+        threshold: GaplyBudget.fps120, // 모든 호출 기록
+        maxBatchCount: 1000,
+        maxBatchInterval: Duration(minutes: 1),
       ),
 
-      const GaplyMemoryEngineSpec(threshold: GaplyBudget.batchFlushLazy),
+      const GaplyMemoryEngineSpec(thresholdBytes: GaplyBudget.kb1),
     ],
   );
 
-  final int totalCount = 1000; // 1만 건으로 점프!
+  final int totalCount = 100000; // 1만 건으로 점프!
   print('--- Memory Stress Test Start: $totalCount tasks ---');
 
   final tasks = List.generate(totalCount, (i) {
@@ -80,13 +135,6 @@ Future<void> testHeavyHub() async {
 }
 
 Future<void> testHub() async {
-  const GaplyConsoleLoggerSpec(
-    id: 'MainConsole',
-    flushInterval: Duration(milliseconds: 100),
-  ).registerDefault();
-
-  const GaplyMemoryLoggerSpec(id: 'TempMemory', maxCapacity: 500).registerDefault();
-
   GaplyHub.info('🚀 Gaply System Initialized!');
 
   final netProfiler = GaplyProfiler.withSpecs(
@@ -97,16 +145,16 @@ Future<void> testHub() async {
     ],
   );
 
-  await netProfiler.traceAsync(
-    () async {
-      GaplyHub.debug('Fetching user data from API...');
+  await netProfiler.traceAsync(() async {
+    GaplyHub.debug('Fetching user data from API...');
 
-      // 가상의 네트워크 지연 및 메모리 사용 시뮬레이션
-      await Future.delayed(const Duration(milliseconds: 700));
-    },
-    tag: 'fetch_user_data',
-    metadata: {'url': 'https://api.gaply.com/user'},
-  );
+    final dummyData = List.generate(1024 * 1024, (i) => i);
+
+    // 가상의 네트워크 지연 및 메모리 사용 시뮬레이션
+    await Future.delayed(const Duration(milliseconds: 700));
+
+    print('Data size: ${dummyData.length}');
+  }, tag: 'fetch_user_data');
   print('DEBUG: traceAsync finished!');
 
   netProfiler.printStats();
@@ -114,9 +162,6 @@ Future<void> testHub() async {
 }
 
 Future<void> profilerTest() async {
-  const GaplyConsoleLoggerSpec().registerDefault();
-  //GaplyHub.addDefaultLogger(const GaplyConsoleLoggerSpec());
-
   // 1. Setup Engines
   final traceEngine = GaplyTraceEngineSpec(threshold: GaplyBudget.warning); // 8.3ms
   final memoryEngine = GaplyMemoryEngineSpec(thresholdBytes: GaplyBudget.mb1); // 1MB
@@ -131,7 +176,7 @@ Future<void> profilerTest() async {
   heavyProfiler.addEngine(memoryEngine);
   heavyProfiler.addEngine(batchEngine);
 
-  final loopProfiler = GaplyProfiler(id: 'BatchTask').addEngine(batchEngine);
+  final loopProfiler = GaplyHub.createProfiler(id: 'BatchTask').addEngine(batchEngine);
 
   debugPrint('🚀 Starting Gaply Performance Test...\n');
 
@@ -148,7 +193,7 @@ Future<void> profilerTest() async {
   }, tag: 'InitialLoad');
 
   // --- Test Case 2: Async Task (Time Tracking) ---
-  await heavyProfiler.trace(() async {
+  await heavyProfiler.traceAsync(() async {
     debugPrint('\n🌐 Running Async Network Simulation...');
     await Future.delayed(const Duration(milliseconds: 500));
   }, tag: 'ApiCall');
@@ -166,10 +211,6 @@ Future<void> profilerTest() async {
 
   // 3. Print Final Stats
   debugPrint('\n--- [ Final Performance Report ] ---');
-  heavyProfiler.printStats();
-  loopProfiler.printStats();
-
-  GaplyHub.dispose();
 }
 
 // 🚀 Starting Gaply Performance Test...

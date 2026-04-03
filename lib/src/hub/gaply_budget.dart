@@ -29,6 +29,12 @@ class GaplyBudget {
   static const Duration batchFlushNormal = micro; // Balanced flushing
   static const Duration batchFlushLazy = smooth60; // Resource-saving flushing
 
+  static const int memoryTrack240 = 4;
+  static const int memoryTrack120 = 8;
+  static const int memoryTrack60 = 16;
+  static const int memoryTrack30 = 32;
+  static const int memoryTrack15 = 64;
+
   // --- [Helper Methods] ---
   /// Creates a Duration from microseconds
   static Duration us(num amount) => Duration(microseconds: amount.toInt());

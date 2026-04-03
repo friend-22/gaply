@@ -2,7 +2,7 @@ part of 'gaply_profiler.dart';
 
 @immutable
 abstract class GaplyEngineSpec extends Equatable {
-  final String id;
+  final String? id;
   final GaplyLoggerEngine? customLogger;
   final Duration threshold;
   final int maxStats;
@@ -11,7 +11,7 @@ abstract class GaplyEngineSpec extends Equatable {
   bool get enableMemoryTracking => false;
 
   const GaplyEngineSpec({
-    required this.id,
+    this.id,
     required this.threshold,
     required this.maxStats,
     required this.statsLifetime,
@@ -33,7 +33,7 @@ abstract class GaplyEngineSpec extends Equatable {
 @immutable
 class GaplyNoOpEngineSpec extends GaplyEngineSpec {
   const GaplyNoOpEngineSpec({
-    super.id = '',
+    super.id,
     super.customLogger,
     super.threshold = Duration.zero,
     super.maxStats = 0,
@@ -58,7 +58,7 @@ class GaplyBatchEngineSpec extends GaplyEngineSpec {
   final int maxBatchCount;
 
   const GaplyBatchEngineSpec({
-    String? id,
+    super.id,
     super.customLogger,
     Duration? threshold,
     int? maxStats,
@@ -66,7 +66,6 @@ class GaplyBatchEngineSpec extends GaplyEngineSpec {
     this.maxBatchInterval = GaplyBudget.fps60,
     this.maxBatchCount = 100,
   }) : super(
-         id: id ?? '',
          threshold: threshold ?? GaplyBudget.all,
          maxStats: maxStats ?? 100,
          statsLifetime: statsLifetime ?? const Duration(minutes: 1),
@@ -105,15 +104,13 @@ class GaplyMemoryEngineSpec extends GaplyEngineSpec {
   bool get enableMemoryTracking => true;
 
   const GaplyMemoryEngineSpec({
-    String? id,
+    super.id,
     super.customLogger,
-    Duration? threshold,
     int? maxStats,
     Duration? statsLifetime,
-    this.thresholdBytes = GaplyBudget.zeroBytes,
+    this.thresholdBytes = GaplyBudget.kb1,
   }) : super(
-         id: id ?? '',
-         threshold: threshold ?? GaplyBudget.all,
+         threshold: GaplyBudget.all,
          maxStats: maxStats ?? 100,
          statsLifetime: statsLifetime ?? const Duration(minutes: 1),
        );
@@ -133,7 +130,7 @@ class GaplyMemoryEngineSpec extends GaplyEngineSpec {
     return GaplyMemoryEngineSpec(
       id: id ?? this.id,
       customLogger: customLogger ?? this.customLogger,
-      threshold: threshold ?? this.threshold,
+      //threshold: threshold ?? this.threshold,
       maxStats: maxStats ?? this.maxStats,
       statsLifetime: statsLifetime ?? this.statsLifetime,
       thresholdBytes: thresholdBytes ?? this.thresholdBytes,
@@ -144,13 +141,12 @@ class GaplyMemoryEngineSpec extends GaplyEngineSpec {
 @immutable
 class GaplyTraceEngineSpec extends GaplyEngineSpec {
   const GaplyTraceEngineSpec({
-    String? id,
+    super.id,
     super.customLogger,
     Duration? threshold,
     int? maxStats,
     Duration? statsLifetime,
   }) : super(
-         id: id ?? '',
          threshold: threshold ?? GaplyBudget.all,
          maxStats: maxStats ?? 100,
          statsLifetime: statsLifetime ?? const Duration(minutes: 1),

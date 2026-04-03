@@ -1,11 +1,28 @@
 class GaplyIntervalGate {
   DateTime _lastUpdateTime = DateTime.fromMillisecondsSinceEpoch(0);
 
+  /// 시간이 지났는지 확인하고, 지났다면 시간을 갱신한 뒤 true를 반환합니다.
   bool checkAndTick(Duration interval) {
     final now = DateTime.now();
     if (now.difference(_lastUpdateTime) < interval) return false;
 
     _lastUpdateTime = now;
+    return true;
+  }
+}
+
+class GaplyIntervalMsGate {
+  final Stopwatch _timer = Stopwatch()..start();
+  int? _lastMillis;
+
+  bool checkAndTick(int intervalMs) {
+    final now = _timer.elapsedMilliseconds;
+
+    if (_lastMillis != null && (now - _lastMillis! < intervalMs)) {
+      return false;
+    }
+
+    _lastMillis = now;
     return true;
   }
 }

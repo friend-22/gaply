@@ -21,7 +21,8 @@ part 'logger/gaply_memory_logger.dart';
 
 class GaplyHub {
   static GaplyAnsiTheme theme = GaplyAnsiTheme.dark;
-  static Duration memoryTrackInterval = GaplyBudget.fps60;
+
+  static const int memoryTrackIntervalMs = GaplyBudget.memoryTrack60;
 
   static final Map<String, GaplyProfiler> _profilers = {};
   static final _GaplyLogger _logger = _GaplyLogger();
@@ -56,14 +57,12 @@ class GaplyHub {
   }
 
   static GaplyProfiler createProfiler({required String id, bool? enabled, List<GaplyEngineSpec>? specs}) {
-    String cleanId = GaplyUtils.cleanId(id);
-
-    if (_profilers.containsKey(cleanId)) {
-      return _profilers[cleanId]!;
+    if (_profilers.containsKey(id)) {
+      return _profilers[id]!;
     }
 
-    final profiler = GaplyProfiler.withSpecs(id: cleanId, enabled: enabled ?? true, specs: specs);
-    _profilers[cleanId] = profiler;
+    final profiler = GaplyProfiler.withSpecs(id: id, enabled: enabled ?? true, specs: specs);
+    _profilers[id] = profiler;
     return profiler;
   }
 

@@ -2,13 +2,11 @@ part of 'gaply_profiler.dart';
 
 /// [GaplyBatchEngine] - Collects data and flushes summaries periodically
 class GaplyBatchEngine extends GaplyProfilerEngine<BatchCollector> {
-  static const String categoryName = 'GaplyBatch';
+  @override
+  String get category => 'Batch';
 
   @override
   final GaplyBatchEngineSpec spec;
-
-  @override
-  String get category => GaplyTraceEngine.categoryName;
 
   GaplyBatchEngine({required this.spec});
 

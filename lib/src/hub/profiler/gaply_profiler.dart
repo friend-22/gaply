@@ -9,7 +9,6 @@ import 'package:gaply/src/hub/gaply_ansi.dart';
 import 'package:gaply/src/hub/gaply_budget.dart';
 import 'package:gaply/src/hub/gaply_hub.dart';
 import 'package:gaply/src/hub/gaply_throttler.dart';
-import 'package:gaply/src/utils/gaply_utils.dart';
 
 part 'gaply_profiler_base.dart';
 part 'gaply_engine_specs.dart';
@@ -23,10 +22,10 @@ class GaplyProfiler {
   final List<GaplyProfilerEngine> _engines;
 
   static const Object _depthKey = #gaply_profiler_depth;
-  static final GaplyIntervalGate _memoryGate = GaplyIntervalGate();
+  static final GaplyIntervalMsGate _memoryGate = GaplyIntervalMsGate();
 
-  const GaplyProfiler({required this.id, this.enabled = true, List<GaplyProfilerEngine>? engines})
-    : _engines = engines ?? const [];
+  GaplyProfiler({required this.id, this.enabled = true, List<GaplyProfilerEngine>? engines})
+    : _engines = engines ?? [];
 
   const GaplyProfiler.none() : id = '', enabled = false, _engines = const [];
 
@@ -53,7 +52,7 @@ class GaplyProfiler {
   GaplyTraceHandle start({String? tag, Map<String, dynamic>? metadata}) {
     if (!_canProfile) return GaplyTraceHandle.noOp(id: id, tag: tag, metadata: metadata);
 
-    final bool trackMem = _shouldTrackMemory && _memoryGate.checkAndTick(GaplyHub.memoryTrackInterval);
+    final bool trackMem = _shouldTrackMemory && _memoryGate.checkAndTick(GaplyHub.memoryTrackIntervalMs);
     final sw = Stopwatch()..start();
     final int startMem = trackMem ? ProcessInfo.currentRss : 0;
 
@@ -105,7 +104,7 @@ class GaplyProfiler {
 
     final nextDepth = _currentDepth + 1;
 
-    final bool trackMem = _shouldTrackMemory && _memoryGate.checkAndTick(GaplyHub.memoryTrackInterval);
+    final bool trackMem = _shouldTrackMemory && _memoryGate.checkAndTick(GaplyHub.memoryTrackIntervalMs);
     final sw = Stopwatch()..start();
     final int startMem = trackMem ? ProcessInfo.currentRss : 0;
 
@@ -149,7 +148,6 @@ class GaplyProfiler {
 
     args[ProfilerIdx.sw] = sw.elapsedMicroseconds;
     args[ProfilerIdx.memDelta] = trackMem ? (ProcessInfo.currentRss - startMem) : 0;
-    args[ProfilerIdx.tag] = GaplyUtils.cleanTag(args[ProfilerIdx.tag]);
 
     for (var child in _engines) {
       child.record(args);
@@ -157,7 +155,7 @@ class GaplyProfiler {
   }
 
   Future<void> printStats() async {
-    GaplyHub.info('\n--- [ $id - Final Performance Report ] ---', isImmediate: true);
+    GaplyHub.info('--- [ $id - Final Performance Report ] ---', isImmediate: true);
     for (final child in _engines) {
       await child.printStats(id);
     }
@@ -208,15 +206,13 @@ class GaplyTraceHandle {
 
 extension GaplyProfilerX on GaplyProfiler {
   GaplyProfilerEngine _createEngineFactory(GaplyEngineSpec spec) {
-    final String finalId = spec.id.isEmpty ? '${_getCategoryName(spec)} + $id' : spec.id;
-
     switch (spec) {
       case GaplyBatchEngineSpec s:
-        return GaplyBatchEngine(spec: s.copyWith(id: finalId));
+        return GaplyBatchEngine(spec: s);
       case GaplyMemoryEngineSpec s:
-        return GaplyMemoryEngine(spec: s.copyWith(id: finalId));
+        return GaplyMemoryEngine(spec: s);
       case GaplyTraceEngineSpec s:
-        return GaplyTraceEngine(spec: s.copyWith(id: finalId));
+        return GaplyTraceEngine(spec: s);
     }
 
     return _GaplyNoOpEngine();
@@ -243,14 +239,13 @@ extension GaplyProfilerX on GaplyProfiler {
   }
 
   bool _engineExists(GaplyEngineSpec spec) {
-    return _engines.any((e) => e.spec.id == spec.id && spec.id.isNotEmpty);
-  }
+    return _engines.any((e) {
+      if (e.spec.id != null && spec.id != null) {
+        return e.spec.id == spec.id;
+      }
 
-  String _getCategoryName(GaplyEngineSpec spec) {
-    if (spec is GaplyBatchEngineSpec) return GaplyBatchEngine.categoryName;
-    if (spec is GaplyMemoryEngineSpec) return GaplyMemoryEngine.categoryName;
-    if (spec is GaplyTraceEngineSpec) return GaplyTraceEngine.categoryName;
-    return 'Unknown';
+      return e.spec.runtimeType == spec.runtimeType;
+    });
   }
 }
 

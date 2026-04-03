@@ -14,7 +14,7 @@ abstract class GaplyProfilerEngine<T extends GaplyProfilerStats> {
   GaplyProfilerEngine() {
     _channelId = _getGroupedChannelId(category, spec.threshold);
     _channel = GaplyChannelPool.getChannel(_channelId);
-    _listenerId = _channel.registerListener(spec.id, (data) {
+    _listenerId = _channel.registerListener((data) {
       if (data is List) {
         handleIncomingData(data);
       }

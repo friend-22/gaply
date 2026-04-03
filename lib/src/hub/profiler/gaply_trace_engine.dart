@@ -2,13 +2,11 @@ part of 'gaply_profiler.dart';
 
 /// [GaplyTraceEngine] - Immediate logging for individual performance hits
 class GaplyTraceEngine extends GaplyProfilerEngine<TraceStats> {
-  static const String categoryName = 'GaplyTrace';
+  @override
+  String get category => 'Trace';
 
   @override
   final GaplyTraceEngineSpec spec;
-
-  @override
-  String get category => GaplyTraceEngine.categoryName;
 
   GaplyTraceEngine({required this.spec});
 

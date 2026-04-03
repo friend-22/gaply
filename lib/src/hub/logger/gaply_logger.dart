@@ -14,7 +14,7 @@ class _GaplyLogger {
 
   _GaplyLogger() {
     _channel = GaplyChannelPool.getChannel(_channelId);
-    _listenerId = _channel.registerListener(_channelId, (data) {
+    _listenerId = _channel.registerListener((data) {
       if (data is List) {
         _handleIncomingData(data);
       }

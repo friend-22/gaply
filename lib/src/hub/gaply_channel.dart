@@ -62,9 +62,8 @@ class GaplyChannel {
     responsePort.close();
   }
 
-  String registerListener(String id, Function(dynamic) listener) {
-    final String cleanId = GaplyUtils.cleanId(id);
-    final String newId = '${cleanId}_${DateTime.now().microsecondsSinceEpoch}';
+  String registerListener(Function(dynamic) listener) {
+    final String newId = '${DateTime.now().microsecondsSinceEpoch}';
     _listeners[newId] = listener;
     return newId;
   }

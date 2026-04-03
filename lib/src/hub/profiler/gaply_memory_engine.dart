@@ -2,13 +2,11 @@ part of 'gaply_profiler.dart';
 
 /// [GaplyMemoryEngine] - Focused on tracking memory allocation and leaks
 class GaplyMemoryEngine extends GaplyProfilerEngine<MemoryStats> {
-  static const String categoryName = 'GaplyMemory';
+  @override
+  String get category => 'Memory';
 
   @override
   final GaplyMemoryEngineSpec spec;
-
-  @override
-  String get category => GaplyTraceEngine.categoryName;
 
   GaplyMemoryEngine({required this.spec});
 
@@ -127,7 +125,7 @@ class MemoryStats implements GaplyProfilerStats {
 
     engine.infoLog(
       '🧠 ${a.label}[MEMORY STATS] $label${a.reset} ${a.gray}(Budget: $limitStr)${a.reset}\n'
-      '   Calls: $count | '
+      '           Calls: $count | '
       'Avg Delta: ${a.label}$avgStr${a.reset} | '
       'Peak: $peakColor$peakStr$offsetStr${a.reset} | '
       'Min: ${a.perf}$minStr${a.reset} | '
