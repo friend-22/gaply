@@ -15,7 +15,7 @@ class GaplyBatchEngine extends GaplyProfilerEngine<BatchCollector> {
   @override
   void record(dynamic data) {
     final List<dynamic> pkt = data;
-    final int elapsedUs = pkt[ProfilerIdx.us];
+    final int elapsedUs = pkt[ProfilerIdx.sw];
 
     if (elapsedUs < spec.threshold.inMicroseconds) return;
     sendPacket(data);
@@ -24,7 +24,7 @@ class GaplyBatchEngine extends GaplyProfilerEngine<BatchCollector> {
   @override
   void onDataReceived(dynamic data) {
     final List<dynamic> pkt = data;
-    final int elapsedUs = pkt[ProfilerIdx.us];
+    final int elapsedUs = pkt[ProfilerIdx.sw];
     final String labelId = pkt[ProfilerIdx.id];
     final String? tag = pkt[ProfilerIdx.tag];
     final Map<String, dynamic>? metadata = pkt[ProfilerIdx.metadata];

@@ -8,12 +8,14 @@ class GaplyBudget {
   static const Duration fps240 = Duration(microseconds: 4166); // 240fps
   static const Duration fps120 = Duration(microseconds: 8333); // 120fps
   static const Duration fps60 = Duration(microseconds: 16666); // 60fps
+  static const Duration fps30 = Duration(microseconds: 33333); // 30fps
 
   // Smoothing Budgets (Update Intervals)
   static const Duration micro = Duration(milliseconds: 100); // 10Hz
   static const Duration smooth240 = Duration(milliseconds: 250); // 4Hz
   static const Duration smooth120 = Duration(milliseconds: 500); // 2Hz
   static const Duration smooth60 = Duration(milliseconds: 1000); // 1Hz
+  static const Duration smooth30 = Duration(milliseconds: 2000); // 0.5Hz
 
   // Profiling Thresholds
   static const Duration critical = fps60; // Frame drop risk at 60fps

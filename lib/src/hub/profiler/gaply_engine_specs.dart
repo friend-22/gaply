@@ -8,6 +8,8 @@ abstract class GaplyEngineSpec extends Equatable {
   final int maxStats;
   final Duration statsLifetime;
 
+  bool get enableMemoryTracking => false;
+
   const GaplyEngineSpec({
     required this.id,
     required this.threshold,
@@ -98,6 +100,9 @@ class GaplyBatchEngineSpec extends GaplyEngineSpec {
 @immutable
 class GaplyMemoryEngineSpec extends GaplyEngineSpec {
   final int thresholdBytes;
+
+  @override
+  bool get enableMemoryTracking => true;
 
   const GaplyMemoryEngineSpec({
     String? id,

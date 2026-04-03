@@ -2,7 +2,6 @@ part of 'gaply_profiler.dart';
 
 abstract class GaplyProfilerEngine<T extends GaplyProfilerStats> {
   GaplyEngineSpec get spec;
-  bool get enableMemoryTracking => false;
 
   Map<String, T> statsMap = {};
   Timer? _cleanupTimer;
@@ -123,11 +122,11 @@ abstract class GaplyProfilerStats {
 }
 
 abstract class ProfilerIdx {
-  static const int us = 0;
-  static const int id = 1;
-  static const int tag = 2;
-  static const int isAsync = 3;
-  static const int depth = 4;
-  static const int mem = 5;
-  static const int metadata = 6;
+  static const int sw = 0; // Stopwatch or Microseconds
+  static const int id = 1; // Profiler ID
+  static const int tag = 2; // Custom Tag
+  static const int isAsync = 3; // IsAsync Flag (0 or 1)
+  static const int depth = 4; // Depth
+  static const int memDelta = 5; // Memory Delta
+  static const int metadata = 6; // Metadata Map
 }

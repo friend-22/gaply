@@ -8,9 +8,6 @@ class GaplyMemoryEngine extends GaplyProfilerEngine<MemoryStats> {
   final GaplyMemoryEngineSpec spec;
 
   @override
-  bool get enableMemoryTracking => true;
-
-  @override
   String get category => GaplyTraceEngine.categoryName;
 
   GaplyMemoryEngine({required this.spec});
@@ -18,7 +15,7 @@ class GaplyMemoryEngine extends GaplyProfilerEngine<MemoryStats> {
   @override
   void record(dynamic data) {
     final List<dynamic> pkt = data;
-    final int memoryDelta = pkt[ProfilerIdx.mem];
+    final int memoryDelta = pkt[ProfilerIdx.memDelta];
 
     if (memoryDelta.abs() < spec.thresholdBytes) return;
 
@@ -31,7 +28,7 @@ class GaplyMemoryEngine extends GaplyProfilerEngine<MemoryStats> {
     final String labelId = pkt[ProfilerIdx.id];
     final String? tag = pkt[ProfilerIdx.tag];
     final int depth = pkt[ProfilerIdx.depth];
-    final int memoryDelta = pkt[ProfilerIdx.mem];
+    final int memoryDelta = pkt[ProfilerIdx.memDelta];
     final Map<String, dynamic>? metadata = pkt[ProfilerIdx.metadata];
 
     final String statsKey = tag != null ? '$labelId@$tag' : labelId;

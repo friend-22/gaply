@@ -15,7 +15,7 @@ class GaplyTraceEngine extends GaplyProfilerEngine<TraceStats> {
   @override
   void record(dynamic data) {
     final List<dynamic> pkt = data;
-    final int elapsedUs = pkt[ProfilerIdx.us];
+    final int elapsedUs = pkt[ProfilerIdx.sw];
 
     if (elapsedUs < spec.threshold.inMicroseconds) return;
 
@@ -25,7 +25,7 @@ class GaplyTraceEngine extends GaplyProfilerEngine<TraceStats> {
   @override
   void onDataReceived(dynamic data) {
     final List<dynamic> pkt = data;
-    final int elapsedUs = pkt[ProfilerIdx.us];
+    final int elapsedUs = pkt[ProfilerIdx.sw];
     final String labelId = pkt[ProfilerIdx.id];
     final String? tag = pkt[ProfilerIdx.tag];
     final bool isAsync = pkt[ProfilerIdx.isAsync] == 1;
@@ -41,7 +41,7 @@ class GaplyTraceEngine extends GaplyProfilerEngine<TraceStats> {
 
   void _log(dynamic data) {
     final List<dynamic> pkt = data;
-    final int elapsedUs = pkt[ProfilerIdx.us];
+    final int elapsedUs = pkt[ProfilerIdx.sw];
     final String labelId = pkt[ProfilerIdx.id];
     final String? tag = pkt[ProfilerIdx.tag];
     final int depth = pkt[ProfilerIdx.depth];

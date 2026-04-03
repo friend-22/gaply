@@ -1,3 +1,15 @@
+class GaplyIntervalGate {
+  DateTime _lastUpdateTime = DateTime.fromMillisecondsSinceEpoch(0);
+
+  bool checkAndTick(Duration interval) {
+    final now = DateTime.now();
+    if (now.difference(_lastUpdateTime) < interval) return false;
+
+    _lastUpdateTime = now;
+    return true;
+  }
+}
+
 class GaplyThrottler<T> {
   final Duration interval;
   final void Function(T value) onUpdate;

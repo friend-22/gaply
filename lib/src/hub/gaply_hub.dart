@@ -8,6 +8,7 @@ import 'package:gaply/src/hub/profiler/gaply_profiler.dart';
 import 'package:gaply/src/utils/gaply_utils.dart';
 
 import 'gaply_ansi.dart';
+import 'gaply_budget.dart';
 import 'logger/gaply_logger_spec.dart';
 
 part 'gaply_channel.dart';
@@ -20,6 +21,7 @@ part 'logger/gaply_memory_logger.dart';
 
 class GaplyHub {
   static GaplyAnsiTheme theme = GaplyAnsiTheme.dark;
+  static Duration memoryTrackInterval = GaplyBudget.fps60;
 
   static final Map<String, GaplyProfiler> _profilers = {};
   static final _GaplyLogger _logger = _GaplyLogger();

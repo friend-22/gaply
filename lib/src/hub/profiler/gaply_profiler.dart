@@ -8,6 +8,7 @@ import 'package:gaply/src/hub/gaply_ansi.dart';
 
 import 'package:gaply/src/hub/gaply_budget.dart';
 import 'package:gaply/src/hub/gaply_hub.dart';
+import 'package:gaply/src/hub/gaply_throttler.dart';
 import 'package:gaply/src/utils/gaply_utils.dart';
 
 part 'gaply_profiler_base.dart';
@@ -22,6 +23,7 @@ class GaplyProfiler {
   final List<GaplyProfilerEngine> _engines;
 
   static const Object _depthKey = #gaply_profiler_depth;
+  static final GaplyIntervalGate _memoryGate = GaplyIntervalGate();
 
   const GaplyProfiler({required this.id, this.enabled = true, List<GaplyProfilerEngine>? engines})
     : _engines = engines ?? const [];
@@ -37,7 +39,7 @@ class GaplyProfiler {
     }
   }
 
-  bool get _shouldTrackMemory => _engines.any((e) => e.enableMemoryTracking);
+  bool get _shouldTrackMemory => _engines.any((e) => e.spec.enableMemoryTracking);
   bool get _canProfile => enabled && kDebugMode && _engines.isNotEmpty;
 
   static int get _currentDepth {
@@ -51,18 +53,18 @@ class GaplyProfiler {
   GaplyTraceHandle start({String? tag, Map<String, dynamic>? metadata}) {
     if (!_canProfile) return GaplyTraceHandle.noOp(id: id, tag: tag, metadata: metadata);
 
-    final bool trackMem = _shouldTrackMemory;
+    final bool trackMem = _shouldTrackMemory && _memoryGate.checkAndTick(GaplyHub.memoryTrackInterval);
     final sw = Stopwatch()..start();
     final int startMem = trackMem ? ProcessInfo.currentRss : 0;
 
     final args = List<dynamic>.filled(7, null);
-    args[_Idx.sw] = sw;
-    args[_Idx.id] = id;
-    args[_Idx.tag] = tag;
-    args[_Idx.async] = 0;
-    args[_Idx.dep] = _currentDepth;
-    args[_Idx.mem] = 0;
-    args[_Idx.meta] = metadata;
+    args[ProfilerIdx.sw] = sw;
+    args[ProfilerIdx.id] = id;
+    args[ProfilerIdx.tag] = tag;
+    args[ProfilerIdx.isAsync] = 0;
+    args[ProfilerIdx.depth] = _currentDepth;
+    args[ProfilerIdx.memDelta] = 0;
+    args[ProfilerIdx.metadata] = metadata;
 
     return GaplyTraceHandle._(args: args, startMem: startMem, trackMemory: trackMem, onStop: _handleRecord);
   }
@@ -102,7 +104,8 @@ class GaplyProfiler {
     if (!_canProfile) return operation();
 
     final nextDepth = _currentDepth + 1;
-    final bool trackMem = _shouldTrackMemory;
+
+    final bool trackMem = _shouldTrackMemory && _memoryGate.checkAndTick(GaplyHub.memoryTrackInterval);
     final sw = Stopwatch()..start();
     final int startMem = trackMem ? ProcessInfo.currentRss : 0;
 
@@ -136,17 +139,17 @@ class GaplyProfiler {
     }, zoneValues: {_depthKey: nextDepth});
   }
 
-  List<dynamic> _buildArgs(Stopwatch sw, String? tag, int depth, int async, Map<String, dynamic>? meta) {
-    return [sw, id, tag, async, depth, 0, meta];
+  List<dynamic> _buildArgs(Stopwatch sw, String? tag, int depth, int async, Map<String, dynamic>? metadata) {
+    return [sw, id, tag, async, depth, 0, metadata];
   }
 
   void _handleRecord(List<dynamic> args, int startMem, bool trackMem) {
-    final sw = args[_Idx.sw] as Stopwatch;
+    final sw = args[ProfilerIdx.sw] as Stopwatch;
     sw.stop();
 
-    args[_Idx.sw] = sw.elapsedMicroseconds;
-    args[_Idx.mem] = trackMem ? (ProcessInfo.currentRss - startMem) : 0;
-    args[_Idx.tag] = GaplyUtils.cleanTag(args[_Idx.tag]);
+    args[ProfilerIdx.sw] = sw.elapsedMicroseconds;
+    args[ProfilerIdx.memDelta] = trackMem ? (ProcessInfo.currentRss - startMem) : 0;
+    args[ProfilerIdx.tag] = GaplyUtils.cleanTag(args[ProfilerIdx.tag]);
 
     for (var child in _engines) {
       child.record(args);
@@ -193,10 +196,10 @@ class GaplyTraceHandle {
     if (_isStopped) return;
     _isStopped = true;
 
-    if (isAsync) _args[_Idx.async] = 1;
+    _args[ProfilerIdx.isAsync] = isAsync ? 1 : 0;
     if (extraMetadata != null) {
-      final base = _args[_Idx.meta] as Map<String, dynamic>?;
-      _args[_Idx.meta] = base != null ? {...base, ...extraMetadata} : extraMetadata;
+      final base = _args[ProfilerIdx.metadata] as Map<String, dynamic>?;
+      _args[ProfilerIdx.metadata] = base != null ? {...base, ...extraMetadata} : extraMetadata;
     }
 
     _onStop(_args, _startMem, _trackMemory);
@@ -267,14 +270,4 @@ class _GaplyNoOpEngine extends GaplyProfilerEngine {
 
   @override
   void onDataReceived(dynamic data) {}
-}
-
-abstract class _Idx {
-  static const int sw = 0; // Stopwatch or Microseconds
-  static const int id = 1; // Profiler ID
-  static const int tag = 2; // Custom Tag
-  static const int async = 3; // IsAsync Flag (0 or 1)
-  static const int dep = 4; // Depth
-  static const int mem = 5; // Memory Delta
-  static const int meta = 6; // Metadata Map
 }
