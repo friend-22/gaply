@@ -8,6 +8,7 @@ import 'package:gaply/src/hub/gaply_ansi.dart';
 
 import 'package:gaply/src/hub/gaply_budget.dart';
 import 'package:gaply/src/hub/gaply_hub.dart';
+import 'package:gaply/src/utils/gaply_utils.dart';
 
 part 'gaply_profiler_base.dart';
 part 'gaply_engine_specs.dart';
@@ -19,22 +20,13 @@ class GaplyProfiler {
   final String id;
   final bool enabled;
   final List<GaplyProfilerEngine> _engines;
-  bool _hasMemoryEngine = false;
 
   static const Object _depthKey = #gaply_profiler_depth;
 
-  static int get _currentDepth {
-    try {
-      return Zone.current[_depthKey] ?? 0;
-    } catch (_) {
-      return 0;
-    }
-  }
-
-  GaplyProfiler({required this.id, this.enabled = true, List<GaplyProfilerEngine>? engines})
+  const GaplyProfiler({required this.id, this.enabled = true, List<GaplyProfilerEngine>? engines})
     : _engines = engines ?? const [];
 
-  GaplyProfiler.none() : id = '', enabled = false, _engines = const [];
+  const GaplyProfiler.none() : id = '', enabled = false, _engines = const [];
 
   GaplyProfiler.withSpecs({required this.id, this.enabled = true, List<GaplyEngineSpec>? specs})
     : _engines = [] {
@@ -45,63 +37,50 @@ class GaplyProfiler {
     }
   }
 
-  GaplyProfiler addEngine(GaplyEngineSpec spec) {
-    if (_engineExists(spec)) {
-      GaplyHub.info('⚠️ [Gaply] Engine with this spec already exists: ${spec.id}');
-      return this;
+  bool get _shouldTrackMemory => _engines.any((e) => e.enableMemoryTracking);
+  bool get _canProfile => enabled && kDebugMode && _engines.isNotEmpty;
+
+  static int get _currentDepth {
+    try {
+      return Zone.current[_depthKey] ?? 0;
+    } catch (_) {
+      return 0;
     }
-    _engines.add(_createEngineFactory(spec));
-    _hasMemoryEngine = _hasMemoryEngine || spec is GaplyMemoryEngineSpec;
-    return this;
   }
 
-  GaplyProfiler removeEngine(GaplyEngineSpec spec) {
-    final targets = _engines.where((e) => e.spec == spec).toList();
+  GaplyTraceHandle start({String? tag, Map<String, dynamic>? metadata}) {
+    if (!_canProfile) return GaplyTraceHandle.noOp(id: id, tag: tag, metadata: metadata);
 
-    for (var engine in targets) {
-      engine.dispose();
-      _engines.remove(engine);
-    }
+    final bool trackMem = _shouldTrackMemory;
+    final sw = Stopwatch()..start();
+    final int startMem = trackMem ? ProcessInfo.currentRss : 0;
 
-    _hasMemoryEngine = _engines.any((e) => e is GaplyMemoryEngine);
-    return this;
-  }
+    final args = List<dynamic>.filled(7, null);
+    args[_Idx.sw] = sw;
+    args[_Idx.id] = id;
+    args[_Idx.tag] = tag;
+    args[_Idx.async] = 0;
+    args[_Idx.dep] = _currentDepth;
+    args[_Idx.mem] = 0;
+    args[_Idx.meta] = metadata;
 
-  bool _engineExists(GaplyEngineSpec spec) {
-    return _engines.any((e) => e.spec.id == spec.id && spec.id.isNotEmpty);
-  }
-
-  String _getCategoryName(GaplyEngineSpec spec) {
-    if (spec is GaplyBatchEngineSpec) return GaplyBatchEngine.categoryName;
-    if (spec is GaplyMemoryEngineSpec) return GaplyMemoryEngine.categoryName;
-    if (spec is GaplyTraceEngineSpec) return GaplyTraceEngine.categoryName;
-    return 'Unknown';
+    return GaplyTraceHandle._(args: args, startMem: startMem, trackMemory: trackMem, onStop: _handleRecord);
   }
 
   /// Executes and traces the performance of a given operation
   T trace<T>(T Function() operation, {String? tag, Map<String, dynamic>? metadata}) {
-    if (!enabled || !kDebugMode || _engines.isEmpty) return operation();
-
-    final nextDepth = _currentDepth + 1;
-    final sw = Stopwatch()..start();
-    final startMem = _hasMemoryEngine ? ProcessInfo.currentRss : 0;
-
-    return runZoned(() {
-      try {
-        final result = operation();
-
-        if (result is Future) {
-          GaplyHub.warning('⚠️ [Gaply] Use traceAsync for Future operations.');
-          return result;
-        }
-
-        _handleRecord(sw, startMem, tag, nextDepth, false, metadata);
-        return result;
-      } catch (e) {
-        _handleRecord(sw, startMem, '${tag ?? 'task'}:error', nextDepth, false, metadata);
-        rethrow;
-      }
-    }, zoneValues: {_depthKey: nextDepth});
+    return _runTrace<T>(
+          () {
+            final result = operation();
+            if (result is Future) {
+              GaplyHub.warning('⚠️ [Gaply] Use traceAsync for Future operations (ID: $id, Tag: $tag).');
+            }
+            return result;
+          },
+          tag: tag,
+          metadata: metadata,
+        )
+        as T;
   }
 
   Future<T> traceAsync<T>(
@@ -110,47 +89,121 @@ class GaplyProfiler {
     Map<String, dynamic>? metadata,
     Duration timeout = const Duration(seconds: 60),
   }) async {
-    if (!enabled || !kDebugMode || _engines.isEmpty) {
-      return operation().timeout(timeout);
-    }
+    final result = _runTrace<T>(() => operation().timeout(timeout), tag: tag, metadata: metadata);
+
+    return await (result as Future<T>);
+  }
+
+  FutureOr<T> _runTrace<T>(
+    FutureOr<T> Function() operation, {
+    required String? tag,
+    required Map<String, dynamic>? metadata,
+  }) {
+    if (!_canProfile) return operation();
 
     final nextDepth = _currentDepth + 1;
+    final bool trackMem = _shouldTrackMemory;
     final sw = Stopwatch()..start();
-    final startMem = ProcessInfo.currentRss;
+    final int startMem = trackMem ? ProcessInfo.currentRss : 0;
 
-    return await runZoned(() async {
+    return runZoned(() {
       try {
-        final T result = await operation().timeout(timeout);
-        _handleRecord(sw, startMem, tag, nextDepth, true, metadata);
+        final result = operation();
+
+        if (result is Future<T>) {
+          return result
+              .then((value) {
+                _handleRecord(_buildArgs(sw, tag, nextDepth, 1, metadata), startMem, trackMem);
+                return value;
+              })
+              .catchError((e) {
+                _handleRecord(
+                  _buildArgs(sw, '${tag ?? 'task'}:error', nextDepth, 1, metadata),
+                  startMem,
+                  trackMem,
+                );
+                GaplyHub.error('❌ [ASYNC ERROR] $id: $e');
+                throw e;
+              });
+        }
+
+        _handleRecord(_buildArgs(sw, tag, nextDepth, 0, metadata), startMem, trackMem);
         return result;
       } catch (e) {
-        _handleRecord(sw, startMem, '${tag ?? 'task'}:error', nextDepth, true, metadata);
-        GaplyHub.error('❌ [ASYNC ERROR] $id: $e');
+        _handleRecord(_buildArgs(sw, '${tag ?? 'task'}:error', nextDepth, 0, metadata), startMem, trackMem);
         rethrow;
       }
     }, zoneValues: {_depthKey: nextDepth});
   }
 
-  void _handleRecord(
-    Stopwatch sw,
-    int startMem,
-    String? tag,
-    int depth,
-    bool isAsync,
-    Map<String, dynamic>? metadata,
-  ) {
+  List<dynamic> _buildArgs(Stopwatch sw, String? tag, int depth, int async, Map<String, dynamic>? meta) {
+    return [sw, id, tag, async, depth, 0, meta];
+  }
+
+  void _handleRecord(List<dynamic> args, int startMem, bool trackMem) {
+    final sw = args[_Idx.sw] as Stopwatch;
     sw.stop();
-    final int endMem = _hasMemoryEngine ? ProcessInfo.currentRss : 0;
-    final int memoryDelta = endMem - startMem;
 
-    String? cleanTag = _cleanTag(tag);
+    args[_Idx.sw] = sw.elapsedMicroseconds;
+    args[_Idx.mem] = trackMem ? (ProcessInfo.currentRss - startMem) : 0;
+    args[_Idx.tag] = GaplyUtils.cleanTag(args[_Idx.tag]);
 
-    final data = [sw.elapsedMicroseconds, id, cleanTag, isAsync ? 1 : 0, depth, memoryDelta, metadata];
     for (var child in _engines) {
-      child.record(data);
+      child.record(args);
     }
   }
 
+  Future<void> printStats() async {
+    GaplyHub.info('\n--- [ $id - Final Performance Report ] ---', isImmediate: true);
+    for (final child in _engines) {
+      await child.printStats(id);
+    }
+  }
+
+  Future<void> dispose() async {
+    for (final child in _engines) {
+      await child.dispose();
+    }
+  }
+}
+
+class GaplyTraceHandle {
+  final List<dynamic> _args;
+  final int _startMem;
+  final bool _trackMemory;
+  final void Function(List<dynamic> args, int startMem, bool trackMem) _onStop;
+
+  bool _isStopped = false;
+
+  GaplyTraceHandle._({
+    required List<dynamic> args,
+    required int startMem,
+    required bool trackMemory,
+    required void Function(List<dynamic> args, int startMem, bool trackMem) onStop,
+  }) : _args = args,
+       _startMem = startMem,
+       _trackMemory = trackMemory,
+       _onStop = onStop;
+
+  factory GaplyTraceHandle.noOp({required String id, String? tag, Map<String, dynamic>? metadata}) {
+    return GaplyTraceHandle._(args: [], startMem: 0, trackMemory: false, onStop: (_, _, _) {});
+  }
+
+  void stop({Map<String, dynamic>? extraMetadata, bool isAsync = false}) {
+    if (_isStopped) return;
+    _isStopped = true;
+
+    if (isAsync) _args[_Idx.async] = 1;
+    if (extraMetadata != null) {
+      final base = _args[_Idx.meta] as Map<String, dynamic>?;
+      _args[_Idx.meta] = base != null ? {...base, ...extraMetadata} : extraMetadata;
+    }
+
+    _onStop(_args, _startMem, _trackMemory);
+  }
+}
+
+extension GaplyProfilerX on GaplyProfiler {
   GaplyProfilerEngine _createEngineFactory(GaplyEngineSpec spec) {
     final String finalId = spec.id.isEmpty ? '${_getCategoryName(spec)} + $id' : spec.id;
 
@@ -166,28 +219,35 @@ class GaplyProfiler {
     return _GaplyNoOpEngine();
   }
 
-  Future<void> printStats() async {
-    GaplyHub.info('\n--- [ $id - Final Performance Report ] ---', isImmediate: true);
-    for (final child in _engines) {
-      await child.printStats(id);
+  GaplyProfiler addEngine(GaplyEngineSpec spec) {
+    if (_engineExists(spec)) {
+      GaplyHub.info('⚠️ [Gaply] Engine with this spec already exists: ${spec.id}');
+      return this;
     }
+    _engines.add(_createEngineFactory(spec));
+    return this;
   }
 
-  Future<void> dispose() async {
-    for (final child in _engines) {
-      await child.dispose();
+  GaplyProfiler removeEngine(GaplyEngineSpec spec) {
+    final targets = _engines.where((e) => e.spec == spec).toList();
+
+    for (var engine in targets) {
+      engine.dispose();
+      _engines.remove(engine);
     }
+
+    return this;
   }
 
-  bool _isValidTag(String? tag) => tag == null || RegExp(r'^[a-zA-Z0-9_:]+$').hasMatch(tag);
+  bool _engineExists(GaplyEngineSpec spec) {
+    return _engines.any((e) => e.spec.id == spec.id && spec.id.isNotEmpty);
+  }
 
-  String? _cleanTag(String? tag) {
-    String? cleanTag = tag;
-    if (tag != null && !_isValidTag(tag)) {
-      cleanTag = tag.replaceAll(RegExp(r'[^a-zA-Z0-9_:]'), '_');
-      GaplyHub.info('⚠️ [Gaply] Invalid tag "$tag" sanitized to "$cleanTag"');
-    }
-    return cleanTag;
+  String _getCategoryName(GaplyEngineSpec spec) {
+    if (spec is GaplyBatchEngineSpec) return GaplyBatchEngine.categoryName;
+    if (spec is GaplyMemoryEngineSpec) return GaplyMemoryEngine.categoryName;
+    if (spec is GaplyTraceEngineSpec) return GaplyTraceEngine.categoryName;
+    return 'Unknown';
   }
 }
 
@@ -207,4 +267,14 @@ class _GaplyNoOpEngine extends GaplyProfilerEngine {
 
   @override
   void onDataReceived(dynamic data) {}
+}
+
+abstract class _Idx {
+  static const int sw = 0; // Stopwatch or Microseconds
+  static const int id = 1; // Profiler ID
+  static const int tag = 2; // Custom Tag
+  static const int async = 3; // IsAsync Flag (0 or 1)
+  static const int dep = 4; // Depth
+  static const int mem = 5; // Memory Delta
+  static const int meta = 6; // Metadata Map
 }

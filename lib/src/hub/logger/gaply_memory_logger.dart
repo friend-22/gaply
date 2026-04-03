@@ -10,7 +10,7 @@ class GaplyMemoryLogger extends GaplyLoggerEngine {
 
   @override
   void write(dynamic data) {
-    final String text = data[LogPktIdx.text];
+    final String text = data[LoggerIdx.text];
 
     if (_logs.length >= spec.maxCapacity) _logs.removeAt(0);
     _logs.add(text);

@@ -26,7 +26,7 @@ class _GaplyLogger {
   void _handleIncomingData(dynamic data) {
     if (data is! List) return;
 
-    final String? engineId = data[LogPktIdx.engineId];
+    final String? engineId = data[LoggerIdx.engineId];
 
     if (engineId != null && _customEngines.containsKey(engineId)) {
       _customEngines[engineId]!.write(data);
@@ -89,11 +89,11 @@ class _GaplyLogger {
     if (level.index < _GaplyLogger.level.index && !isImmediate) return;
 
     final List<dynamic> logData = [
-      text, // LogPktIdx.text
-      isImmediate ? 1 : 0, // LogPktIdx.isImmediate
-      level.index, // LogPktIdx.level (int가 전송에 유리)
-      DateTime.now().microsecondsSinceEpoch, // LogPktIdx.timestamp
-      engineId, // LogPktIdx.engineId
+      text, // LoggerIdx.text
+      isImmediate ? 1 : 0, // LoggerIdx.isImmediate
+      level.index, // LoggerIdx.level (int가 전송에 유리)
+      DateTime.now().microsecondsSinceEpoch, // LoggerIdx.timestamp
+      engineId, // LoggerIdx.engineId
     ];
 
     _channelPort.sendPacket(_listenerId, logData);

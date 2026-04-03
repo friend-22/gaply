@@ -14,7 +14,7 @@ class GaplyConsoleLogger extends GaplyLoggerEngine {
 
   @override
   void write(dynamic data) {
-    final bool isImmediate = data[LogPktIdx.isImmediate] == 1;
+    final bool isImmediate = data[LoggerIdx.isImmediate] == 1;
 
     if (isImmediate) {
       _log(data);
@@ -42,8 +42,8 @@ class GaplyConsoleLogger extends GaplyLoggerEngine {
   }
 
   void _log(dynamic data) {
-    final GaplyLogLevel level = GaplyLogLevel.values[data[LogPktIdx.level]];
-    final String text = data[LogPktIdx.text];
+    final GaplyLogLevel level = GaplyLogLevel.values[data[LoggerIdx.level]];
+    final String text = data[LoggerIdx.text];
 
     final a = GaplyHub.theme.ansi;
     String prefix = '';

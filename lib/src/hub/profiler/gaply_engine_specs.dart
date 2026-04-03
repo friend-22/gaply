@@ -5,26 +5,26 @@ abstract class GaplyEngineSpec extends Equatable {
   final String id;
   final GaplyLoggerEngine? customLogger;
   final Duration threshold;
-  final int maxKeys;
-  final Duration maxIdleTime;
+  final int maxStats;
+  final Duration statsLifetime;
 
   const GaplyEngineSpec({
     required this.id,
     required this.threshold,
-    required this.maxKeys,
-    required this.maxIdleTime,
+    required this.maxStats,
+    required this.statsLifetime,
     this.customLogger,
   });
 
   @override
-  List<Object?> get props => [id, threshold, maxKeys, maxIdleTime];
+  List<Object?> get props => [id, threshold, maxStats, statsLifetime];
 
   GaplyEngineSpec copyWith({
     String? id,
     GaplyLoggerEngine? customLogger,
     Duration? threshold,
-    int? maxKeys,
-    Duration? maxIdleTime,
+    int? maxStats,
+    Duration? statsLifetime,
   });
 }
 
@@ -34,8 +34,8 @@ class GaplyNoOpEngineSpec extends GaplyEngineSpec {
     super.id = '',
     super.customLogger,
     super.threshold = Duration.zero,
-    super.maxKeys = 0,
-    super.maxIdleTime = Duration.zero,
+    super.maxStats = 0,
+    super.statsLifetime = Duration.zero,
   });
 
   @override
@@ -43,8 +43,8 @@ class GaplyNoOpEngineSpec extends GaplyEngineSpec {
     String? id,
     GaplyLoggerEngine? customLogger,
     Duration? threshold,
-    int? maxKeys,
-    Duration? maxIdleTime,
+    int? maxStats,
+    Duration? statsLifetime,
   }) {
     return const GaplyNoOpEngineSpec();
   }
@@ -59,15 +59,15 @@ class GaplyBatchEngineSpec extends GaplyEngineSpec {
     String? id,
     super.customLogger,
     Duration? threshold,
-    int? maxKeys,
-    Duration? maxIdleTime,
+    int? maxStats,
+    Duration? statsLifetime,
     this.maxBatchInterval = GaplyBudget.fps60,
     this.maxBatchCount = 100,
   }) : super(
          id: id ?? '',
          threshold: threshold ?? GaplyBudget.all,
-         maxKeys: maxKeys ?? 500,
-         maxIdleTime: maxIdleTime ?? const Duration(minutes: 5),
+         maxStats: maxStats ?? 100,
+         statsLifetime: statsLifetime ?? const Duration(minutes: 1),
        );
 
   @override
@@ -78,8 +78,8 @@ class GaplyBatchEngineSpec extends GaplyEngineSpec {
     String? id,
     GaplyLoggerEngine? customLogger,
     Duration? threshold,
-    int? maxKeys,
-    Duration? maxIdleTime,
+    int? maxStats,
+    Duration? statsLifetime,
     Duration? maxBatchInterval,
     int? maxBatchCount,
   }) {
@@ -87,8 +87,8 @@ class GaplyBatchEngineSpec extends GaplyEngineSpec {
       id: id ?? this.id,
       customLogger: customLogger ?? this.customLogger,
       threshold: threshold ?? this.threshold,
-      maxKeys: maxKeys ?? this.maxKeys,
-      maxIdleTime: maxIdleTime ?? this.maxIdleTime,
+      maxStats: maxStats ?? this.maxStats,
+      statsLifetime: statsLifetime ?? this.statsLifetime,
       maxBatchInterval: maxBatchInterval ?? this.maxBatchInterval,
       maxBatchCount: maxBatchCount ?? this.maxBatchCount,
     );
@@ -103,14 +103,14 @@ class GaplyMemoryEngineSpec extends GaplyEngineSpec {
     String? id,
     super.customLogger,
     Duration? threshold,
-    int? maxKeys,
-    Duration? maxIdleTime,
-    this.thresholdBytes = GaplyBudget.mb1,
+    int? maxStats,
+    Duration? statsLifetime,
+    this.thresholdBytes = GaplyBudget.zeroBytes,
   }) : super(
          id: id ?? '',
          threshold: threshold ?? GaplyBudget.all,
-         maxKeys: maxKeys ?? 500,
-         maxIdleTime: maxIdleTime ?? const Duration(minutes: 5),
+         maxStats: maxStats ?? 100,
+         statsLifetime: statsLifetime ?? const Duration(minutes: 1),
        );
 
   @override
@@ -121,16 +121,16 @@ class GaplyMemoryEngineSpec extends GaplyEngineSpec {
     String? id,
     GaplyLoggerEngine? customLogger,
     Duration? threshold,
-    int? maxKeys,
-    Duration? maxIdleTime,
+    int? maxStats,
+    Duration? statsLifetime,
     int? thresholdBytes,
   }) {
     return GaplyMemoryEngineSpec(
       id: id ?? this.id,
       customLogger: customLogger ?? this.customLogger,
       threshold: threshold ?? this.threshold,
-      maxKeys: maxKeys ?? this.maxKeys,
-      maxIdleTime: maxIdleTime ?? this.maxIdleTime,
+      maxStats: maxStats ?? this.maxStats,
+      statsLifetime: statsLifetime ?? this.statsLifetime,
       thresholdBytes: thresholdBytes ?? this.thresholdBytes,
     );
   }
@@ -142,13 +142,13 @@ class GaplyTraceEngineSpec extends GaplyEngineSpec {
     String? id,
     super.customLogger,
     Duration? threshold,
-    int? maxKeys,
-    Duration? maxIdleTime,
+    int? maxStats,
+    Duration? statsLifetime,
   }) : super(
          id: id ?? '',
          threshold: threshold ?? GaplyBudget.all,
-         maxKeys: maxKeys ?? 500,
-         maxIdleTime: maxIdleTime ?? const Duration(minutes: 5),
+         maxStats: maxStats ?? 100,
+         statsLifetime: statsLifetime ?? const Duration(minutes: 1),
        );
 
   @override
@@ -159,15 +159,15 @@ class GaplyTraceEngineSpec extends GaplyEngineSpec {
     String? id,
     GaplyLoggerEngine? customLogger,
     Duration? threshold,
-    int? maxKeys,
-    Duration? maxIdleTime,
+    int? maxStats,
+    Duration? statsLifetime,
   }) {
     return GaplyTraceEngineSpec(
       id: id ?? this.id,
       customLogger: customLogger ?? this.customLogger,
       threshold: threshold ?? this.threshold,
-      maxKeys: maxKeys ?? this.maxKeys,
-      maxIdleTime: maxIdleTime ?? this.maxIdleTime,
+      maxStats: maxStats ?? this.maxStats,
+      statsLifetime: statsLifetime ?? this.statsLifetime,
     );
   }
 }

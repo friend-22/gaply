@@ -14,7 +14,7 @@ abstract class GaplyLoggerEngine {
   Future<void> flush() async {}
 }
 
-abstract class LogPktIdx {
+abstract class LoggerIdx {
   static const int text = 0;
   static const int isImmediate = 1;
   static const int level = 2;

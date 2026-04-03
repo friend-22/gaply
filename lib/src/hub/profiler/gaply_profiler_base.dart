@@ -2,6 +2,7 @@ part of 'gaply_profiler.dart';
 
 abstract class GaplyProfilerEngine<T extends GaplyProfilerStats> {
   GaplyEngineSpec get spec;
+  bool get enableMemoryTracking => false;
 
   Map<String, T> statsMap = {};
   Timer? _cleanupTimer;
@@ -43,9 +44,9 @@ abstract class GaplyProfilerEngine<T extends GaplyProfilerStats> {
   void onDataReceived(dynamic data);
 
   void handleIncomingData(dynamic data) {
-    if (statsMap.length >= spec.maxKeys) {
+    if (statsMap.length >= spec.maxStats) {
       statsMap.clear();
-      warningLog('⚠️ [Gaply] $category: Memory limit reached. Map cleared.');
+      warningLog('⚠️ [Gaply] $category: Map Keys limit reached. Map cleared.');
     }
     onDataReceived(data);
   }
@@ -55,7 +56,7 @@ abstract class GaplyProfilerEngine<T extends GaplyProfilerStats> {
     final keysToRemove = <String>[];
 
     statsMap.forEach((key, stats) {
-      if (now.difference(stats.lastLogTime) > spec.maxIdleTime) {
+      if (now.difference(stats.lastLogTime) > spec.statsLifetime) {
         keysToRemove.add(key);
       }
     });

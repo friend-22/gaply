@@ -8,6 +8,9 @@ class GaplyMemoryEngine extends GaplyProfilerEngine<MemoryStats> {
   final GaplyMemoryEngineSpec spec;
 
   @override
+  bool get enableMemoryTracking => true;
+
+  @override
   String get category => GaplyTraceEngine.categoryName;
 
   GaplyMemoryEngine({required this.spec});

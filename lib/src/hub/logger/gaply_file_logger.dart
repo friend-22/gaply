@@ -39,10 +39,10 @@ class GaplyFileLogger extends GaplyLoggerEngine {
 
   @override
   void write(dynamic data) {
-    final String text = data[LogPktIdx.text];
-    final bool isImmediate = data[LogPktIdx.isImmediate] == 1;
-    final GaplyLogLevel level = GaplyLogLevel.values[data[LogPktIdx.level]];
-    final DateTime timestamp = DateTime.fromMicrosecondsSinceEpoch(data[LogPktIdx.timestamp]);
+    final String text = data[LoggerIdx.text];
+    final bool isImmediate = data[LoggerIdx.isImmediate] == 1;
+    final GaplyLogLevel level = GaplyLogLevel.values[data[LoggerIdx.level]];
+    final DateTime timestamp = DateTime.fromMicrosecondsSinceEpoch(data[LoggerIdx.timestamp]);
 
     if (level.index < GaplyLogLevel.warning.index) return;
 
