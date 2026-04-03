@@ -28,6 +28,7 @@ class GaplyAnsi {
   String get jank => isDark ? '\x1B[91m' : '\x1B[31m'; // Bright Red
   String get async => isDark ? '\x1B[94m' : '\x1B[94m'; // Blue
 
+  String get success => perf;
   String get error => jank;
   String get warning => warn;
   String get info => perf;
@@ -43,13 +44,26 @@ class GaplyFormatter {
   final GaplyAnsi ansi;
   GaplyFormatter(this.ansi);
 
+  String header(String category, String label, {String? tag}) {
+    final tagStr = tag != null ? ' ${ansi.tag}@$tag${ansi.reset}' : '';
+    return '${ansi.gray}[$category]${ansi.reset} ${ansi.label}$label$tagStr${ansi.reset}';
+  }
+
+  String errorStatus(int total, int errors) {
+    if (errors == 0) return '';
+    final double failRate = (errors / total) * 100;
+    return ' ${ansi.error}[FAIL: $errors (${failRate.toStringAsFixed(1)}%)]${ansi.reset}';
+  }
+
+  String indent(int depth) => depth > 0 ? '${'  ' * depth}└ ' : '';
+
   String formatMs(double ms, double limit, {bool showDiff = true}) {
     final color = ansi.colorByMs(ms, limit);
     final diff = ms - limit;
     final sign = diff > 0 ? '+' : '';
     final diffStr = showDiff ? ' ${ansi.gray}($sign${diff.toStringAsFixed(2)}ms)${ansi.reset}' : '';
 
-    return '$color${ms.toStringAsFixed(3).padLeft(7)}ms${ansi.reset}$diffStr';
+    return '$color${ms.toStringAsFixed(3).padLeft(10)}ms${ansi.reset}$diffStr';
   }
 
   String formatDistRow(List<int> dist, int total) {

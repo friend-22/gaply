@@ -7,19 +7,34 @@ abstract class GaplyEngineSpec extends Equatable {
   final Duration threshold;
   final int maxStats;
   final Duration statsLifetime;
+  final Duration maxFlushInterval;
+  final int maxFlushCount;
+  final Duration autoFlushInterval;
 
   bool get enableMemoryTracking => false;
 
   const GaplyEngineSpec({
     this.id,
+    this.customLogger,
     required this.threshold,
     required this.maxStats,
     required this.statsLifetime,
-    this.customLogger,
+    required this.maxFlushInterval,
+    required this.maxFlushCount,
+    required this.autoFlushInterval,
   });
 
   @override
-  List<Object?> get props => [id, threshold, maxStats, statsLifetime];
+  List<Object?> get props => [
+    id,
+    customLogger,
+    threshold,
+    maxStats,
+    statsLifetime,
+    maxFlushInterval,
+    maxFlushCount,
+    autoFlushInterval,
+  ];
 
   GaplyEngineSpec copyWith({
     String? id,
@@ -27,6 +42,9 @@ abstract class GaplyEngineSpec extends Equatable {
     Duration? threshold,
     int? maxStats,
     Duration? statsLifetime,
+    Duration? maxFlushInterval,
+    int? maxFlushCount,
+    Duration? autoFlushInterval,
   });
 }
 
@@ -38,6 +56,9 @@ class GaplyNoOpEngineSpec extends GaplyEngineSpec {
     super.threshold = Duration.zero,
     super.maxStats = 0,
     super.statsLifetime = Duration.zero,
+    super.maxFlushInterval = Duration.zero,
+    super.maxFlushCount = 0,
+    super.autoFlushInterval = Duration.zero,
   });
 
   @override
@@ -47,6 +68,9 @@ class GaplyNoOpEngineSpec extends GaplyEngineSpec {
     Duration? threshold,
     int? maxStats,
     Duration? statsLifetime,
+    Duration? maxFlushInterval,
+    int? maxFlushCount,
+    Duration? autoFlushInterval,
   }) {
     return const GaplyNoOpEngineSpec();
   }
@@ -54,25 +78,16 @@ class GaplyNoOpEngineSpec extends GaplyEngineSpec {
 
 @immutable
 class GaplyBatchEngineSpec extends GaplyEngineSpec {
-  final Duration maxBatchInterval;
-  final int maxBatchCount;
-
   const GaplyBatchEngineSpec({
     super.id,
     super.customLogger,
-    Duration? threshold,
-    int? maxStats,
-    Duration? statsLifetime,
-    this.maxBatchInterval = GaplyBudget.fps60,
-    this.maxBatchCount = 100,
-  }) : super(
-         threshold: threshold ?? GaplyBudget.all,
-         maxStats: maxStats ?? 100,
-         statsLifetime: statsLifetime ?? const Duration(minutes: 1),
-       );
-
-  @override
-  List<Object?> get props => [...super.props, maxBatchInterval, maxBatchCount];
+    super.threshold = GaplyBudget.fps120,
+    super.maxStats = 100,
+    super.statsLifetime = const Duration(minutes: 1),
+    super.maxFlushInterval = GaplyBudget.fps60,
+    super.maxFlushCount = 100,
+    super.autoFlushInterval = const Duration(seconds: 1),
+  });
 
   @override
   GaplyBatchEngineSpec copyWith({
@@ -81,8 +96,9 @@ class GaplyBatchEngineSpec extends GaplyEngineSpec {
     Duration? threshold,
     int? maxStats,
     Duration? statsLifetime,
-    Duration? maxBatchInterval,
-    int? maxBatchCount,
+    Duration? maxFlushInterval,
+    int? maxFlushCount,
+    Duration? autoFlushInterval,
   }) {
     return GaplyBatchEngineSpec(
       id: id ?? this.id,
@@ -90,8 +106,9 @@ class GaplyBatchEngineSpec extends GaplyEngineSpec {
       threshold: threshold ?? this.threshold,
       maxStats: maxStats ?? this.maxStats,
       statsLifetime: statsLifetime ?? this.statsLifetime,
-      maxBatchInterval: maxBatchInterval ?? this.maxBatchInterval,
-      maxBatchCount: maxBatchCount ?? this.maxBatchCount,
+      maxFlushInterval: maxFlushInterval ?? this.maxFlushInterval,
+      maxFlushCount: maxFlushCount ?? this.maxFlushCount,
+      autoFlushInterval: autoFlushInterval ?? this.autoFlushInterval,
     );
   }
 }
@@ -106,14 +123,13 @@ class GaplyMemoryEngineSpec extends GaplyEngineSpec {
   const GaplyMemoryEngineSpec({
     super.id,
     super.customLogger,
-    int? maxStats,
-    Duration? statsLifetime,
+    super.maxStats = 100,
+    super.statsLifetime = const Duration(minutes: 1),
+    super.maxFlushInterval = GaplyBudget.fps60,
+    super.maxFlushCount = 100,
+    super.autoFlushInterval = const Duration(seconds: 1),
     this.thresholdBytes = GaplyBudget.kb1,
-  }) : super(
-         threshold: GaplyBudget.all,
-         maxStats: maxStats ?? 100,
-         statsLifetime: statsLifetime ?? const Duration(minutes: 1),
-       );
+  }) : super(threshold: GaplyBudget.all);
 
   @override
   List<Object?> get props => [...super.props, thresholdBytes];
@@ -126,6 +142,9 @@ class GaplyMemoryEngineSpec extends GaplyEngineSpec {
     int? maxStats,
     Duration? statsLifetime,
     int? thresholdBytes,
+    Duration? maxFlushInterval,
+    int? maxFlushCount,
+    Duration? autoFlushInterval,
   }) {
     return GaplyMemoryEngineSpec(
       id: id ?? this.id,
@@ -134,6 +153,9 @@ class GaplyMemoryEngineSpec extends GaplyEngineSpec {
       maxStats: maxStats ?? this.maxStats,
       statsLifetime: statsLifetime ?? this.statsLifetime,
       thresholdBytes: thresholdBytes ?? this.thresholdBytes,
+      maxFlushInterval: maxFlushInterval ?? this.maxFlushInterval,
+      maxFlushCount: maxFlushCount ?? this.maxFlushCount,
+      autoFlushInterval: autoFlushInterval ?? this.autoFlushInterval,
     );
   }
 }
@@ -143,17 +165,13 @@ class GaplyTraceEngineSpec extends GaplyEngineSpec {
   const GaplyTraceEngineSpec({
     super.id,
     super.customLogger,
-    Duration? threshold,
-    int? maxStats,
-    Duration? statsLifetime,
-  }) : super(
-         threshold: threshold ?? GaplyBudget.all,
-         maxStats: maxStats ?? 100,
-         statsLifetime: statsLifetime ?? const Duration(minutes: 1),
-       );
-
-  @override
-  List<Object?> get props => [...super.props];
+    super.threshold = GaplyBudget.fps120,
+    super.maxStats = 100,
+    super.statsLifetime = const Duration(minutes: 1),
+    super.maxFlushInterval = GaplyBudget.fps60,
+    super.maxFlushCount = 100,
+    super.autoFlushInterval = const Duration(seconds: 1),
+  });
 
   @override
   GaplyTraceEngineSpec copyWith({
@@ -162,6 +180,9 @@ class GaplyTraceEngineSpec extends GaplyEngineSpec {
     Duration? threshold,
     int? maxStats,
     Duration? statsLifetime,
+    Duration? maxFlushInterval,
+    int? maxFlushCount,
+    Duration? autoFlushInterval,
   }) {
     return GaplyTraceEngineSpec(
       id: id ?? this.id,
@@ -169,6 +190,9 @@ class GaplyTraceEngineSpec extends GaplyEngineSpec {
       threshold: threshold ?? this.threshold,
       maxStats: maxStats ?? this.maxStats,
       statsLifetime: statsLifetime ?? this.statsLifetime,
+      maxFlushInterval: maxFlushInterval ?? this.maxFlushInterval,
+      maxFlushCount: maxFlushCount ?? this.maxFlushCount,
+      autoFlushInterval: autoFlushInterval ?? this.autoFlushInterval,
     );
   }
 }

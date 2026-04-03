@@ -4,8 +4,8 @@ class ProfilerBundle {
   static final traceEngine = GaplyTraceEngineSpec(threshold: GaplyBudget.fps60);
   static final batchEngine = GaplyBatchEngineSpec(
     threshold: GaplyBudget.all,
-    maxBatchInterval: GaplyBudget.fps60,
-    maxBatchCount: 100,
+    maxFlushInterval: GaplyBudget.fps60,
+    maxFlushCount: 100,
   );
   static final memoryEngine = GaplyMemoryEngineSpec(thresholdBytes: GaplyBudget.mb1);
 

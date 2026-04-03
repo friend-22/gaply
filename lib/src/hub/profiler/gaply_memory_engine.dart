@@ -16,7 +16,6 @@ class GaplyMemoryEngine extends GaplyProfilerEngine<MemoryStats> {
     final int memoryDelta = pkt[ProfilerIdx.memDelta];
 
     if (memoryDelta.abs() < spec.thresholdBytes) return;
-
     sendPacket(data);
   }
 
@@ -25,118 +24,192 @@ class GaplyMemoryEngine extends GaplyProfilerEngine<MemoryStats> {
     final List<dynamic> pkt = data;
     final String labelId = pkt[ProfilerIdx.id];
     final String? tag = pkt[ProfilerIdx.tag];
-    final int depth = pkt[ProfilerIdx.depth];
     final int memoryDelta = pkt[ProfilerIdx.memDelta];
-    final Map<String, dynamic>? metadata = pkt[ProfilerIdx.metadata];
 
     final String statsKey = tag != null ? '$labelId@$tag' : labelId;
-    final stats = statsMap.putIfAbsent(statsKey, () => MemoryStats(engine: this));
-    stats.add(memoryDelta);
+    final stats = statsMap.putIfAbsent(statsKey, () => MemoryStats(engine: this, label: labelId, tag: tag));
+    stats.add(data);
 
     if (memoryDelta.abs() >= spec.thresholdBytes) {
-      _log(memoryDelta, label: labelId, tag: tag, depth: depth, metadata: metadata);
+      _log(data);
     }
   }
 
-  void _log(
-    int delta, {
-    required String label,
-    String? tag,
-    required int depth,
-    Map<String, dynamic>? metadata,
-  }) {
-    final a = GaplyHub.theme.ansi;
-    final String formatted = GaplyBudget.formatBytes(delta);
+  void _log(dynamic data) {
+    final f = GaplyHub.theme.formatter;
+    final List<dynamic> pkt = data;
+    final int memoryDelta = pkt[ProfilerIdx.memDelta];
 
-    final String icon = delta > 0 ? '📈' : '📉';
-    final String color = delta > 0 ? a.jank : a.perf;
-    final String indent = depth > 0 ? '${'  ' * depth}└ ' : '';
-    final String tagStr = tag != null ? ' ${a.tag}@$tag${a.reset}' : '';
+    final String icon = memoryDelta > 0 ? '📈' : '📉';
+    final String color = memoryDelta > 0 ? f.ansi.jank : f.ansi.perf;
+    final String formatted = GaplyBudget.formatBytes(memoryDelta).padLeft(10);
 
-    String metaStr = '';
-    if (metadata != null && metadata.isNotEmpty) {
-      metaStr = ' ${a.gray}context:$metadata${a.reset}';
-    }
+    final header = f.header('MEM', pkt[ProfilerIdx.id], tag: pkt[ProfilerIdx.tag]);
+    final indent = f.indent(pkt[ProfilerIdx.depth]);
 
-    infoLog(
-      '${a.gray}[MEM]${a.reset} $indent$icon ${a.label}$label${a.reset}$tagStr : '
-      '$color${formatted.padLeft(10)}${a.reset}$metaStr',
-    );
+    infoLog('$header : $indent$icon $color$formatted${f.ansi.reset}');
+    //
+    // final List<dynamic> pkt = data;
+    // final String label = pkt[ProfilerIdx.id];
+    // final String? tag = pkt[ProfilerIdx.tag];
+    // final int depth = pkt[ProfilerIdx.depth];
+    // final int memoryDelta = pkt[ProfilerIdx.memDelta];
+    // final Map<String, dynamic>? metadata = pkt[ProfilerIdx.metadata];
+    //
+    // final a = GaplyHub.theme.ansi;
+    // final String formatted = GaplyBudget.formatBytes(memoryDelta);
+    //
+    // final String icon = memoryDelta > 0 ? '📈' : '📉';
+    // final String color = memoryDelta > 0 ? a.jank : a.perf;
+    // final String indent = depth > 0 ? '${'  ' * depth}└ ' : '';
+    // final String tagStr = tag != null ? ' ${a.tag}@$tag${a.reset}' : '';
+    //
+    // String metaStr = '';
+    // if (metadata != null && metadata.isNotEmpty) {
+    //   metaStr = ' ${a.gray}context:$metadata${a.reset}';
+    // }
+    //
+    // infoLog(
+    //   '${a.gray}[MEM]${a.reset} $indent$icon ${a.label}$label${a.reset}$tagStr : '
+    //       '$color${formatted.padLeft(10)}${a.reset}$metaStr',
+    // );
   }
 }
 
-class MemoryStats implements GaplyProfilerStats {
-  final GaplyMemoryEngine engine;
-
-  Map<String, dynamic>? peakMetadata;
+class MemoryStats extends GaplyProfilerStats {
+  GaplyMemoryEngine get memEngine => engine as GaplyMemoryEngine;
 
   int count = 0;
   int totalDelta = 0;
   int peakDelta = 0;
   int minDelta = 0;
   int lastThresholdBytes = 0;
+  Map<String, dynamic>? _sessionPeakMetadata;
 
-  @override
-  DateTime lastLogTime = DateTime.now();
+  int errorCount = 0;
+  String? _lastError;
+
+  int globalCount = 0;
+  int globalTotalDelta = 0;
+  int globalPeakDelta = 0;
+  int globalErrorCount = 0;
+  Map<String, dynamic>? _globalPeakMetadata;
 
   @override
   bool get isNotEmpty => count > 0;
 
-  MemoryStats({required this.engine});
+  MemoryStats({required super.engine, required super.label, super.tag});
 
-  void add(int delta, {Map<String, dynamic>? metadata}) {
+  void add(dynamic data) {
+    final List<dynamic> pkt = data;
+    final int memoryDelta = pkt[ProfilerIdx.memDelta];
+    final Map<String, dynamic>? metadata = pkt[ProfilerIdx.metadata];
+    final dynamic error = pkt.length > ProfilerIdx.error ? pkt[ProfilerIdx.error] : null;
+
     count++;
-    totalDelta += delta;
-    lastLogTime = DateTime.now();
+    globalCount++;
+    totalDelta += memoryDelta;
+    globalTotalDelta += memoryDelta;
 
-    if (delta > peakDelta) {
-      peakDelta = delta;
-      peakMetadata = metadata;
+    if (memoryDelta > peakDelta) {
+      peakDelta = memoryDelta;
+      _sessionPeakMetadata = metadata;
     }
-    if (delta < minDelta) minDelta = delta;
+
+    if (memoryDelta > globalPeakDelta) {
+      globalPeakDelta = memoryDelta;
+      _globalPeakMetadata = metadata;
+    }
+
+    if (memoryDelta < minDelta) minDelta = memoryDelta;
+
+    if (error != null) {
+      errorCount++;
+      globalErrorCount++;
+      _lastError = error.toString();
+    }
+
+    checkFlushThreshold(count);
+  }
+
+  void _reset() {
+    count = 0;
+    totalDelta = 0;
+    peakDelta = 0;
+    minDelta = 0;
+    errorCount = 0;
+    _lastError = null;
+    _sessionPeakMetadata = null;
+    lastLogTime = DateTime.now();
+  }
+
+  @override
+  void flush() {
+    if (!isNotEmpty) return;
+
+    final f = GaplyHub.theme.formatter;
+    final a = f.ansi;
+
+    final header = f.header('MEM', label, tag: tag);
+    final error = f.errorStatus(count, errorCount);
+
+    final String avgStr = GaplyBudget.formatBytes(totalDelta ~/ count);
+    final String peakStr = GaplyBudget.formatBytes(peakDelta);
+
+    String peakHint = '';
+    if (_sessionPeakMetadata != null && _sessionPeakMetadata!.isNotEmpty) {
+      peakHint = '\n           ${a.gray}└ Session Peak Meta: $_sessionPeakMetadata${a.reset}';
+    }
+
+    String errorHint = '';
+    if (errorCount > 0 && _lastError != null) {
+      errorHint = '\n           ${a.error}└ Last Error: $_lastError${a.reset}';
+    }
+
+    engine.infoLog(
+      '$header : Avg Delta ${a.label}$avgStr${a.reset} | '
+      'Peak ${a.accent}$peakStr${a.reset} | '
+      'Count: $count$error$peakHint$errorHint',
+      isImmediate: true,
+    );
+
+    _reset();
   }
 
   @override
   void printSummary(String label) {
-    if (count == 0) return;
+    if (globalCount == 0) return;
+    if (isNotEmpty) flush();
 
-    final a = GaplyHub.theme.ansi;
+    final f = GaplyHub.theme.formatter;
+    final a = f.ansi;
 
-    final String avgStr = GaplyBudget.formatBytes((totalDelta ~/ count));
-    final String peakStr = GaplyBudget.formatBytes(peakDelta);
-    final String minStr = GaplyBudget.formatBytes(minDelta);
-    final String limitStr = GaplyBudget.formatBytes(engine.spec.thresholdBytes);
+    final String avgStr = GaplyBudget.formatBytes(globalTotalDelta ~/ globalCount);
+    final String peakStr = GaplyBudget.formatBytes(globalPeakDelta);
+    final int limitBytes = memEngine.spec.thresholdBytes;
+    final String limitStr = GaplyBudget.formatBytes(limitBytes);
 
-    final bool isOver = engine.spec.thresholdBytes > 0 && peakDelta > engine.spec.thresholdBytes;
-    final String peakColor = isOver ? a.accent : a.label;
+    final bool isOver = limitBytes > 0 && globalPeakDelta > limitBytes;
+    final String peakColor = isOver ? a.jank : a.perf;
 
     String offsetStr = '';
-    if (engine.spec.thresholdBytes > 0) {
-      final int diff = peakDelta - engine.spec.thresholdBytes;
-      if (diff > 0) {
-        offsetStr = ' ${a.gray}(${a.jank}+${GaplyBudget.formatBytes(diff)}${a.gray})${a.reset}';
-      }
+    if (isOver) {
+      final int diff = globalPeakDelta - limitBytes;
+      offsetStr = ' ${a.gray}(${a.jank}+${GaplyBudget.formatBytes(diff)}${a.gray})${a.reset}';
     }
 
     String peakHint = '';
-    if (peakMetadata != null) {
-      peakHint = '\n      ${a.gray}└ Peak Context: $peakMetadata${a.reset}';
+    if (_globalPeakMetadata != null && _globalPeakMetadata!.isNotEmpty) {
+      peakHint = '\n           ${a.gray}└ Global Peak Context: $_globalPeakMetadata${a.reset}';
     }
 
     engine.infoLog(
-      '🧠 ${a.label}[MEMORY STATS] $label${a.reset} ${a.gray}(Budget: $limitStr)${a.reset}\n'
-      '           Calls: $count | '
-      'Avg Delta: ${a.label}$avgStr${a.reset} | '
+      '${f.header('MEM SUMMARY', label, tag: tag)} ${a.gray}(Budget: $limitStr)${a.reset}\n'
+      '           Avg Delta: ${a.label}$avgStr${a.reset} | '
       'Peak: $peakColor$peakStr$offsetStr${a.reset} | '
-      'Min: ${a.perf}$minStr${a.reset} | '
+      'Reliability: ${f.errorStatus(globalCount, globalErrorCount).trim().isEmpty ? "${a.success}100% OK" : f.errorStatus(globalCount, globalErrorCount)}'
       '$peakHint',
       isImmediate: true,
     );
   }
-
-  @override
-  void flush() {}
-
-  @override
-  Future<void> dispose() async {}
 }

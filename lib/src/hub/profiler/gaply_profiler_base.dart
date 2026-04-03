@@ -110,15 +110,40 @@ extension GaplyProfilerEngineX on GaplyProfilerEngine {
 }
 
 abstract class GaplyProfilerStats {
-  const GaplyProfilerStats();
+  final GaplyProfilerEngine engine;
+  final String label;
+  final String? tag;
+
+  DateTime lastLogTime = DateTime.now();
+  Timer? _autoFlushTimer;
+
+  GaplyProfilerStats({required this.engine, required this.label, this.tag}) {
+    _autoFlushTimer = Timer.periodic(engine.spec.autoFlushInterval, (_) {
+      if (isNotEmpty) flush();
+    });
+  }
 
   bool get isNotEmpty;
-  DateTime get lastLogTime;
 
-  void flush();
   void printSummary(String label);
 
-  Future<void> dispose();
+  void flush();
+
+  void checkFlushThreshold(int count) {
+    final now = DateTime.now();
+    final bool isTimeOut = now.difference(lastLogTime) >= engine.spec.maxFlushInterval;
+    final bool isCountOver = count >= engine.spec.maxFlushCount;
+
+    if (isTimeOut || isCountOver) {
+      flush();
+    }
+  }
+
+  Future<void> dispose() async {
+    _autoFlushTimer?.cancel();
+    _autoFlushTimer = null;
+    if (isNotEmpty) flush();
+  }
 }
 
 abstract class ProfilerIdx {
@@ -129,4 +154,5 @@ abstract class ProfilerIdx {
   static const int depth = 4; // Depth
   static const int memDelta = 5; // Memory Delta
   static const int metadata = 6; // Metadata Map
+  static const int error = 7; // Error
 }

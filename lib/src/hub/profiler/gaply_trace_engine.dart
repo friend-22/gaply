@@ -26,11 +26,9 @@ class GaplyTraceEngine extends GaplyProfilerEngine<TraceStats> {
     final int elapsedUs = pkt[ProfilerIdx.sw];
     final String labelId = pkt[ProfilerIdx.id];
     final String? tag = pkt[ProfilerIdx.tag];
-    final bool isAsync = pkt[ProfilerIdx.isAsync] == 1;
 
-    final stats = statsMap.putIfAbsent(labelId, () => TraceStats(engine: this));
-
-    stats.add(elapsedUs, isAsync, tag, spec.threshold.inMicroseconds);
+    final stats = statsMap.putIfAbsent(labelId, () => TraceStats(engine: this, label: labelId, tag: tag));
+    stats.add(spec.threshold.inMicroseconds, data);
 
     if (elapsedUs >= spec.threshold.inMicroseconds) {
       _log(data);
@@ -45,14 +43,15 @@ class GaplyTraceEngine extends GaplyProfilerEngine<TraceStats> {
     final int depth = pkt[ProfilerIdx.depth];
     final Map<String, dynamic>? metadata = pkt[ProfilerIdx.metadata];
 
+    final f = GaplyHub.theme.formatter;
+    final a = f.ansi;
+
+    final String timeStr = a.gray + DateTime.now().toString().substring(11, 19) + a.reset;
+    final String header = f.header(category.toUpperCase(), labelId, tag: tag);
+    final String indent = f.indent(depth);
+
     final double ms = elapsedUs / 1000;
     final double limit = spec.threshold.inMicroseconds / 1000;
-
-    final a = GaplyHub.theme.ansi;
-    final fmt = GaplyHub.theme.formatter;
-
-    final String indent = depth > 0 ? '${'  ' * depth}└ ' : '';
-    final String tagStr = tag != null ? ' ${a.tag}@$tag${a.reset}' : '';
 
     String metaStr = '';
     if (metadata != null && metadata.isNotEmpty) {
@@ -60,148 +59,104 @@ class GaplyTraceEngine extends GaplyProfilerEngine<TraceStats> {
     }
 
     infoLog(
-      '${a.gray}[${DateTime.now().toString().substring(11, 19)}]${a.reset} '
-      '$indent$labelId$tagStr : ${fmt.formatMs(ms, limit)}$metaStr',
+      '$timeStr $header : $indent${f.formatMs(ms, limit, showDiff: false)}$metaStr',
       isImmediate: false,
     );
   }
 }
 
-class TraceStats implements GaplyProfilerStats {
-  final GaplyTraceEngine engine;
-
-  Map<String, dynamic>? maxSyncMeta;
-  Map<String, dynamic>? maxAsyncMeta;
-
+class TraceStats extends GaplyProfilerStats {
   int syncCount = 0;
   int syncTotalUs = 0;
   int syncMaxUs = 0;
-  int lastThresholdUs = 0;
-
-  // Buckets: [Perfect, Normal, Warning, Critical/Jank]
   final List<int> syncDist = [0, 0, 0, 0];
   final Map<String, List<int>> tagDist = {};
+  Map<String, dynamic>? _maxSyncMeta;
 
   int asyncCount = 0;
   int asyncTotalUs = 0;
   int asyncMaxUs = 0;
+  Map<String, dynamic>? _maxAsyncMeta;
 
-  @override
-  DateTime lastLogTime = DateTime.now();
+  int globalSyncCount = 0;
+  int globalSyncTotalUs = 0;
+  int globalSyncMaxUs = 0;
+  final List<int> globalSyncDist = [0, 0, 0, 0];
+
+  int globalAsyncCount = 0;
+  int globalAsyncTotalUs = 0;
+  int globalAsyncMaxUs = 0;
+  Map<String, dynamic>? _globalMaxAsyncMeta;
+
+  int errorCount = 0;
+  int globalErrorCount = 0;
+  String? _lastError;
+
+  int lastThresholdUs = 0;
 
   @override
   bool get isNotEmpty => syncCount > 0 || asyncCount > 0;
 
-  Timer? _autoFlushTimer;
+  TraceStats({required super.engine, required super.label, super.tag});
 
-  TraceStats({required this.engine}) {
-    _autoFlushTimer = Timer.periodic(const Duration(minutes: 1), (_) {
-      if (isNotEmpty) flush();
-    });
+  int _getDistIdx(int elapsedUs) {
+    if (elapsedUs < GaplyBudget.slow.inMicroseconds) return 0;
+    if (elapsedUs < GaplyBudget.warning.inMicroseconds) return 1;
+    if (elapsedUs < GaplyBudget.critical.inMicroseconds) return 2;
+    return 3;
   }
 
-  void add(int us, bool isAsync, String? tag, int thresholdUs, {Map<String, dynamic>? metadata}) {
+  void add(int thresholdUs, dynamic data) {
+    final List<dynamic> pkt = data;
+    final int elapsedUs = pkt[ProfilerIdx.sw];
+    final String? tag = pkt[ProfilerIdx.tag];
+    final bool isAsync = pkt[ProfilerIdx.isAsync] == 1;
+    final Map<String, dynamic>? metadata = pkt[ProfilerIdx.metadata];
+    final dynamic error = pkt.length > ProfilerIdx.error ? pkt[ProfilerIdx.error] : null;
+
     lastThresholdUs = thresholdUs;
-    lastLogTime = DateTime.now();
 
     if (isAsync) {
       asyncCount++;
-      asyncTotalUs += us;
-      if (us > asyncMaxUs) {
-        asyncMaxUs = us;
-        maxAsyncMeta = metadata;
+      globalAsyncCount++;
+      asyncTotalUs += elapsedUs;
+      globalAsyncTotalUs += elapsedUs;
+
+      if (elapsedUs > asyncMaxUs) {
+        asyncMaxUs = elapsedUs;
+        _maxAsyncMeta = metadata;
+      }
+      if (elapsedUs > globalAsyncMaxUs) {
+        globalAsyncMaxUs = elapsedUs;
+        _globalMaxAsyncMeta = metadata;
       }
     } else {
       syncCount++;
-      syncTotalUs += us;
-      if (us > syncMaxUs) {
-        syncMaxUs = us;
-        maxSyncMeta = metadata;
+      globalSyncCount++;
+      syncTotalUs += elapsedUs;
+      globalSyncTotalUs += elapsedUs;
+
+      if (elapsedUs > syncMaxUs) {
+        syncMaxUs = elapsedUs;
+        _maxSyncMeta = metadata;
       }
 
-      int distIdx;
-      if (us < GaplyBudget.slow.inMicroseconds) {
-        distIdx = 0;
-      } else if (us < GaplyBudget.warning.inMicroseconds) {
-        distIdx = 1;
-      } else if (us < GaplyBudget.critical.inMicroseconds) {
-        distIdx = 2;
-      } else {
-        distIdx = 3;
-      }
-
+      int distIdx = _getDistIdx(elapsedUs);
       syncDist[distIdx]++;
+      globalSyncDist[distIdx]++;
 
       if (tag != null) {
         tagDist.putIfAbsent(tag, () => [0, 0, 0, 0])[distIdx]++;
       }
     }
-  }
 
-  @override
-  void printSummary(String label) {
-    if (!isNotEmpty) return;
-
-    final a = GaplyHub.theme.ansi;
-    final fmt = GaplyHub.theme.formatter;
-
-    final double limit = lastThresholdUs / 1000;
-
-    engine.infoLog(
-      '📊 ${a.label}[STATS] $label${a.reset} ${a.gray}(Threshold: ${limit.toStringAsFixed(2)}ms)${a.reset}',
-      isImmediate: true,
-    );
-
-    engine.infoLog(' 🎯 ${a.hint}${GaplyBudget.syncThresholdGuide} 🎯', isImmediate: true);
-
-    if (syncCount > 0) {
-      final double avgMs = (syncTotalUs / syncCount) / 1000;
-      final double maxMs = syncMaxUs / 1000;
-
-      engine.infoLog(
-        '   ${a.label}[Sync]${a.reset}  Total:$syncCount | '
-        'Avg:${fmt.formatMs(avgMs, limit)} | '
-        'Max:${fmt.formatMs(maxMs, limit)}',
-        isImmediate: true,
-      );
-      engine.infoLog('           Total Dist: ${fmt.formatDistRow(syncDist, syncCount)}', isImmediate: true);
-
-      tagDist.forEach((tag, dist) {
-        int tagTotal = dist.reduce((a, b) => a + b);
-        engine.infoLog(
-          '           ${a.gray}└${a.reset} ${a.tag}@$tag${a.reset}: ${fmt.formatDistRow(dist, tagTotal)}',
-          isImmediate: true,
-        );
-      });
-
-      if (maxSyncMeta != null) {
-        engine.infoLog('           ${a.gray}└ Max Meta: $maxSyncMeta${a.reset}', isImmediate: true);
-      }
+    if (error != null) {
+      errorCount++;
+      globalErrorCount++;
+      _lastError = error.toString();
     }
 
-    if (asyncCount > 0) {
-      final double avg = (asyncTotalUs / asyncCount) / 1000;
-      final double max = asyncMaxUs / 1000;
-      engine.infoLog(
-        '   ${a.async}[Async]${a.reset} Calls:$asyncCount | '
-        'Avg:${a.async}${avg.toStringAsFixed(2)}ms${a.reset} | '
-        'Max:${max.toStringAsFixed(2)}ms (Latency)',
-        isImmediate: true,
-      );
-      if (maxAsyncMeta != null) {
-        engine.infoLog('           ${a.gray}└ Max Meta: $maxAsyncMeta${a.reset}', isImmediate: true);
-      }
-    }
-  }
-
-  @override
-  void flush() {
-    if (!isNotEmpty) return;
-
-    printSummary("${engine.spec.id} (Auto-Flush)");
-
-    _reset();
-    lastLogTime = DateTime.now();
+    checkFlushThreshold(syncCount + asyncCount);
   }
 
   void _reset() {
@@ -210,17 +165,107 @@ class TraceStats implements GaplyProfilerStats {
     syncMaxUs = 0;
     syncDist.fillRange(0, syncDist.length, 0);
     tagDist.clear();
+    _maxSyncMeta = null;
+
     asyncCount = 0;
     asyncTotalUs = 0;
     asyncMaxUs = 0;
-    maxSyncMeta = null;
-    maxAsyncMeta = null;
+    _maxAsyncMeta = null;
+
+    errorCount = 0;
+    _lastError = null;
+    lastLogTime = DateTime.now();
   }
 
   @override
-  Future<void> dispose() async {
-    _autoFlushTimer?.cancel();
-    _autoFlushTimer = null;
+  void flush() {
+    if (!isNotEmpty) return;
+
+    final f = GaplyHub.theme.formatter;
+    final header = f.header('TRACE', label, tag: tag);
+    final error = f.errorStatus(syncCount + asyncCount, errorCount);
+
+    String errorHint = '';
+    if (errorCount > 0 && _lastError != null) {
+      errorHint = '\n           ${f.ansi.error}└ Last Error: $_lastError${f.ansi.reset}';
+    }
+
+    String syncMetaHint = '';
+    if (_maxSyncMeta != null && _maxSyncMeta!.isNotEmpty) {
+      syncMetaHint = '\n           ${f.ansi.gray}└ Session Sync Max: $_maxSyncMeta${f.ansi.reset}';
+    }
+
+    String asyncMetaHint = '';
+    if (_maxAsyncMeta != null && _maxAsyncMeta!.isNotEmpty) {
+      asyncMetaHint = '\n           ${f.ansi.gray}└ Session Async Max: $_maxAsyncMeta${f.ansi.reset}';
+    }
+
+    engine.infoLog(
+      '$header : Sync($syncCount) Async($asyncCount) $error'
+      '$syncMetaHint'
+      '$asyncMetaHint'
+      '$errorHint',
+      isImmediate: true,
+    );
+
+    _reset();
+  }
+
+  @override
+  void printSummary(String label) {
+    if (globalSyncCount == 0 && globalAsyncCount == 0) return;
     if (isNotEmpty) flush();
+
+    final f = GaplyHub.theme.formatter;
+    final double limit = lastThresholdUs / 1000;
+
+    engine.infoLog(f.header('TRACE SUMMARY', label, tag: tag), isImmediate: true);
+    engine.infoLog(
+      ' 🎯 ${f.ansi.hint}${GaplyBudget.syncThresholdGuide}${f.ansi.reset} 🎯',
+      isImmediate: true,
+    );
+
+    if (globalSyncCount > 0) {
+      final double avgMs = (globalSyncTotalUs / globalSyncCount) / 1000;
+      engine.infoLog(
+        '   ${f.ansi.label}[Sync]${f.ansi.reset}  Avg:${f.formatMs(avgMs, limit)} | Count:$globalSyncCount',
+        isImmediate: true,
+      );
+      engine.infoLog(
+        '           Dist: ${f.formatDistRow(globalSyncDist, globalSyncCount)}',
+        isImmediate: true,
+      );
+
+      if (_maxSyncMeta != null) {
+        engine.infoLog(
+          '           ${f.ansi.gray}└ Peak Sync Meta: $_maxSyncMeta${f.ansi.reset}',
+          isImmediate: true,
+        );
+      }
+    }
+
+    if (globalAsyncCount > 0) {
+      final double avgMs = (globalAsyncTotalUs / globalAsyncCount) / 1000;
+      final double maxMs = globalAsyncMaxUs / 1000;
+
+      engine.infoLog(
+        '   ${f.ansi.async}[Async]${f.ansi.reset} Avg:${f.formatMs(avgMs, limit)} | Max:${f.ansi.accent}${maxMs.toStringAsFixed(3)}ms${f.ansi.reset}',
+        isImmediate: true,
+      );
+
+      if (_globalMaxAsyncMeta != null && _globalMaxAsyncMeta!.isNotEmpty) {
+        engine.infoLog(
+          '           ${f.ansi.gray}└ Peak Async Meta: $_globalMaxAsyncMeta${f.ansi.reset}',
+          isImmediate: true,
+        );
+      }
+    }
+
+    if (globalErrorCount > 0) {
+      engine.infoLog(
+        '   ${f.ansi.error}[Error]${f.ansi.reset} Total Failures: $globalErrorCount',
+        isImmediate: true,
+      );
+    }
   }
 }

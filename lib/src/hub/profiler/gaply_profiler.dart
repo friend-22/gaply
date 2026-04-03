@@ -119,11 +119,9 @@ class GaplyProfiler {
                 return value;
               })
               .catchError((e) {
-                _handleRecord(
-                  _buildArgs(sw, '${tag ?? 'task'}:error', nextDepth, 1, metadata),
-                  startMem,
-                  trackMem,
-                );
+                final args = _buildArgs(sw, tag, nextDepth, 1, metadata); // 태그명 유지
+                args[ProfilerIdx.error] = e.toString();
+                _handleRecord(args, startMem, trackMem);
                 GaplyHub.error('❌ [ASYNC ERROR] $id: $e');
                 throw e;
               });
@@ -132,14 +130,25 @@ class GaplyProfiler {
         _handleRecord(_buildArgs(sw, tag, nextDepth, 0, metadata), startMem, trackMem);
         return result;
       } catch (e) {
-        _handleRecord(_buildArgs(sw, '${tag ?? 'task'}:error', nextDepth, 0, metadata), startMem, trackMem);
+        final args = _buildArgs(sw, tag, nextDepth, 0, metadata);
+        args[ProfilerIdx.error] = e.toString();
+        _handleRecord(args, startMem, trackMem);
         rethrow;
       }
     }, zoneValues: {_depthKey: nextDepth});
   }
 
   List<dynamic> _buildArgs(Stopwatch sw, String? tag, int depth, int async, Map<String, dynamic>? metadata) {
-    return [sw, id, tag, async, depth, 0, metadata];
+    final args = List<dynamic>.filled(8, null);
+    args[ProfilerIdx.sw] = sw;
+    args[ProfilerIdx.id] = id;
+    args[ProfilerIdx.tag] = tag;
+    args[ProfilerIdx.isAsync] = async;
+    args[ProfilerIdx.depth] = depth;
+    args[ProfilerIdx.memDelta] = 0;
+    args[ProfilerIdx.metadata] = metadata;
+    args[ProfilerIdx.error] = null;
+    return args;
   }
 
   void _handleRecord(List<dynamic> args, int startMem, bool trackMem) {

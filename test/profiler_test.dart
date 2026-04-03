@@ -62,8 +62,8 @@ Future<void> testExtremeMemory() async {
       const GaplyBatchEngineSpec(
         id: 'Batch100',
         threshold: GaplyBudget.fps120, // 모든 호출 기록
-        maxBatchCount: 1000,
-        maxBatchInterval: Duration(minutes: 1),
+        maxFlushCount: 1000,
+        maxFlushInterval: Duration(minutes: 1),
       ),
 
       const GaplyMemoryEngineSpec(thresholdBytes: GaplyBudget.kb1),
@@ -167,7 +167,7 @@ Future<void> profilerTest() async {
   final memoryEngine = GaplyMemoryEngineSpec(thresholdBytes: GaplyBudget.mb1); // 1MB
   final batchEngine = GaplyBatchEngineSpec(
     threshold: GaplyBudget.all,
-    maxBatchInterval: const Duration(seconds: 2),
+    maxFlushInterval: const Duration(seconds: 2),
   );
 
   // 2. Initialize Profilers
@@ -181,22 +181,30 @@ Future<void> profilerTest() async {
   debugPrint('🚀 Starting Gaply Performance Test...\n');
 
   // --- Test Case 1: Synchronous Heavy Task (Time & Memory) ---
-  heavyProfiler.trace(() {
-    debugPrint('🧐 Running Sync Heavy Task...');
-    // Artificial Delay (~15ms)
-    final s = Stopwatch()..start();
-    while (s.elapsedMilliseconds < 15) {}
+  heavyProfiler.trace(
+    () {
+      debugPrint('🧐 Running Sync Heavy Task...');
+      // Artificial Delay (~15ms)
+      final s = Stopwatch()..start();
+      while (s.elapsedMilliseconds < 15) {}
 
-    // Artificial Memory Allocation (~5MB)
-    final list = List.generate(1000000, (i) => i);
-    debugPrint('   Allocated ${list.length} integers.');
-  }, tag: 'InitialLoad');
+      // Artificial Memory Allocation (~5MB)
+      final list = List.generate(1000000, (i) => i);
+      debugPrint('   Allocated ${list.length} integers.');
+    },
+    tag: 'InitialLoad',
+    metadata: {'type': 'MemoryHeavy', 'size': '5MB'},
+  );
 
   // --- Test Case 2: Async Task (Time Tracking) ---
-  await heavyProfiler.traceAsync(() async {
-    debugPrint('\n🌐 Running Async Network Simulation...');
-    await Future.delayed(const Duration(milliseconds: 500));
-  }, tag: 'ApiCall');
+  await heavyProfiler.traceAsync(
+    () async {
+      debugPrint('\n🌐 Running Async Network Simulation...');
+      await Future.delayed(const Duration(milliseconds: 500));
+    },
+    tag: 'ApiCall',
+    metadata: {'endpoint': '/api/v1/user_profile', 'method': 'GET', 'retry': 0},
+  );
 
   // --- Test Case 3: Batched Loop Task (Aggregation) ---
   debugPrint('\n🔄 Running Loop Task (Batched)...');
@@ -210,6 +218,33 @@ Future<void> profilerTest() async {
   }
 
   // 3. Print Final Stats
+  debugPrint('\n--- [ Final Performance Report ] ---');
+
+  // --- Test Case 4: Error Handling (Sync & Async) ---
+  debugPrint('\n⚠️ Running Error Simulation...');
+
+  // 1. Sync Error (Trace & Batch)
+  try {
+    heavyProfiler.trace(
+      () {
+        throw Exception('Critical Database Connection Failure');
+      },
+      tag: 'DB_Task',
+      metadata: {'db': 'postgres_main'},
+    );
+  } catch (e) {
+    debugPrint('   Caught expected sync error: $e');
+  }
+
+  try {
+    await heavyProfiler.traceAsync(() async {
+      await Future.delayed(const Duration(milliseconds: 100));
+      throw TimeoutException('External API Timeout');
+    }, tag: 'Auth_API');
+  } catch (e) {
+    debugPrint('   Caught expected async error: $e');
+  }
+
   debugPrint('\n--- [ Final Performance Report ] ---');
 }
 
