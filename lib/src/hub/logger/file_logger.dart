@@ -2,7 +2,7 @@
 
 part of '../gaply_hub.dart';
 
-class GaplyFileLogger extends GaplyLoggerEngine {
+class _FileLogger extends _LoggerEngine {
   @override
   final GaplyFileLoggerSpec spec;
 
@@ -14,39 +14,45 @@ class GaplyFileLogger extends GaplyLoggerEngine {
   final List<String> _buffer = [];
   Timer? _flushTimer;
 
-  GaplyFileLogger({required this.spec}) : _file = File(spec.path) {
+  _FileLogger({required this.spec}) : _file = File(spec.path) {
     _enqueue(_initLogger);
   }
 
   void _enqueue(FutureOr<void> Function() task) {
     _lock = _lock.then((_) => task()).catchError((e) {
-      debugPrint('❌ GaplyFileLogger Task Error: $e');
+      debugPrint('❌ [Gaply] FileLogger Task Error: $e');
     });
   }
 
   Future<void> _initLogger() async {
     try {
+      final parentDir = _file.parent;
+      if (!await parentDir.exists()) {
+        await parentDir.create(recursive: true);
+      }
+
       if (await _file.exists()) {
         _currentFileBytes = await _file.length();
-      } else {
-        _currentFileBytes = 0;
       }
-      _sink = _file.openWrite(mode: spec.mode, encoding: utf8);
+      _sink = _file.openWrite(mode: FileMode.append, encoding: utf8);
     } catch (e) {
-      debugPrint('❌ GaplyFileLogger Init Error: $e');
+      debugPrint('❌ [Gaply] FileLogger Init Error: $e');
     }
   }
 
   @override
-  void write(dynamic data) {
-    final String text = data[LoggerIdx.text];
-    final bool isImmediate = data[LoggerIdx.isImmediate] == 1;
-    final GaplyLogLevel level = GaplyLogLevel.values[data[LoggerIdx.level]];
-    final DateTime timestamp = DateTime.fromMicrosecondsSinceEpoch(data[LoggerIdx.timestamp]);
+  void write(Uint8List data) {
+    final r = GaplyBytesReader(data);
 
-    if (level.index < GaplyLogLevel.warning.index) return;
+    final _ = r.readStringOrNull();
+    final level = GaplyLogLevel.values[r.readInt()];
+    final isImmediate = r.readBool();
+    final text = r.readString();
+    final DateTime timestamp = DateTime.fromMicrosecondsSinceEpoch(r.readInt());
 
-    final message = '$timestamp | [${level.name}] | $text';
+    if (level.index < spec.minLevel.index) return;
+
+    final message = '${timestamp.toIso8601String()} | [${level.name.toUpperCase()}] | $text';
     _buffer.add(message);
 
     if (isImmediate || _buffer.length >= spec.bufferCapacity) {
@@ -60,10 +66,11 @@ class GaplyFileLogger extends GaplyLoggerEngine {
   Future<void> flush() async {
     if (_buffer.isEmpty) return;
 
-    final String content = '${_buffer.join('\n')}\n';
-    _buffer.clear();
     _flushTimer?.cancel();
     _flushTimer = null;
+
+    final String content = '${_buffer.join('\n')}\n';
+    _buffer.clear();
 
     _enqueue(() => _writeAsync(content));
   }
@@ -81,7 +88,7 @@ class GaplyFileLogger extends GaplyLoggerEngine {
       _sink?.add(bytes);
       _currentFileBytes += bytes.length;
     } catch (e) {
-      debugPrint('❌ GaplyFileLogger Write Error: $e');
+      debugPrint('❌ [Gaply] FileLogger Write Error: $e');
     }
   }
 
@@ -98,15 +105,22 @@ class GaplyFileLogger extends GaplyLoggerEngine {
       _currentFileBytes = 0;
       await _initLogger();
     } catch (e) {
-      debugPrint('❌ GaplyFileLogger Rotation Error: $e');
+      debugPrint('❌ [Gaply] FileLogger Rotation Error: $e');
     }
   }
 
   @override
   Future<void> dispose() async {
-    await _lock.then((_) async {
+    _flushTimer?.cancel();
+
+    if (_buffer.isNotEmpty) {
+      await flush();
+    }
+
+    return _lock.then((_) async {
       await _sink?.flush();
       await _sink?.close();
+      _sink = null;
     });
   }
 

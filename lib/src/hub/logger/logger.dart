@@ -2,31 +2,24 @@ part of '../gaply_hub.dart';
 
 class _GaplyLogger {
   static const String _channelId = 'GaplyLogger';
-  static GaplyLogLevel level = GaplyLogLevel.debug;
-  static late _GaplyLogger _instance;
 
-  final Map<String, GaplyLoggerEngine> _customEngines = {};
-  GaplyCompositeLogger _defaultEngine = GaplyCompositeLogger();
+  final Map<String, _LoggerEngine> _customEngines = {};
+  _CompositeLogger _defaultEngine = _CompositeLogger();
 
   late GaplyChannel _channel;
   late String _listenerId;
-  late SendPort _channelPort;
 
   _GaplyLogger() {
     _channel = GaplyChannelPool.getChannel(_channelId);
     _listenerId = _channel.registerListener((data) {
-      if (data is List) {
+      if (data is Uint8List) {
         _handleIncomingData(data);
       }
     });
-    _channelPort = _channel.sendPort;
-    _instance = this;
   }
 
-  void _handleIncomingData(dynamic data) {
-    if (data is! List) return;
-
-    final String? engineId = data[LoggerIdx.engineId];
+  void _handleIncomingData(Uint8List data) {
+    final engineId = GaplyBytesReader(data).readStringOrNull();
 
     if (engineId != null && _customEngines.containsKey(engineId)) {
       _customEngines[engineId]!.write(data);
@@ -36,11 +29,11 @@ class _GaplyLogger {
   }
 
   void addDefaultLogger(GaplyLoggerSpec spec) {
-    _defaultEngine = (_defaultEngine).addLogger(spec);
+    _defaultEngine = _defaultEngine.addEngine(spec);
   }
 
   void removeDefaultLogger(GaplyLoggerSpec spec) {
-    _defaultEngine = _defaultEngine.removeLogger(spec);
+    _defaultEngine = _defaultEngine.removeEngine(spec);
   }
 
   void addCustomLogger(GaplyLoggerSpec logger) {
@@ -66,60 +59,73 @@ class _GaplyLogger {
     engine?.dispose();
   }
 
-  static GaplyLoggerEngine createEngineFactory(GaplyLoggerSpec spec) {
+  static _LoggerEngine createEngineFactory(GaplyLoggerSpec spec) {
     switch (spec) {
       case GaplyConsoleLoggerSpec s:
-        return GaplyConsoleLogger(spec: s);
+        return _ConsoleLogger(spec: s);
       case GaplyFileLoggerSpec s:
-        return GaplyFileLogger(spec: s);
+        return _FileLogger(spec: s);
       case GaplyMemoryLoggerSpec s:
-        return GaplyMemoryLogger(spec: s);
+        return _MemoryLogger(spec: s);
     }
-    return const _GaplyNoOpLogger();
+    return const _NoOpLogger();
+  }
+
+  Future<void> flush() async {
+    await _channel.waitForPendingMessages();
+    await _defaultEngine.flush();
+    await Future.wait(_customEngines.values.map((e) => e.flush()));
   }
 
   Future<void> dispose() async {
     await _channel.waitForPendingMessages();
     await _defaultEngine.dispose();
     await Future.wait(_customEngines.values.map((e) => e.dispose()));
-    GaplyChannelPool.removeChannel(_channelId);
+    await _channel.dispose();
   }
 
-  void dispatch(String text, GaplyLogLevel level, bool isImmediate, {String? engineId}) {
-    if (level.index < _GaplyLogger.level.index && !isImmediate) return;
+  void dispatch(Uint8List data) {
+    final r = GaplyBytesReader(data);
+    final _ = r.readStringOrNull();
+    final level = GaplyLogLevel.values[r.readInt()];
+    final isImmediate = r.readBool();
+    final _ = r.readString();
 
-    final List<dynamic> logData = [
-      text, // LoggerIdx.text
-      isImmediate ? 1 : 0, // LoggerIdx.isImmediate
-      level.index, // LoggerIdx.level (int가 전송에 유리)
-      DateTime.now().microsecondsSinceEpoch, // LoggerIdx.timestamp
-      engineId, // LoggerIdx.engineId
-    ];
+    if (level.index < _LoggerWorker.logLevel.index && !isImmediate) return;
 
-    _channelPort.sendPacket(_listenerId, logData);
-  }
+    final w = GaplyBytesWriter(data);
+    w.writeInt(DateTime.now().microsecondsSinceEpoch);
 
-  static Future<void> waitForPendingMessages() async {
-    await _instance._channel.waitForPendingMessages();
+    _channel.sendPacket(_listenerId, w.takeBytes());
   }
 }
 
-class _GaplyNoOpLogger extends GaplyLoggerEngine {
-  @override
-  final GaplyNoOpLoggerSpec spec = const GaplyNoOpLoggerSpec();
+@immutable
+class _NoOpLoggerSpec extends GaplyLoggerSpec {
+  const _NoOpLoggerSpec();
 
-  const _GaplyNoOpLogger();
+  @override
+  _NoOpLoggerSpec copyWith({String? id}) {
+    return _NoOpLoggerSpec();
+  }
 }
 
-class GaplyCompositeLogger extends GaplyLoggerEngine {
+class _NoOpLogger extends _LoggerEngine {
   @override
-  final GaplyNoOpLoggerSpec spec = const GaplyNoOpLoggerSpec();
+  final _NoOpLoggerSpec spec = const _NoOpLoggerSpec();
 
-  final List<GaplyLoggerEngine> _engines;
+  const _NoOpLogger();
+}
 
-  GaplyCompositeLogger({List<GaplyLoggerEngine>? engines}) : _engines = engines ?? [];
+class _CompositeLogger extends _LoggerEngine {
+  @override
+  final _NoOpLoggerSpec spec = const _NoOpLoggerSpec();
 
-  GaplyCompositeLogger addLogger(GaplyLoggerSpec spec) {
+  final List<_LoggerEngine> _engines;
+
+  _CompositeLogger({List<_LoggerEngine>? engines}) : _engines = engines ?? [];
+
+  _CompositeLogger addEngine(GaplyLoggerSpec spec) {
     if (_loggerExists(spec)) return this;
 
     final engine = _GaplyLogger.createEngineFactory(spec);
@@ -127,7 +133,7 @@ class GaplyCompositeLogger extends GaplyLoggerEngine {
     return this;
   }
 
-  GaplyCompositeLogger removeLogger(GaplyLoggerSpec spec) {
+  _CompositeLogger removeEngine(GaplyLoggerSpec spec) {
     _engines.removeWhere((e) {
       if (e.spec.id != null && spec.id != null) return e.spec.id == spec.id;
       return e.spec.runtimeType == spec.runtimeType;
@@ -146,7 +152,7 @@ class GaplyCompositeLogger extends GaplyLoggerEngine {
   }
 
   @override
-  void write(dynamic data) {
+  void write(Uint8List data) {
     for (var l in _engines) {
       l.write(data);
     }
@@ -159,7 +165,6 @@ class GaplyCompositeLogger extends GaplyLoggerEngine {
 
   @override
   Future<void> flush() async {
-    await _GaplyLogger.waitForPendingMessages();
     await Future.wait(_engines.map((l) => l.flush()));
   }
 }

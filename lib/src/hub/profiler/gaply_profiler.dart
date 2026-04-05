@@ -10,36 +10,62 @@ import 'package:gaply/src/hub/gaply_budget.dart';
 import 'package:gaply/src/hub/gaply_hub.dart';
 import 'package:gaply/src/hub/gaply_throttler.dart';
 
+import '../isolate/gaply_isolate.dart';
+
 part 'gaply_profiler_base.dart';
 part 'gaply_engine_specs.dart';
 part 'gaply_batch_engine.dart';
 part 'gaply_trace_engine.dart';
 part 'gaply_memory_engine.dart';
+part 'gaply_trace_handle.dart';
+part 'gaply_profiler_worker.dart';
 
 class GaplyProfiler {
   final String id;
-  final bool enabled;
-  final List<GaplyProfilerEngine> _engines;
+  final List<String> _engineIds;
+
+  //final bool enabled;
+  // final List<GaplyProfilerEngine> _engines;
+  // final List<GaplyEngineSpec> specs;
 
   static const Object _depthKey = #gaply_profiler_depth;
   static final GaplyIntervalMsGate _memoryGate = GaplyIntervalMsGate();
+  static GaplyWorker worker = GaplyWorkerPool.getWorker('GaplyProfiler', workerEntryPoint, workerListener);
 
-  GaplyProfiler({required this.id, this.enabled = true, List<GaplyProfilerEngine>? engines})
-    : _engines = engines ?? [];
-
-  const GaplyProfiler.none() : id = '', enabled = false, _engines = const [];
-
-  GaplyProfiler.withSpecs({required this.id, this.enabled = true, List<GaplyEngineSpec>? specs})
-    : _engines = [] {
-    if (specs != null) {
-      for (final spec in specs) {
-        addEngine(spec);
-      }
-    }
+  const GaplyProfiler.none() : id = '', _engineIds = const [];
+  GaplyProfiler({
+    required this.id,
+    List<GaplyProfilerEngine>? engines,
+    List<GaplyEngineSpec>? specs,
+    required List<String> engineIds,
+  }) : _engineIds = [] {
+    // for (final spec in specs ?? []) {
+    //   addEngine(spec);
+    // }
+    // for (final id in engineIds) {
+    //   _engineIds.add(id);
+    // }
+    // for (final engine in engines ?? []) {
+    //   addEngine(engine);
+    // }
   }
+  // GaplyProfiler({required this.id, this.enabled = true, List<GaplyProfilerEngine>? engines, List<GaplyEngineSpec>? specs}) {
+  //
+  // }
+  //   : _engines = engines ?? [];
+  //
+  // GaplyProfiler.withSpecs({required this.id, this.enabled = true, required List<GaplyEngineSpec> specs})
+  //   : _engines = [] {
+  //   for (final spec in specs) {
+  //     addEngine(spec);
+  //   }
+  // }
 
-  bool get _shouldTrackMemory => _engines.any((e) => e.spec.enableMemoryTracking);
-  bool get _canProfile => enabled && kDebugMode && _engines.isNotEmpty;
+  // bool get _shouldTrackMemory => _engines.any((e) => e.spec.enableMemoryTracking);
+  // bool get _canProfile => enabled && kDebugMode && _engines.isNotEmpty;
+
+  bool get _shouldTrackMemory => false;
+  bool get _canProfile => false;
 
   static int get _currentDepth {
     try {
@@ -158,104 +184,55 @@ class GaplyProfiler {
     args[ProfilerIdx.sw] = sw.elapsedMicroseconds;
     args[ProfilerIdx.memDelta] = trackMem ? (ProcessInfo.currentRss - startMem) : 0;
 
-    for (var child in _engines) {
-      child.record(args);
-    }
+    // for (var child in _engines) {
+    //   child.record(args);
+    // }
   }
 
   Future<void> printStats() async {
     GaplyHub.info('--- [ $id - Final Performance Report ] ---', isImmediate: true);
-    for (final child in _engines) {
-      await child.printStats(id);
-    }
+    // for (final child in _engines) {
+    //   await child.printStats(id);
+    // }
   }
 
   Future<void> dispose() async {
-    for (final child in _engines) {
-      await child.dispose();
-    }
-  }
-}
-
-class GaplyTraceHandle {
-  final List<dynamic> _args;
-  final int _startMem;
-  final bool _trackMemory;
-  final void Function(List<dynamic> args, int startMem, bool trackMem) _onStop;
-
-  bool _isStopped = false;
-
-  GaplyTraceHandle._({
-    required List<dynamic> args,
-    required int startMem,
-    required bool trackMemory,
-    required void Function(List<dynamic> args, int startMem, bool trackMem) onStop,
-  }) : _args = args,
-       _startMem = startMem,
-       _trackMemory = trackMemory,
-       _onStop = onStop;
-
-  factory GaplyTraceHandle.noOp({required String id, String? tag, Map<String, dynamic>? metadata}) {
-    return GaplyTraceHandle._(args: [], startMem: 0, trackMemory: false, onStop: (_, _, _) {});
-  }
-
-  void stop({Map<String, dynamic>? extraMetadata, bool isAsync = false}) {
-    if (_isStopped) return;
-    _isStopped = true;
-
-    _args[ProfilerIdx.isAsync] = isAsync ? 1 : 0;
-    if (extraMetadata != null) {
-      final base = _args[ProfilerIdx.metadata] as Map<String, dynamic>?;
-      _args[ProfilerIdx.metadata] = base != null ? {...base, ...extraMetadata} : extraMetadata;
-    }
-
-    _onStop(_args, _startMem, _trackMemory);
+    // for (final child in _engines) {
+    //   await child.dispose();
+    // }
   }
 }
 
 extension GaplyProfilerX on GaplyProfiler {
-  GaplyProfilerEngine _createEngineFactory(GaplyEngineSpec spec) {
-    switch (spec) {
-      case GaplyBatchEngineSpec s:
-        return GaplyBatchEngine(spec: s);
-      case GaplyMemoryEngineSpec s:
-        return GaplyMemoryEngine(spec: s);
-      case GaplyTraceEngineSpec s:
-        return GaplyTraceEngine(spec: s);
-    }
+  // GaplyProfiler addEngine(GaplyEngineSpec spec) {
+  //   if (_engineExists(spec)) {
+  //     GaplyHub.info('⚠️ [Gaply] Engine with this spec already exists: ${spec.id}');
+  //     return this;
+  //   }
+  //   //_engines.add(_createEngineFactory(spec));
+  //   return this;
+  //}
 
-    return _GaplyNoOpEngine();
-  }
+  // GaplyProfiler removeEngine(GaplyEngineSpec spec) {
+  //   final targets = _engines.where((e) => e.spec == spec).toList();
+  //
+  //   for (var engine in targets) {
+  //     engine.dispose();
+  //     _engines.remove(engine);
+  //   }
+  //
+  //   return this;
+  // }
 
-  GaplyProfiler addEngine(GaplyEngineSpec spec) {
-    if (_engineExists(spec)) {
-      GaplyHub.info('⚠️ [Gaply] Engine with this spec already exists: ${spec.id}');
-      return this;
-    }
-    _engines.add(_createEngineFactory(spec));
-    return this;
-  }
-
-  GaplyProfiler removeEngine(GaplyEngineSpec spec) {
-    final targets = _engines.where((e) => e.spec == spec).toList();
-
-    for (var engine in targets) {
-      engine.dispose();
-      _engines.remove(engine);
-    }
-
-    return this;
-  }
-
-  bool _engineExists(GaplyEngineSpec spec) {
-    return _engines.any((e) {
-      if (e.spec.id != null && spec.id != null) {
-        return e.spec.id == spec.id;
-      }
-
-      return e.spec.runtimeType == spec.runtimeType;
-    });
-  }
+  // bool _engineExists(GaplyEngineSpec spec) {
+  //   return _engines.any((e) {
+  //     if (e.spec.id != null && spec.id != null) {
+  //       return e.spec.id == spec.id;
+  //     }
+  //
+  //     return e.spec.runtimeType == spec.runtimeType;
+  //   });
+  // }
 }
 
 class _GaplyNoOpEngine extends GaplyProfilerEngine {

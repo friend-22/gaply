@@ -19,7 +19,6 @@ abstract class GaplyProfilerEngine<T extends GaplyProfilerStats> {
         handleIncomingData(data);
       }
     });
-    _channelPort = _channel.sendPort;
 
     _cleanupTimer = Timer.periodic(const Duration(minutes: 1), (_) {
       _performCleanup();
@@ -87,7 +86,7 @@ abstract class GaplyProfilerEngine<T extends GaplyProfilerStats> {
   }
 
   void sendPacket(dynamic payload) {
-    _channelPort.sendPacket(_listenerId, payload);
+    //_channelPort.sendPacket(_listenerId, payload);
   }
 }
 

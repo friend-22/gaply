@@ -3,7 +3,7 @@ part of 'gaply_profiler.dart';
 @immutable
 abstract class GaplyEngineSpec extends Equatable {
   final String? id;
-  final GaplyLoggerEngine? customLogger;
+  final GaplyLoggerSpec? customLogger;
   final Duration threshold;
   final int maxStats;
   final Duration statsLifetime;
@@ -38,7 +38,7 @@ abstract class GaplyEngineSpec extends Equatable {
 
   GaplyEngineSpec copyWith({
     String? id,
-    GaplyLoggerEngine? customLogger,
+    GaplyLoggerSpec? customLogger,
     Duration? threshold,
     int? maxStats,
     Duration? statsLifetime,
@@ -64,7 +64,7 @@ class GaplyNoOpEngineSpec extends GaplyEngineSpec {
   @override
   GaplyNoOpEngineSpec copyWith({
     String? id,
-    GaplyLoggerEngine? customLogger,
+    GaplyLoggerSpec? customLogger,
     Duration? threshold,
     int? maxStats,
     Duration? statsLifetime,
@@ -92,7 +92,7 @@ class GaplyBatchEngineSpec extends GaplyEngineSpec {
   @override
   GaplyBatchEngineSpec copyWith({
     String? id,
-    GaplyLoggerEngine? customLogger,
+    GaplyLoggerSpec? customLogger,
     Duration? threshold,
     int? maxStats,
     Duration? statsLifetime,
@@ -137,7 +137,7 @@ class GaplyMemoryEngineSpec extends GaplyEngineSpec {
   @override
   GaplyMemoryEngineSpec copyWith({
     String? id,
-    GaplyLoggerEngine? customLogger,
+    GaplyLoggerSpec? customLogger,
     Duration? threshold,
     int? maxStats,
     Duration? statsLifetime,
@@ -176,7 +176,7 @@ class GaplyTraceEngineSpec extends GaplyEngineSpec {
   @override
   GaplyTraceEngineSpec copyWith({
     String? id,
-    GaplyLoggerEngine? customLogger,
+    GaplyLoggerSpec? customLogger,
     Duration? threshold,
     int? maxStats,
     Duration? statsLifetime,

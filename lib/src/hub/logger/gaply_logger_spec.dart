@@ -1,11 +1,4 @@
-import 'dart:io';
-
-import 'package:equatable/equatable.dart';
-import 'package:flutter/foundation.dart';
-
-import 'package:gaply/src/hub/gaply_hub.dart';
-
-import '../gaply_budget.dart';
+part of '../gaply_hub.dart';
 
 mixin _GaplyLoggerSpecMixin on Equatable {
   GaplyLoggerSpec get _self => this as GaplyLoggerSpec;
@@ -38,33 +31,37 @@ abstract class GaplyLoggerSpec extends Equatable with _GaplyLoggerSpecMixin {
   GaplyLoggerSpec copyWith({String? id});
 }
 
-@immutable
-class GaplyNoOpLoggerSpec extends GaplyLoggerSpec {
-  const GaplyNoOpLoggerSpec({super.id});
-
-  @override
-  GaplyNoOpLoggerSpec copyWith({String? id}) {
-    return GaplyNoOpLoggerSpec();
-  }
-}
+enum ConsoleOutputMode { debugPrint, stdout }
 
 @immutable
 class GaplyConsoleLoggerSpec extends GaplyLoggerSpec {
+  final ConsoleOutputMode outputMode;
   final Duration flushInterval;
   final int bufferCapacity;
-  const GaplyConsoleLoggerSpec({super.id, this.flushInterval = GaplyBudget.fps60, this.bufferCapacity = 20});
+  const GaplyConsoleLoggerSpec({
+    super.id,
+    this.outputMode = ConsoleOutputMode.debugPrint,
+    this.flushInterval = GaplyBudget.fps60,
+    this.bufferCapacity = 20,
+  });
 
   @override
-  GaplyLoggerSpec copyWith({String? id, Duration? flushInterval, int? bufferCapacity}) {
+  GaplyLoggerSpec copyWith({
+    String? id,
+    ConsoleOutputMode? outputMode,
+    Duration? flushInterval,
+    int? bufferCapacity,
+  }) {
     return GaplyConsoleLoggerSpec(
       id: id ?? this.id,
+      outputMode: outputMode ?? this.outputMode,
       flushInterval: flushInterval ?? this.flushInterval,
       bufferCapacity: bufferCapacity ?? this.bufferCapacity,
     );
   }
 
   @override
-  List<Object?> get props => [...super.props, flushInterval, bufferCapacity];
+  List<Object?> get props => [...super.props, outputMode, flushInterval, bufferCapacity];
 }
 
 @immutable
@@ -74,6 +71,7 @@ class GaplyFileLoggerSpec extends GaplyLoggerSpec {
   final FileMode mode;
   final int bufferCapacity;
   final Duration flushInterval;
+  final GaplyLogLevel minLevel;
 
   const GaplyFileLoggerSpec({
     super.id,
@@ -82,6 +80,7 @@ class GaplyFileLoggerSpec extends GaplyLoggerSpec {
     this.mode = FileMode.append,
     this.bufferCapacity = 20,
     this.flushInterval = const Duration(seconds: 5),
+    this.minLevel = GaplyLogLevel.warning,
   });
 
   @override
@@ -92,6 +91,7 @@ class GaplyFileLoggerSpec extends GaplyLoggerSpec {
     FileMode? mode,
     Duration? flushInterval,
     int? bufferCapacity,
+    GaplyLogLevel? minLevel,
   }) {
     return GaplyFileLoggerSpec(
       id: id ?? this.id,
@@ -100,11 +100,12 @@ class GaplyFileLoggerSpec extends GaplyLoggerSpec {
       mode: mode ?? this.mode,
       flushInterval: flushInterval ?? this.flushInterval,
       bufferCapacity: bufferCapacity ?? this.bufferCapacity,
+      minLevel: minLevel ?? this.minLevel,
     );
   }
 
   @override
-  List<Object?> get props => [...super.props, path, maxBytes, mode, bufferCapacity, flushInterval];
+  List<Object?> get props => [...super.props, path, maxBytes, mode, bufferCapacity, flushInterval, minLevel];
 }
 
 @immutable
